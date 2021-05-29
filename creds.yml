@@ -1,0 +1,14 @@
+# MAIN NET
+prod:
+    access_key: NQI6IznoBsjUL4tgTkGJOf5l9S6zu2vVBqfF0nla2vArjl2AdDWYGPbCowZiEseW
+    secret_key: Ue0SuTXvZh24BX0XROQg5HuQVGV6VqoKgXbMWDdZWTdSwPNND9I0kQwr60EdQXWn
+
+# TEST NET
+test:
+    access_key: zuqDmiJB9jj9GQohBJzgW8P5X9bZUaXkM2xHTjoOznEoBLcy2x01euUoDzhLG2kX
+    secret_key: Pi3w63tG7EtjER4Y4uaiEMaPbN8Kw3vX9hHXeKZTDwkAIISRyePBFf2nARYoofeo
+
+#Tlegram bot token and id for log sending
+#  TELEGRAM_BOT_TOKEN: 1826715767:AAE5bm2PxZuCTLcWOE6WU4JAERUQ-F58GJM
+#  TELEGRAM_BOT_ID: 496371304
+

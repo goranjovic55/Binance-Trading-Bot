@@ -1,0 +1,29 @@
+{
+    "BNTETH": {
+        "symbol": "BNTETH",
+        "orderid": 0,
+        "timestamp": 1622306889.043468,
+        "bought_at": "0.00179300",
+        "volume": 27.89,
+        "stop_loss": -1.2,
+        "take_profit": 2.4
+    },
+    "EOSETH": {
+        "symbol": "EOSETH",
+        "orderid": 0,
+        "timestamp": 1622307436.120437,
+        "bought_at": "0.00262900",
+        "volume": 19.02,
+        "stop_loss": -1.08,
+        "take_profit": 2.16
+    },
+    "FUNETH": {
+        "symbol": "FUNETH",
+        "orderid": 0,
+        "timestamp": 1622308550.495623,
+        "bought_at": "0.00000896",
+        "volume": 5580,
+        "stop_loss": -1.296,
+        "take_profit": 2.592
+    }
+}
