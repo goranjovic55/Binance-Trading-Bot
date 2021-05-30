@@ -169,7 +169,7 @@ def wait_for_price():
         # sleep for exactly the amount of time required
 
         time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
-
+    #gogo MOD todo more verbose having all the report things in it!!!!!
     print(f'Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. Session profit: {session_profit:.2f}% - Est: {(QUANTITY * session_profit)/100:.{decimals()}f} {PAIR_WITH}')
     # retrieve latest prices
     get_price()
@@ -464,6 +464,9 @@ def sell_coins():
 
 
 def update_portfolio(orders, last_price, volume):
+
+    global session_profit
+
     '''add every coin bought to our portfolio for tracking/selling later'''
     if DEBUG: print(orders)
     for coin in orders:
@@ -476,11 +479,14 @@ def update_portfolio(orders, last_price, volume):
             'volume': volume[coin],
             'stop_loss': -STOP_LOSS,
             'take_profit': TAKE_PROFIT,
-            }
+             }
 
         # save the coins in a json file in the same directory
         with open(coins_bought_file_path, 'w') as file:
             json.dump(coins_bought, file, indent=4)
+
+        with open(session_info_file_path, 'w') as file:
+            json.dump(session_profit, file, indent=4)
 
         print(f'Order with id {orders[coin][0]["orderId"]} placed and saved to file')
         # print balance report
@@ -609,6 +615,14 @@ if __name__ == '__main__':
 
     # path to the saved coins_bought file
     coins_bought_file_path = 'coins_bought.json'
+
+    #gogo MOD path to session info file and loading variables from previous sessions
+    #sofar only used for session profit TODO implement to use other things too
+    #session_profit is calculated in % wich is innacurate if QUANTITY is not the same!!!!!
+    session_info_file_path = 'session_info.json'
+    json_file=open(session_info_file_path)
+    session_profit=json.load(json_file)
+    json_file.close()
 
     # rolling window of prices; cyclical queue
     historical_prices = [None] * (TIME_DIFFERENCE * RECHECK_INTERVAL)
