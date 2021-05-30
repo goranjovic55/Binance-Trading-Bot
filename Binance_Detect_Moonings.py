@@ -167,6 +167,7 @@ def wait_for_price():
     if historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'] > datetime.now() - timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)):
 
         # sleep for exactly the amount of time required
+
         time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
 
     print(f'Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. Session profit: {session_profit:.2f}% - Est: {(QUANTITY * session_profit)/100:.{decimals()}f} {PAIR_WITH}')
@@ -435,20 +436,20 @@ def sell_coins():
                 if profit > 0:
                    win_trade_count = win_trade_count + 1
                    last_trade_won = 1
-                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}% - SP:{session_profit:.2f}% ${(QUANTITY * session_profit)/100:.2f} - W:{win_trade_count} L:{loss_trade_count}")
+                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}% -SP:{session_profit:.2f}% -{(QUANTITY * session_profit)/100:.2f} -W:{win_trade_count} L:{loss_trade_count}")
                 else:
                    loss_trade_count = loss_trade_count + 1
                    last_trade_lost = 1
-                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}% - SP:{session_profit:.2f}% ${(QUANTITY * session_profit)/100:.2f} - W: {win_trade_count} L:{loss_trade_count}")
+                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}% -SP:{session_profit:.2f}% -{(QUANTITY * session_profit)/100:.2f} -W:{win_trade_count} L:{loss_trade_count}")
 
                 # LastPrice (10) - BuyPrice (5) = 5
                 # 5 * coins_sold (1) = 5
                 # 5 * (1-(0.07875)) = 4.60625
                 # profit = 4.60625, it seems ok!
-                write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PAIR_WITH} ({PriceChange-(buyFee+sellFee):.2f}%)")
+#                write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PAIR_WITH} ({PriceChange-(buyFee+sellFee):.2f}%)")
                 session_profit = session_profit + (PriceChange-(buyFee+sellFee))
                 #print balance report
-                balance_report()
+                balance_report(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}% - SP:{session_profit:.2f}% -{(QUANTITY * session_profit)/100:.2f} -W:{win_trade_count} L:{loss_trade_count}")
 
             continue
 
@@ -483,7 +484,7 @@ def update_portfolio(orders, last_price, volume):
 
         print(f'Order with id {orders[coin][0]["orderId"]} placed and saved to file')
         # print balance report
-        balance_report()
+#        balance_report(f"report")
 
 def remove_from_portfolio(coins_sold):
     '''Remove coins sold due to SL or TP from portfolio'''
@@ -507,20 +508,20 @@ def write_log(logline):
     timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
     with open(LOG_FILE,'a+') as f:
         f.write(timestamp + ' ' + logline + '\n')
-    telegram_bot_sendtext(SETTINGS_STRING + '\n' + logline)
 
-def balance_report():
+def balance_report(reportline):
+
     INVESTMENT_TOTAL = (QUANTITY * TRADE_SLOTS)
     CURRENT_EXPOSURE = (QUANTITY * len(coins_bought))
     TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
     NEW_BALANCE = (INVESTMENT_TOTAL + TOTAL_GAINS)
     INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT_TOTAL) * 100
 
-    print(f' ')
-    print(f'Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. Session profit: {session_profit:.2f}% - Est: {TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}')
-    print(f'Investment: {INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}, Exposure: {CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}, New balance: {NEW_BALANCE:.{decimals()}f} {PAIR_WITH}, Gains: {INVESTMENT_GAIN:.2f}%')
-    print(f'---------------------------------------------------------------------------------------------')
-    print(f' ')
+    print(f'>>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> IT: {INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE: {CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB: {NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> G: {INVESTMENT_GAIN:.2f}% <<<')
+
+    REPORT_STRING = 'IT:'+str(round(INVESTMENT_TOTAL, 4))+'-CE:'+str(round(CURRENT_EXPOSURE, 4))+'-NB:'+str(round(NEW_BALANCE, 4))+'-IG:'+str(round(INVESTMENT_GAIN, 4))+'%'
+
+    telegram_bot_sendtext(SETTINGS_STRING + '\n' + reportline + '\n' + REPORT_STRING + '\n')
 
     return
 
