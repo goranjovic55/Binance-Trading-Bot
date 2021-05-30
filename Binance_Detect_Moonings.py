@@ -178,10 +178,10 @@ def wait_for_price():
 
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if win_trade_count > 0 or loss_trade_count > 0:
-       print(f'{txcolors.NOTICE}>>Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> IT: {INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE: {CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB: {NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> G: {INVESTMENT_GAIN:.2f}%<<<{txcolors.DEFAULT}')
+       print(f'{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> IT:{INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> G:{INVESTMENT_GAIN:.2f}%> W:{win_trade_count}> L:{loss_trade_count} <<{txcolors.DEFAULT}')
 
     else:
-       print(f'{txcolors.NOTICE}>>Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{((QUANTITY * session_profit) / 100):.{decimals()}f} {PAIR_WITH}<<{txcolors.DEFAULT}')
+       print(f'{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{((QUANTITY * session_profit) / 100):.{decimals()}f} {PAIR_WITH} <<{txcolors.DEFAULT}')
 
     # retrieve latest prices
     get_price()
@@ -708,14 +708,14 @@ if __name__ == '__main__':
            TAKE_PROFIT = TAKE_PROFIT + (TAKE_PROFIT * DYNAMIC_WIN_LOSS_UP) / 100
            TRAILING_STOP_LOSS = TRAILING_STOP_LOSS + (TRAILING_STOP_LOSS * DYNAMIC_WIN_LOSS_UP) / 100
            last_trade_won = 0
-           print(f'{txcolors.NOTICE}>>>Last Trade WON Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f}  - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f}<<<{txcolors.DEFAULT}')
+           print(f'{txcolors.NOTICE}>> Last Trade WON Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f}  - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} <<{txcolors.DEFAULT}')
 
         if last_trade_lost == 1:
            STOP_LOSS = STOP_LOSS - (STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
            TAKE_PROFIT = TAKE_PROFIT - (TAKE_PROFIT * DYNAMIC_WIN_LOSS_DOWN) / 100
            TRAILING_STOP_LOSS = TRAILING_STOP_LOSS - (TRAILING_STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
            last_trade_lost = 0
-           print(f'{txcolors.NOTICE}>>>Last Trade LOST Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}<<<{txcolors.DEFAULT}')
+           print(f'{txcolors.NOTICE}>> Last Trade LOST Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} <<{txcolors.DEFAULT}')
 
         #Setting string used for messaging and logging
         SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'-RI:'+str(round(RECHECK_INTERVAL, 2))+'-CIP:'+str(round(CHANGE_IN_PRICE, 2))+'-SL:'+str(round(STOP_LOSS, 2))+'-TP:'+str(round(TAKE_PROFIT, 2))+'-TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'-TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
