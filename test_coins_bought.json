@@ -35,24 +35,6 @@
         "stop_loss": -9,
         "take_profit": 0.9
     },
-    "BQXETH": {
-        "symbol": "BQXETH",
-        "orderid": 0,
-        "timestamp": 1622377892.818395,
-        "bought_at": "0.00097990",
-        "volume": 6,
-        "stop_loss": -9,
-        "take_profit": 0.9
-    },
-    "DEXEETH": {
-        "symbol": "DEXEETH",
-        "orderid": 0,
-        "timestamp": 1622377892.818468,
-        "bought_at": "0.00234300",
-        "volume": 2.56,
-        "stop_loss": 1.0523687580025658,
-        "take_profit": 1.2523687580025658
-    },
     "HEGICETH": {
         "symbol": "HEGICETH",
         "orderid": 0,
@@ -143,93 +125,84 @@
         "stop_loss": -9,
         "take_profit": 0.9
     },
-    "GHSTETH": {
-        "symbol": "GHSTETH",
-        "orderid": 0,
-        "timestamp": 1622378383.733913,
-        "bought_at": "0.00045530",
-        "volume": 13,
-        "stop_loss": 0.9123228640456851,
-        "take_profit": 1.110322864045685
-    },
-    "EZETH": {
-        "symbol": "EZETH",
-        "orderid": 0,
-        "timestamp": 1622378625.052955,
-        "bought_at": "0.00258200",
-        "volume": 2.32,
-        "stop_loss": -0.2,
-        "take_profit": 0.4
-    },
-    "LOOMETH": {
-        "symbol": "LOOMETH",
-        "orderid": 0,
-        "timestamp": 1622378829.190254,
-        "bought_at": "0.00003151",
-        "volume": 190,
-        "stop_loss": 0.5029831799428641,
-        "take_profit": 0.7029831799428641
-    },
-    "PUNDIXETH": {
-        "symbol": "PUNDIXETH",
-        "orderid": 0,
-        "timestamp": 1622378829.190496,
-        "bought_at": "0.00068400",
-        "volume": 8.77,
-        "stop_loss": 0.33859649122806496,
-        "take_profit": 0.538596491228065
-    },
-    "ETCETH": {
-        "symbol": "ETCETH",
-        "orderid": 0,
-        "timestamp": 1622379031.17957,
-        "bought_at": "0.02765900",
-        "volume": 0.22,
-        "stop_loss": -0.2,
-        "take_profit": 0.4
-    },
-    "COVERETH": {
-        "symbol": "COVERETH",
-        "orderid": 0,
-        "timestamp": 1622379031.180276,
-        "bought_at": "0.09470000",
-        "volume": 0.0634,
-        "stop_loss": -0.2,
-        "take_profit": 0.4
-    },
-    "CVPETH": {
-        "symbol": "CVPETH",
-        "orderid": 0,
-        "timestamp": 1622379031.180416,
-        "bought_at": "0.00049600",
-        "volume": 12.1,
-        "stop_loss": -0.2,
-        "take_profit": 0.4
-    },
     "ELFETH": {
         "symbol": "ELFETH",
         "orderid": 0,
         "timestamp": 1622379031.180502,
         "bought_at": "0.00010199",
         "volume": 58,
+        "stop_loss": 0.3236099617609512,
+        "take_profit": 0.5216099617609512
+    },
+    "DASHETH": {
+        "symbol": "DASHETH",
+        "orderid": 0,
+        "timestamp": 1622382780.223395,
+        "bought_at": "0.07729000",
+        "volume": 0.078,
         "stop_loss": -0.2,
         "take_profit": 0.4
     },
-    "IOTXETH": {
-        "symbol": "IOTXETH",
+    "MTLETH": {
+        "symbol": "MTLETH",
         "orderid": 0,
-        "timestamp": 1622379040.602521,
-        "bought_at": "0.00001153",
-        "volume": 520,
-        "stop_loss": -0.198,
-        "take_profit": 0.396
+        "timestamp": 1622383264.546099,
+        "bought_at": "0.00089000",
+        "volume": 6.74,
+        "stop_loss": 0.34943820224720196,
+        "take_profit": 0.549438202247202
     },
-    "QLCETH": {
-        "symbol": "QLCETH",
+    "VIBETH": {
+        "symbol": "VIBETH",
         "orderid": 0,
-        "timestamp": 1622379040.602807,
-        "bought_at": "0.00001417",
-        "volume": 423,
+        "timestamp": 1622383274.575472,
+        "bought_at": "0.00002229",
+        "volume": 269,
+        "stop_loss": -0.19998000000000002,
+        "take_profit": 0.39996000000000004
+    },
+    "AIONETH": {
+        "symbol": "AIONETH",
+        "orderid": 0,
+        "timestamp": 1622383552.580969,
+        "bought_at": "0.00008100",
+        "volume": 74.07,
+        "stop_loss": -0.2,
+        "take_profit": 0.4
+    },
+    "HOTETH": {
+        "symbol": "HOTETH",
+        "orderid": 0,
+        "timestamp": 1622384058.79363,
+        "bought_at": "0.00000361",
+        "volume": 1662,
+        "stop_loss": -0.2,
+        "take_profit": 0.4
+    },
+    "DATAETH": {
+        "symbol": "DATAETH",
+        "orderid": 0,
+        "timestamp": 1622384058.793919,
+        "bought_at": "0.00003349",
+        "volume": 179,
+        "stop_loss": -0.2,
+        "take_profit": 0.4
+    },
+    "BNBETH": {
+        "symbol": "BNBETH",
+        "orderid": 0,
+        "timestamp": 1622384160.274354,
+        "bought_at": "0.13772000",
+        "volume": 0.044,
+        "stop_loss": -0.2,
+        "take_profit": 0.4
+    },
+    "RENBTCETH": {
+        "symbol": "RENBTCETH",
+        "orderid": 0,
+        "timestamp": 1622384180.736824,
+        "bought_at": "14.87900000",
+        "volume": 0.0004,
         "stop_loss": -0.198,
         "take_profit": 0.396
     }

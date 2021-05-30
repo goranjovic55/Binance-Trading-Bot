@@ -66,6 +66,7 @@ class txcolors:
     SELL_PROFIT = '\033[32m'
     DIM = '\033[2m\033[35m'
     DEFAULT = '\033[39m'
+    NOTICE = '\033[96m'
 
 
 # tracks profit/loss each session
@@ -81,6 +82,11 @@ global last_trade_won
 last_trade_won = 0
 global last_trade_lost
 last_trade_lost = 0
+global INVESTMENT_TOTAL
+global CURRENT_EXPOSURE
+global TOTAL_GAINS
+global NEW_BALANCE
+global INVESTMENT_GAIN
 
 # print with timestamps
 old_out = sys.stdout
@@ -153,7 +159,7 @@ def wait_for_price():
     '''calls the initial price and ensures the correct amount of time has passed
     before reading the current price again'''
 
-    global historical_prices, hsp_head, volatility_cooloff
+    global historical_prices, hsp_head, volatility_cooloff, session_profit, INVESTMENT_TOTAL, CURRENT_EXPOSURE, NEW_BALANCE, INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count
 
     volatile_coins = {}
     externals = {}
@@ -169,8 +175,14 @@ def wait_for_price():
         # sleep for exactly the amount of time required
 
         time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
+
     #gogo MOD todo more verbose having all the report things in it!!!!!
-    print(f'Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. Session profit: {session_profit:.2f}% - Est: {(QUANTITY * session_profit)/100:.{decimals()}f} {PAIR_WITH}')
+    if win_trade_count > 0 or loss_trade_count > 0:
+       print(f'{txcolors.NOTICE}>>Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> IT: {INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE: {CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB: {NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> G: {INVESTMENT_GAIN:.2f}%<<<{txcolors.DEFAULT}')
+
+    else:
+       print(f'{txcolors.NOTICE}>>Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{((QUANTITY * session_profit) / 100):.{decimals()}f} {PAIR_WITH}<<{txcolors.DEFAULT}')
+
     # retrieve latest prices
     get_price()
 
@@ -518,13 +530,15 @@ def write_log(logline):
 
 def balance_report(reportline):
 
+    global session_profit, INVESTMENT_TOTAL, CURRENT_EXPOSURE, NEW_BALANCE, INVESTMENT_GAIN, TOTAL_GAINS
+
     INVESTMENT_TOTAL = (QUANTITY * TRADE_SLOTS)
     CURRENT_EXPOSURE = (QUANTITY * len(coins_bought))
     TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
     NEW_BALANCE = (INVESTMENT_TOTAL + TOTAL_GAINS)
     INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT_TOTAL) * 100
 
-    print(f'>>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> IT: {INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE: {CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB: {NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> G: {INVESTMENT_GAIN:.2f}% <<<')
+    print(f'{txcolors.NOTICE}>>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> IT: {INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE: {CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB: {NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> G: {INVESTMENT_GAIN:.2f}% <<<{txcolors.DEFAULT}')
 
     REPORT_STRING = 'IT:'+str(round(INVESTMENT_TOTAL, 4))+'-CE:'+str(round(CURRENT_EXPOSURE, 4))+'-NB:'+str(round(NEW_BALANCE, 4))+'-IG:'+str(round(INVESTMENT_GAIN, 4))+'%'
 
@@ -694,17 +708,16 @@ if __name__ == '__main__':
            TAKE_PROFIT = TAKE_PROFIT + (TAKE_PROFIT * DYNAMIC_WIN_LOSS_UP) / 100
            TRAILING_STOP_LOSS = TRAILING_STOP_LOSS + (TRAILING_STOP_LOSS * DYNAMIC_WIN_LOSS_UP) / 100
            last_trade_won = 0
-           print(f'Last Trade WON Changing STOP_LOSS: {STOP_LOSS:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}')
+           print(f'Last Trade WON Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f}  - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f}')
 
         if last_trade_lost == 1:
            STOP_LOSS = STOP_LOSS - (STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
            TAKE_PROFIT = TAKE_PROFIT - (TAKE_PROFIT * DYNAMIC_WIN_LOSS_DOWN) / 100
            TRAILING_STOP_LOSS = TRAILING_STOP_LOSS - (TRAILING_STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
            last_trade_lost = 0
-           print(f'Last Trade LOST Changing STOP_LOSS: {STOP_LOSS:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}')
+           print(f'Last Trade LOST Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} ')
 
         #Setting string used for messaging and logging
         SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'-RI:'+str(round(RECHECK_INTERVAL, 2))+'-CIP:'+str(round(CHANGE_IN_PRICE, 2))+'-SL:'+str(round(STOP_LOSS, 2))+'-TP:'+str(round(TAKE_PROFIT, 2))+'-TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'-TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
-
 
         remove_from_portfolio(coins_sold)
