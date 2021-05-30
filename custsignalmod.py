@@ -21,7 +21,7 @@ SCREENER = 'CRYPTO'
 PAIR_WITH = 'ETH'
 TICKERS = 'tickers_ETH.txt'
 TIME_TO_WAIT = 4 # Minutes to wait between analysis
-FULL_LOG = True # List analysis result to console
+FULL_LOG = False # List analysis result to console
 
 def analyze(pairs):
     signal_coins = {}
