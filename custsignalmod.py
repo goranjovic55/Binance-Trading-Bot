@@ -20,7 +20,7 @@ EXCHANGE = 'BINANCE'
 SCREENER = 'CRYPTO'
 PAIR_WITH = 'ETH'
 TICKERS = 'tickers_ETH.txt'
-TIME_TO_WAIT = 4 # Minutes to wait between analysis
+TIME_TO_WAIT = 1 # Minutes to wait between analysis
 FULL_LOG = False # List analysis result to console
 
 def analyze(pairs):
