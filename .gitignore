@@ -1,1 +1,5 @@
 creds.yml
+session_info.json
+test_coins_bought.json
+coins_bought.json
+trades.txt
