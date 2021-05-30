@@ -8,15 +8,6 @@
         "stop_loss": -1.2,
         "take_profit": 2.4
     },
-    "EOSETH": {
-        "symbol": "EOSETH",
-        "orderid": 0,
-        "timestamp": 1622307436.120437,
-        "bought_at": "0.00262900",
-        "volume": 19.02,
-        "stop_loss": -1.08,
-        "take_profit": 2.16
-    },
     "FUNETH": {
         "symbol": "FUNETH",
         "orderid": 0,
@@ -25,5 +16,59 @@
         "volume": 5580,
         "stop_loss": -1.296,
         "take_profit": 2.592
+    },
+    "SCRTETH": {
+        "symbol": "SCRTETH",
+        "orderid": 0,
+        "timestamp": 1622367927.660169,
+        "bought_at": "0.00063500",
+        "volume": 78.74,
+        "stop_loss": -0.9,
+        "take_profit": 1.8
+    },
+    "ETCETH": {
+        "symbol": "ETCETH",
+        "orderid": 0,
+        "timestamp": 1622368149.475807,
+        "bought_at": "0.02766400",
+        "volume": 0.22,
+        "stop_loss": -9,
+        "take_profit": 0.9
+    },
+    "MANAETH": {
+        "symbol": "MANAETH",
+        "orderid": 0,
+        "timestamp": 1622368149.532288,
+        "bought_at": "0.00032840",
+        "volume": 18,
+        "stop_loss": -9,
+        "take_profit": 0.9
+    },
+    "COVERETH": {
+        "symbol": "COVERETH",
+        "orderid": 0,
+        "timestamp": 1622368149.58649,
+        "bought_at": "0.09330000",
+        "volume": 0.0643,
+        "stop_loss": -9,
+        "take_profit": 0.9
+    },
+    "LRCETH": {
+        "symbol": "LRCETH",
+        "orderid": 0,
+        "timestamp": 1622368159.160591,
+        "bought_at": "0.00014377",
+        "volume": 41,
+        "stop_loss": -9,
+        "take_profit": 0.9
+    },
+    "ZRXETH": {
+        "symbol": "ZRXETH",
+        "orderid": 0,
+        "timestamp": 1622368169.397408,
+        "bought_at": "0.00039797",
+        "volume": 15,
+        "stop_loss": -9,
+        "take_profit": 0.9
     }
 }

@@ -73,14 +73,14 @@ global session_profit
 session_profit = 0
 
 #gogo MOD WIN/LOSS COunter and global dynamic stoploss and takeprofit and trailing takeprofit etc
-global WIN_TRADE_COUNT
-WIN_TRADE_COUNT = 0
-global LOSS_TRADE_COUNT
-LOSS_TRADE_COUNT = 0
-global LAST_TRADE_WON
-LAST_TRADE_WON = 0
-global LAST_TRADE_LOST
-LAST_TRADE_LOST = 0
+global win_trade_count
+win_trade_count = 0
+global loss_trade_count
+loss_trade_count = 0
+global last_trade_won
+last_trade_won = 0
+global last_trade_lost
+last_trade_lost = 0
 
 # print with timestamps
 old_out = sys.stdout
@@ -370,7 +370,7 @@ def buy():
 def sell_coins():
     '''sell coins that have reached the STOP LOSS or TAKE PROFIT threshold'''
 
-    global hsp_head, session_profit, WIN_TRADE_COUNT, LOSS_TRADE_COUNT, LAST_TRADE_WON, LAST_TRADE_LOST
+    global hsp_head, session_profit, win_trade_count, loss_trade_count, last_trade_won, last_trade_lost
 
     last_price = get_price(False) # don't populate rolling window
     #last_price = get_price(add_to_historical=True) # don't populate rolling window
@@ -433,13 +433,13 @@ def sell_coins():
 
                 #gogo MOD to trigger trade lost or won and to count lost or won trades
                 if profit > 0:
-                   WIN_TRADE_COUNT = WIN_TRADE_COUNT + 1
-                   LAST_TRADE_WON = 1
-                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}% - SP:{session_profit:.2f}% ${(QUANTITY * session_profit)/100:.2f} - W:{WIN_TRADE_COUNT} L:{LOSS_TRADE_COUNT}")
+                   win_trade_count = win_trade_count + 1
+                   last_trade_won = 1
+                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}% - SP:{session_profit:.2f}% ${(QUANTITY * session_profit)/100:.2f} - W:{win_trade_count} L:{loss_trade_count}")
                 else:
-                   LOSS_TRADE_COUNT = LOSS_TRADE_COUNT + 1
-                   LAST_TRADE_LOST = 1
-                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}% - SP:{session_profit:.2f}% ${(QUANTITY * session_profit)/100:.2f} - W: {WIN_TRADE_COUNT} L:{LOSS_TRADE_COUNT}")
+                   loss_trade_count = loss_trade_count + 1
+                   last_trade_lost = 1
+                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}% - SP:{session_profit:.2f}% ${(QUANTITY * session_profit)/100:.2f} - W: {win_trade_count} L:{loss_trade_count}")
 
                 # LastPrice (10) - BuyPrice (5) = 5
                 # 5 * coins_sold (1) = 5
@@ -651,21 +651,20 @@ if __name__ == '__main__':
         coins_sold = sell_coins()
 
         #gogos MOD to have dynamic stoploss take profit and trailing stoploss
-        print(f'STOP_LOSS: {STOP_LOSS:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}')
-
-        if LAST_TRADE_WON == 1:
+        
+        if last_trade_won == 1:
            STOP_LOSS = STOP_LOSS + (STOP_LOSS * DYNAMIC_WIN_LOSS_UP) / 100
            TAKE_PROFIT = TAKE_PROFIT + (TAKE_PROFIT * DYNAMIC_WIN_LOSS_UP) / 100
            TRAILING_STOP_LOSS = TRAILING_STOP_LOSS + (TRAILING_STOP_LOSS * DYNAMIC_WIN_LOSS_UP) / 100
-           LAST_TRADE_WON = 0
-           print(f'Last Trade WON Changing STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS')
+           last_trade_won = 0
+           print(f'Last Trade WON Changing STOP_LOSS: {STOP_LOSS:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}')
 
-        if LAST_TRADE_LOST == 1:
+        if last_trade_lost == 1:
            STOP_LOSS = STOP_LOSS - (STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
            TAKE_PROFIT = TAKE_PROFIT - (TAKE_PROFIT * DYNAMIC_WIN_LOSS_DOWN) / 100
            TRAILING_STOP_LOSS = TRAILING_STOP_LOSS - (TRAILING_STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
-           LAST_TRADE_LOST = 0
-           print(f'Last Trade LOST Changing STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS')
+           last_trade_lost = 0
+           print(f'Last Trade LOST Changing STOP_LOSS: {STOP_LOSS:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}')
 
         #Setting string used for messaging and logging
         SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'-RI:'+str(round(RECHECK_INTERVAL, 2))+'-CIP:'+str(round(CHANGE_IN_PRICE, 2))+'-SL:'+str(round(STOP_LOSS, 2))+'-TP:'+str(round(TAKE_PROFIT, 2))+'-TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'-TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
