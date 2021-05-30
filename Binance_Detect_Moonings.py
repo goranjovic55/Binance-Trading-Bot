@@ -466,7 +466,7 @@ def sell_coins():
 def update_portfolio(orders, last_price, volume):
 
     global session_profit
-
+    
     '''add every coin bought to our portfolio for tracking/selling later'''
     if DEBUG: print(orders)
     for coin in orders:
@@ -485,9 +485,6 @@ def update_portfolio(orders, last_price, volume):
         with open(coins_bought_file_path, 'w') as file:
             json.dump(coins_bought, file, indent=4)
 
-        with open(session_info_file_path, 'w') as file:
-            json.dump(session_profit, file, indent=4)
-
         print(f'Order with id {orders[coin][0]["orderId"]} placed and saved to file')
         # print balance report
 #        balance_report(f"report")
@@ -499,6 +496,10 @@ def remove_from_portfolio(coins_sold):
 
     with open(coins_bought_file_path, 'w') as file:
         json.dump(coins_bought, file, indent=4)
+
+    #save session info for through session portability
+    with open(session_info_file_path, 'w') as file:
+        json.dump(session_profit, file, indent=4)
 
 def telegram_bot_sendtext(bot_message):
 
@@ -620,9 +621,11 @@ if __name__ == '__main__':
     #sofar only used for session profit TODO implement to use other things too
     #session_profit is calculated in % wich is innacurate if QUANTITY is not the same!!!!!
     session_info_file_path = 'session_info.json'
-    json_file=open(session_info_file_path)
-    session_profit=json.load(json_file)
-    json_file.close()
+
+    if os.path.isfile(session_info_file_path) and os.stat(session_info_file_path).st_size!= 0:
+       json_file=open(session_info_file_path)
+       session_profit=json.load(json_file)
+       json_file.close()
 
     # rolling window of prices; cyclical queue
     historical_prices = [None] * (TIME_DIFFERENCE * RECHECK_INTERVAL)
