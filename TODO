@@ -1,0 +1,7 @@
+add info about exposed capital and all of that to basic log
+add colour to upgraded log lines
+add more session info to session_info.json (quantity etc for more precise calculations)
+add possibility to stop bot if reaches specific -% for security and send message to admin
+add better signals through customsmod
+make modded stuff more modular (like functions independent of original code)
+
