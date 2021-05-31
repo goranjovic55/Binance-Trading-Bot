@@ -255,7 +255,7 @@ def external_signals():
 
 def pause_bot():
     '''Pause the script when external indicators detect a bearish trend in the market'''
-    global bot_paused, session_profit, hsp_head
+    global bot_paused, session_profit, hsp_head, session_profit, INVESTMENT_TOTAL, CURRENT_EXPOSURE, NEW_BALANCE, INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count
 
     # start counting for how long the bot has been paused
     start_time = time.perf_counter()
@@ -272,7 +272,15 @@ def pause_bot():
         get_price(True)
 
         # pausing here
-        if hsp_head == 1: print(f"Paused...Session profit:{session_profit:.2f}% Est: {(QUANTITY * session_profit)/100:.{decimals()}f} {PAIR_WITH}")
+
+        #gogo MOD todo more verbose having all the report things in it!!!!!
+        if hsp_head == 1:
+            if win_trade_count > 0 or loss_trade_count > 0:
+                print(f'{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> IT:{INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> G:{INVESTMENT_GAIN:.2f}%> W:{win_trade_count}> L:{loss_trade_count} <<{txcolors.DEFAULT}')
+
+            else:
+                print(f'{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{((QUANTITY * session_profit) / 100):.{decimals()}f} {PAIR_WITH} <<{txcolors.DEFAULT}')
+
         time.sleep((TIME_DIFFERENCE * 60) / RECHECK_INTERVAL)
 
     else:
