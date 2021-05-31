@@ -171,7 +171,7 @@ def wait_for_price():
         # sleep for exactly the amount of time required
 
         time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
-        
+
     report('console', '.')
 
     # retrieve latest prices
@@ -474,7 +474,7 @@ def sell_coins():
 def update_portfolio(orders, last_price, volume):
 
     global session_profit
-    
+
     '''add every coin bought to our portfolio for tracking/selling later'''
     if DEBUG: print(orders)
     for coin in orders:
@@ -525,8 +525,8 @@ def write_log(logline):
         f.write(timestamp + ' ' + logline + '\n')
 
 def report(type,reportline):
-    
-    global session_profit, INVESTMENT_TOTAL, CURRENT_EXPOSURE, NEW_BALANCE, INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent 
+
+    global session_profit, INVESTMENT_TOTAL, CURRENT_EXPOSURE, NEW_BALANCE, INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent
 
     INVESTMENT_TOTAL = (QUANTITY * TRADE_SLOTS)
     CURRENT_EXPOSURE = (QUANTITY * len(coins_bought))
@@ -548,6 +548,27 @@ def report(type,reportline):
        telegram_bot_sendtext(SETTINGS_STRING + '\n' + reportline + '\n' + REPORT_STRING + '\n')
 
     return
+
+def dynamic_performance_settings(DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS):
+
+    global last_trade_won, last_trade_lost
+
+    #gogos MOD to have dynamic stoploss take profit and trailing stoploss
+    if last_trade_won == 1:
+       STOP_LOSS = STOP_LOSS + (STOP_LOSS * DYNAMIC_WIN_LOSS_UP) / 100
+       TAKE_PROFIT = TAKE_PROFIT + (TAKE_PROFIT * DYNAMIC_WIN_LOSS_UP) / 100
+       TRAILING_STOP_LOSS = TRAILING_STOP_LOSS + (TRAILING_STOP_LOSS * DYNAMIC_WIN_LOSS_UP) / 100
+       last_trade_won = 0
+       print(f'{txcolors.NOTICE}>> Last Trade WON Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f}  - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} <<{txcolors.DEFAULT}')
+
+    if last_trade_lost == 1:
+       STOP_LOSS = STOP_LOSS - (STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
+       TAKE_PROFIT = TAKE_PROFIT - (TAKE_PROFIT * DYNAMIC_WIN_LOSS_DOWN) / 100
+       TRAILING_STOP_LOSS = TRAILING_STOP_LOSS - (TRAILING_STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
+       last_trade_lost = 0
+       print(f'{txcolors.NOTICE}>> Last Trade LOST Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} <<{txcolors.DEFAULT}')
+
+    return STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS;
 
 if __name__ == '__main__':
 
@@ -705,25 +726,12 @@ if __name__ == '__main__':
         coins_sold = sell_coins()
         remove_from_portfolio(coins_sold)
 
-        #gogos MOD to have dynamic stoploss take profit and trailing stoploss
-        
-        if last_trade_won == 1:
-           STOP_LOSS = STOP_LOSS + (STOP_LOSS * DYNAMIC_WIN_LOSS_UP) / 100
-           TAKE_PROFIT = TAKE_PROFIT + (TAKE_PROFIT * DYNAMIC_WIN_LOSS_UP) / 100
-           TRAILING_STOP_LOSS = TRAILING_STOP_LOSS + (TRAILING_STOP_LOSS * DYNAMIC_WIN_LOSS_UP) / 100
-           last_trade_won = 0
-           print(f'{txcolors.NOTICE}>> Last Trade WON Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f}  - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} <<{txcolors.DEFAULT}')
-
-        if last_trade_lost == 1:
-           STOP_LOSS = STOP_LOSS - (STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
-           TAKE_PROFIT = TAKE_PROFIT - (TAKE_PROFIT * DYNAMIC_WIN_LOSS_DOWN) / 100
-           TRAILING_STOP_LOSS = TRAILING_STOP_LOSS - (TRAILING_STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
-           last_trade_lost = 0
-           print(f'{txcolors.NOTICE}>> Last Trade LOST Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} <<{txcolors.DEFAULT}')
+        #gogos MOD to adjust dynamically stoploss trailingstop loss and take profit based on wins
+        STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS = dynamic_performance_settings(DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS)
 
         #Setting string used for messaging and logging
         SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'-RI:'+str(round(RECHECK_INTERVAL, 2))+'-CIP:'+str(round(CHANGE_IN_PRICE, 2))+'-SL:'+str(round(STOP_LOSS, 2))+'-TP:'+str(round(TAKE_PROFIT, 2))+'-TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'-TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
-        
+
         unrealised_percent = 0
 
         for coin in list(coins_bought):
