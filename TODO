@@ -1,3 +1,4 @@
+add running time and %gain in last 24H
 add more session info to session_info.json (quantity etc for more precise calculations)
 add possibility to stop bot if reaches specific -% for security and send message to admin
 add better signals through customsmod
