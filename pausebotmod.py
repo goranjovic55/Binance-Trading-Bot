@@ -1,17 +1,27 @@
+from helpers.parameters import (
+    parse_args, load_config
+)
+# Load arguments then parse settings
+args = parse_args()
+#get config file
+DEFAULT_CONFIG_FILE = 'config.yml'
+config_file = args.config if args.config else DEFAULT_CONFIG_FILE
+parsed_config = load_config(config_file)
+
 from tradingview_ta import TA_Handler, Interval, Exchange
 import os
 import time
 import threading
 
-INTERVAL = Interval.INTERVAL_1_MINUTE #Timeframe for analysis
+INTERVAL = Interval.INTERVAL_5_MINUTES #Timeframe for analysis
 
 EXCHANGE = 'BINANCE'
 SCREENER = 'CRYPTO'
-SYMBOL = 'ETHUSDT'
+SYMBOL = parsed_config['trading_options']['EXCHANGE']
 TYPE = 'BUY'
 THRESHOLD = 7 # 7 of 15 MA's indicating sell
-TIME_TO_WAIT = 1 # Minutes to wait between analysis
-FULL_LOG = False # List analysis result to console
+TIME_TO_WAIT = parsed_config['trading_options']['TIME_DIFFERENCE'] # Minutes to wait between analysis
+FULL_LOG = parsed_config['trading_options']['VERBOSE_MODE'] # List analysis result to console
 
 def analyze():
     analysis = {}

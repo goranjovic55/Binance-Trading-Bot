@@ -18,6 +18,9 @@ script_options:
 
 # These options apply to the trading methods the script executes
 trading_options:
+
+  #exchange type for checking your exchange against USDT/BTC/BUSD/XRP etc
+  EXCHANGE: ETHUSDT
  
   # select your base currency to use for trading pairs (for example USDT, ETH, BTC)
   PAIR_WITH: ETH
