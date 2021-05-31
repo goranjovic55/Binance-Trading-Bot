@@ -1,0 +1,36 @@
+Metadata-Version: 2.1
+Name: python-binance
+Version: 0.7.9
+Summary: Binance REST API python implementation
+Home-page: https://github.com/sammchardy/python-binance
+Author: Sam McHardy
+Author-email: UNKNOWN
+License: MIT
+Keywords: binance exchange rest api bitcoin ethereum btc eth neo
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Dist: requests
+Requires-Dist: six
+Requires-Dist: Twisted
+Requires-Dist: pyOpenSSL
+Requires-Dist: autobahn
+Requires-Dist: service-identity
+Requires-Dist: dateparser
+Requires-Dist: urllib3
+Requires-Dist: certifi
+Requires-Dist: cryptography
+Requires-Dist: ujson
+
+UNKNOWN
+
+

@@ -1,2 +1,0 @@
-ZECETH
-GRTETH
