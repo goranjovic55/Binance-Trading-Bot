@@ -396,9 +396,9 @@ def sell_coins():
 
         LastPrice = float(last_price[coin]['price'])
         # sell fee below would ofc only apply if transaction was closed at the current LastPrice
-        buyFee = (coins_bought[coin]['volume'] * BuyPrice) * (TRADING_FEE/100)
-        BuyPrice = float(coins_bought[coin]['bought_at'])
         sellFee = (coins_bought[coin]['volume'] * LastPrice) * (TRADING_FEE/100)
+        BuyPrice = float(coins_bought[coin]['bought_at'])
+        buyFee = (coins_bought[coin]['volume'] * BuyPrice) * (TRADING_FEE/100)
         PriceChange = float((LastPrice - BuyPrice) / BuyPrice * 100)
 
         # check that the price is above the take profit and readjust SL and TP accordingly if trialing stop loss used
