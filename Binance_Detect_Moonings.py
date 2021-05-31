@@ -159,8 +159,7 @@ def wait_for_price():
     '''calls the initial price and ensures the correct amount of time has passed
     before reading the current price again'''
 
-    global historical_prices, hsp_head, volatility_cooloff, session_profit, INVESTMENT_TOTAL, CURRENT_EXPOSURE, NEW_BALANCE, INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count
-
+    global historical_prices, hsp_head, volatility_cooloff
     volatile_coins = {}
     externals = {}
 
@@ -176,13 +175,7 @@ def wait_for_price():
 
         time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
         
-    console_report()
-    #gogo MOD todo more verbose having all the report things in it!!!!!
-#    if win_trade_count > 0 or loss_trade_count > 0:
-#       print(f'{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> IT:{INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> G:{INVESTMENT_GAIN:.2f}%> W:{win_trade_count}> L:{loss_trade_count} <<{txcolors.DEFAULT}')
-#
-#    else:
-#       print(f'{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{((QUANTITY * session_profit) / 100):.{decimals()}f} {PAIR_WITH} <<{txcolors.DEFAULT}')
+    report('console', '.')
 
     # retrieve latest prices
     get_price()
@@ -277,12 +270,7 @@ def pause_bot():
         #gogo MOD todo more verbose having all the report things in it!!!!!
         if hsp_head == 1:
 
-           console_report()
-#            if win_trade_count > 0 or loss_trade_count > 0:
-#                print(f'{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> IT:{INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> G:{INVESTMENT_GAIN:.2f}%> W:{win_trade_count}> L:{loss_trade_count} <<{txcolors.DEFAULT}')
-#
-#            else:
-#                print(f'{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{((QUANTITY * session_profit) / 100):.{decimals()}f} {PAIR_WITH} <<{txcolors.DEFAULT}')
+           report('console', '.')
 
         time.sleep((TIME_DIFFERENCE * 60) / RECHECK_INTERVAL)
 
@@ -459,11 +447,11 @@ def sell_coins():
                 if profit > 0:
                    win_trade_count = win_trade_count + 1
                    last_trade_won = 1
-                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}% -SP:{session_profit:.2f}% -{(QUANTITY * session_profit)/100:.2f} -W:{win_trade_count} L:{loss_trade_count}")
+                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}%")
                 else:
                    loss_trade_count = loss_trade_count + 1
                    last_trade_lost = 1
-                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}% -SP:{session_profit:.2f}% -{(QUANTITY * session_profit)/100:.2f} -W:{win_trade_count} L:{loss_trade_count}")
+                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}%")
 
                 # LastPrice (10) - BuyPrice (5) = 5
                 # 5 * coins_sold (1) = 5
@@ -472,7 +460,7 @@ def sell_coins():
 #                write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PAIR_WITH} ({PriceChange-(buyFee+sellFee):.2f}%)")
                 session_profit = session_profit + (PriceChange-(buyFee+sellFee))
                 #print balance report
-                balance_report(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}% - SP:{session_profit:.2f}% -{(QUANTITY * session_profit)/100:.2f} -W:{win_trade_count} L:{loss_trade_count}")
+                report('message', "Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}% - SP:{session_profit:.2f}% -{(QUANTITY * session_profit)/100:.2f} -W:{win_trade_count} L:{loss_trade_count}")
 
             continue
 
@@ -539,9 +527,9 @@ def write_log(logline):
     with open(LOG_FILE,'a+') as f:
         f.write(timestamp + ' ' + logline + '\n')
 
-def balance_report(reportline):
-
-    global session_profit, INVESTMENT_TOTAL, CURRENT_EXPOSURE, NEW_BALANCE, INVESTMENT_GAIN, TOTAL_GAINS
+def report(type,reportline):
+    
+    global session_profit, INVESTMENT_TOTAL, CURRENT_EXPOSURE, NEW_BALANCE, INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count 
 
     INVESTMENT_TOTAL = (QUANTITY * TRADE_SLOTS)
     CURRENT_EXPOSURE = (QUANTITY * len(coins_bought))
@@ -549,24 +537,13 @@ def balance_report(reportline):
     NEW_BALANCE = (INVESTMENT_TOTAL + TOTAL_GAINS)
     INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT_TOTAL) * 100
 
-    print(f'{txcolors.NOTICE}>>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> IT: {INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE: {CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB: {NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> G: {INVESTMENT_GAIN:.2f}% <<<{txcolors.DEFAULT}')
-
-    REPORT_STRING = 'IT:'+str(round(INVESTMENT_TOTAL, 4))+'-CE:'+str(round(CURRENT_EXPOSURE, 4))+'-NB:'+str(round(NEW_BALANCE, 4))+'-IG:'+str(round(INVESTMENT_GAIN, 4))+'%'
-
-    telegram_bot_sendtext(SETTINGS_STRING + '\n' + reportline + '\n' + REPORT_STRING + '\n')
-
-    return
-
-def console_report():
-    
-    global session_profit, INVESTMENT_TOTAL, CURRENT_EXPOSURE, NEW_BALANCE, INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count 
-
     #gogo MOD todo more verbose having all the report things in it!!!!!
-    if win_trade_count > 0 or loss_trade_count > 0:
-       print(f'{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> IT:{INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> G:{INVESTMENT_GAIN:.2f}%> W:{win_trade_count}> L:{loss_trade_count} <<{txcolors.DEFAULT}')
+    if type == 'console':
+       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> IT:{INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> G:{INVESTMENT_GAIN:.2f}%> W:{win_trade_count}> L:{loss_trade_count} <<{txcolors.DEFAULT}")
 
-    else:
-       print(f'{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{((QUANTITY * session_profit) / 100):.{decimals()}f} {PAIR_WITH} <<{txcolors.DEFAULT}')
+    if type == 'message':
+       REPORT_STRING = 'IT:'+str(round(INVESTMENT_TOTAL, 4))+'-CE:'+str(round(CURRENT_EXPOSURE, 4))+'-NB:'+str(round(NEW_BALANCE, 4))+'-IG:'+str(round(INVESTMENT_GAIN, 4))+'%'
+       telegram_bot_sendtext(SETTINGS_STRING + '\n' + reportline + '\n' + REPORT_STRING + '\n')
 
     return
 
