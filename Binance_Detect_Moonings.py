@@ -457,7 +457,7 @@ def sell_coins():
 #                write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PAIR_WITH} ({PriceChange-(buyFee+sellFee):.2f}%)")
                 session_profit = session_profit + (PriceChange-(buyFee+sellFee))
                 #print balance report
-                report('message', 'Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}% - SP:{session_profit:.2f}% -{(QUANTITY * session_profit)/100:.2f} -W:{win_trade_count} L:{loss_trade_count}')
+                report('message', "Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}% - SP:{session_profit:.2f}% -{(QUANTITY * session_profit)/100:.2f} -W:{win_trade_count} L:{loss_trade_count}")
 
             continue
 
