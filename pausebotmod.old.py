@@ -7,8 +7,7 @@ INTERVAL = Interval.INTERVAL_1_MINUTE #Timeframe for analysis
 
 EXCHANGE = 'BINANCE'
 SCREENER = 'CRYPTO'
-SYMBOL = 'ETHUSDT'
-TYPE = 'BUY'
+SYMBOL = 'BTCUSDT'
 THRESHOLD = 7 # 7 of 15 MA's indicating sell
 TIME_TO_WAIT = 1 # Minutes to wait between analysis
 FULL_LOG = False # List analysis result to console
@@ -31,12 +30,12 @@ def analyze():
         print("Exception:")
         print(e)
     
-    ma_analysis = analysis.moving_averages[TYPE]
-    if ma_analysis >= THRESHOLD:
+    ma_sell = analysis.moving_averages['SELL']
+    if ma_sell >= THRESHOLD:
         paused = True
-        print(f'pausebotmod: Market not looking too good, bot paused from buying {ma_analysis}/{THRESHOLD} Waiting {TIME_TO_WAIT} minutes for next market checkup')
+        print(f'pausebotmod: Market not looking too good, bot paused from buying {ma_sell}/{THRESHOLD} Waiting {TIME_TO_WAIT} minutes for next market checkup')
     else:
-        print(f'pausebotmod: Market looks ok, bot is running {ma_analysis}/{THRESHOLD} Waiting {TIME_TO_WAIT} minutes for next market checkup ')
+        print(f'pausebotmod: Market looks ok, bot is running {ma_sell}/{THRESHOLD} Waiting {TIME_TO_WAIT} minutes for next market checkup ')
         paused = False
 
     return paused
