@@ -70,23 +70,20 @@ class txcolors:
 
 
 # tracks profit/loss each session
-global session_profit
+global session_profit, unrealised_percent
 session_profit = 0
+unrealised_percent = 0
 
 #gogo MOD WIN/LOSS COunter and global dynamic stoploss and takeprofit and trailing takeprofit etc
-global win_trade_count
+global win_trade_count, loss_trade_count
 win_trade_count = 0
-global loss_trade_count
 loss_trade_count = 0
-global last_trade_won
+
+global last_trade_won, last_trade_lost
 last_trade_won = 0
-global last_trade_lost
 last_trade_lost = 0
-global INVESTMENT_TOTAL
-global CURRENT_EXPOSURE
-global TOTAL_GAINS
-global NEW_BALANCE
-global INVESTMENT_GAIN
+
+global INVESTMENT_TOTAL, CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN
 
 # print with timestamps
 old_out = sys.stdout
@@ -529,7 +526,7 @@ def write_log(logline):
 
 def report(type,reportline):
     
-    global session_profit, INVESTMENT_TOTAL, CURRENT_EXPOSURE, NEW_BALANCE, INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count 
+    global session_profit, INVESTMENT_TOTAL, CURRENT_EXPOSURE, NEW_BALANCE, INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent 
 
     INVESTMENT_TOTAL = (QUANTITY * TRADE_SLOTS)
     CURRENT_EXPOSURE = (QUANTITY * len(coins_bought))
@@ -537,9 +534,14 @@ def report(type,reportline):
     NEW_BALANCE = (INVESTMENT_TOTAL + TOTAL_GAINS)
     INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT_TOTAL) * 100
 
+    if len(coins_bought) > 0:
+        UNREALISED_PERCENT = unrealised_percent/len(coins_bought)
+    else:
+        UNREALISED_PERCENT = 0
+
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
-       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. SP: {session_profit:.2f}% - Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> IT:{INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> G:{INVESTMENT_GAIN:.2f}%> W:{win_trade_count}> L:{loss_trade_count} <<{txcolors.DEFAULT}")
+       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}% - Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> IT:{INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> G:{INVESTMENT_GAIN:.2f}%> W:{win_trade_count}> L:{loss_trade_count} <<{txcolors.DEFAULT}")
 
     if type == 'message':
        REPORT_STRING = 'IT:'+str(round(INVESTMENT_TOTAL, 4))+'-CE:'+str(round(CURRENT_EXPOSURE, 4))+'-NB:'+str(round(NEW_BALANCE, 4))+'-IG:'+str(round(INVESTMENT_GAIN, 4))+'%'
@@ -701,6 +703,7 @@ if __name__ == '__main__':
         orders, last_price, volume = buy()
         update_portfolio(orders, last_price, volume)
         coins_sold = sell_coins()
+        remove_from_portfolio(coins_sold)
 
         #gogos MOD to have dynamic stoploss take profit and trailing stoploss
         
@@ -720,5 +723,16 @@ if __name__ == '__main__':
 
         #Setting string used for messaging and logging
         SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'-RI:'+str(round(RECHECK_INTERVAL, 2))+'-CIP:'+str(round(CHANGE_IN_PRICE, 2))+'-SL:'+str(round(STOP_LOSS, 2))+'-TP:'+str(round(TAKE_PROFIT, 2))+'-TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'-TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
+        
+        unrealised_percent = 0
 
-        remove_from_portfolio(coins_sold)
+        for coin in list(coins_bought):
+            LastPrice = float(last_price[coin]['price'])
+
+            # sell fee below would ofc only apply if transaction was closed at the current LastPrice
+            sellFee = (LastPrice * (TRADING_FEE/100))
+            BuyPrice = float(coins_bought[coin]['bought_at'])
+            buyFee = (BuyPrice * (TRADING_FEE/100))
+            PriceChange = float((LastPrice - BuyPrice) / BuyPrice * 100)
+            if len(coins_bought) > 0:
+               unrealised_percent = unrealised_percent + (PriceChange-(buyFee+sellFee))
