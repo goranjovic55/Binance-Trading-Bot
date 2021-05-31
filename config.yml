@@ -87,7 +87,6 @@ trading_options:
   DYNAMIC_WIN_LOSS_DOWN : 1
 
   SIGNALLING_MODULES:
-    - pausebotmod
     - custsignalmod
 #    - signalsamplemod
 
