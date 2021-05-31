@@ -5,3 +5,4 @@ add better signals through customsmod
 make modded stuff more modular (like functions independent of original code)
 add script to make service out of python systemctl in bash
 move telegrambot creds to creds.yml
+add tickers.blacklist implementation (add code that checks tickers against blacklist and ignores coins from blacklist) blacklist can be populated by bot based on stoplosses etc
