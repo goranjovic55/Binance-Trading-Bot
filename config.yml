@@ -55,10 +55,10 @@ trading_options:
   CHANGE_IN_PRICE: 999
 
   # define in % when to sell a coin that's not making a profit.
-  STOP_LOSS: 0.30
+  STOP_LOSS: 2.7
 
   # define in % when to take profit on a profitable coin.
-  TAKE_PROFIT: 0.6
+  TAKE_PROFIT: 0.9
 
   # Use custom tickers.txt list for filtering pairs.
   CUSTOM_LIST: True
@@ -87,6 +87,7 @@ trading_options:
   DYNAMIC_WIN_LOSS_DOWN : 1
 
   SIGNALLING_MODULES:
+
     - pausebotmod
     - custsignalmod
 #    - signalsamplemod
