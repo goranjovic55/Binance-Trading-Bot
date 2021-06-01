@@ -1,10 +1,9 @@
 add running time and %gain in last 24H
-add more session info to session_info.json (quantity etc for more precise calculations)
+!! add more session info to session_info.json (quantity etc for more precise calculations)
 add possibility to stop bot if reaches specific -% for security and send message to admin
 add script to make service out of python systemctl in bash
 move telegrambot creds to creds.yml
 add tickers.blacklist implementation (add code that checks tickers against blacklist and ignores coins from blacklist) blacklist can be populated by bot based on stoplosses etc
 implement eur/dollar value of current held coins
 Implement unrealised profit as function
-Add dynamic_trade_settings reset to original based on pausebot if market changed
 Add investment gained/unrealised profit as risk reward ratio ( could be used to dynamically adjust stoplosses on open trades)
