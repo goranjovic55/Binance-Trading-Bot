@@ -1,10 +1,8 @@
 add running time and %gain in last 24H
 add more session info to session_info.json (quantity etc for more precise calculations)
 add possibility to stop bot if reaches specific -% for security and send message to admin
-make modded stuff more modular (like functions independent of original code)
 add script to make service out of python systemctl in bash
 move telegrambot creds to creds.yml
 add tickers.blacklist implementation (add code that checks tickers against blacklist and ignores coins from blacklist) blacklist can be populated by bot based on stoplosses etc
 implement eur/dollar value of current held coins
-Fix float number of digits for reportessage profit 
 Implement unrealised profit as function

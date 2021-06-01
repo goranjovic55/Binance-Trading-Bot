@@ -444,11 +444,11 @@ def sell_coins():
                 if profit > 0:
                    win_trade_count = win_trade_count + 1
                    last_trade_won = 1
-                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}%")
+                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
                 else:
                    loss_trade_count = loss_trade_count + 1
                    last_trade_lost = 1
-                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}%")
+                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
 
                 # LastPrice (10) - BuyPrice (5) = 5
                 # 5 * coins_sold (1) = 5
@@ -458,7 +458,7 @@ def sell_coins():
                 session_profit = session_profit + (PriceChange-(buyFee+sellFee))
 
                 #print balance report
-                report('message', f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange-(TRADING_FEE*2):.2f}%")
+                report('message', f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
 
             continue
 
