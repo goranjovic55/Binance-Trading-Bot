@@ -509,16 +509,6 @@ def remove_from_portfolio(coins_sold):
     with open(session_info_file_path, 'w') as file:
         json.dump(session_profit, file, indent=4)
 
-def telegram_bot_sendtext(bot_message):
-
-    bot_token = TELEGRAM_BOT_TOKEN
-    bot_chatID = TELEGRAM_BOT_ID
-    send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
-
-    response = requests.get(send_text)
-
-    return response.json()
-
 def write_log(logline):
     timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
     with open(LOG_FILE,'a+') as f:
@@ -545,10 +535,14 @@ def report(type, reportline):
        print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}% - Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> IT:{INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> G:{INVESTMENT_GAIN:.2f}%> W:{win_trade_count}> L:{loss_trade_count} <<{txcolors.DEFAULT}")
 
     if type == 'message':
-       REPORT_STRING = 'SP:'+str(round(session_profit, 2))+'-IT:'+str(round(INVESTMENT_TOTAL, 4))+'-CE:'+str(round(CURRENT_EXPOSURE, 4))+'-NB:'+str(round(NEW_BALANCE, 4))+'-IG:'+str(round(INVESTMENT_GAIN, 4))+'%'+'-W:'+str(win_trade_count)+'-L:'+str(loss_trade_count)
-       telegram_bot_sendtext(SETTINGS_STRING + '\n' + reportline + '\n' + REPORT_STRING + '\n')
+       report_string = 'SP:'+str(round(session_profit, 2))+'-IT:'+str(round(INVESTMENT_TOTAL, 4))+'-CE:'+str(round(CURRENT_EXPOSURE, 4))+'-NB:'+str(round(NEW_BALANCE, 4))+'-IG:'+str(round(INVESTMENT_GAIN, 4))+'%'+'-W:'+str(win_trade_count)+'-L:'+str(loss_trade_count)
+       bot_message = SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
-    return
+       bot_token = TELEGRAM_BOT_TOKEN
+       bot_chatID = TELEGRAM_BOT_ID
+
+       send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
+       response = requests.get(send_text)
 
 #function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
 def dynamic_performance_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS):
