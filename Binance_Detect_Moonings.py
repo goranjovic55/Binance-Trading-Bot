@@ -533,6 +533,7 @@ def report(type, reportline):
     TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
     NEW_BALANCE = (INVESTMENT_TOTAL + TOTAL_GAINS)
     INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT_TOTAL) * 100
+    SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'-RI:'+str(round(RECHECK_INTERVAL, 2))+'-CIP:'+str(round(CHANGE_IN_PRICE, 2))+'-SL:'+str(round(STOP_LOSS, 2))+'-TP:'+str(round(TAKE_PROFIT, 2))+'-TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'-TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
 
     if len(coins_bought) > 0:
         UNREALISED_PERCENT = unrealised_percent/len(coins_bought)
@@ -576,6 +577,23 @@ def dynamic_performance_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOW
 
 
     return STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS;
+
+def session_calculations():
+
+    global unrealised_percent
+
+    unrealised_percent = 0
+
+    for coin in list(coins_bought):
+        LastPrice = float(last_price[coin]['price'])
+
+        # sell fee below would ofc only apply if transaction was closed at the current LastPrice
+        sellFee = (LastPrice * (TRADING_FEE/100))
+        BuyPrice = float(coins_bought[coin]['bought_at'])
+        buyFee = (BuyPrice * (TRADING_FEE/100))
+        PriceChange = float((LastPrice - BuyPrice) / BuyPrice * 100)
+        if len(coins_bought) > 0:
+           unrealised_percent = unrealised_percent + (PriceChange-(buyFee+sellFee))
 
 if __name__ == '__main__':
 
@@ -629,10 +647,6 @@ if __name__ == '__main__':
 
     if DEBUG_SETTING or args.debug:
         DEBUG = True
-
-    #gogo MOD Setting string used for messaging and logging
-    SETTINGS_STRING = 'TD:'+str(TIME_DIFFERENCE)+'-RI:'+str(RECHECK_INTERVAL)+'-CIP:'+str(CHANGE_IN_PRICE)+'-SL:'+str(STOP_LOSS)+'-TP:'+str(TAKE_PROFIT)+'-TSL:'+str(TRAILING_STOP_LOSS)+'-TTP:'+str(TRAILING_TAKE_PROFIT)
-
     # Load creds for correct environment
     access_key, secret_key = load_correct_creds(parsed_creds)
 
@@ -736,18 +750,5 @@ if __name__ == '__main__':
         #gogos MOD to adjust dynamically stoploss trailingstop loss and take profit based on wins
         STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS = dynamic_performance_settings(dynamic_performance_type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS)
 
-        #Setting string used for messaging and logging
-        SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'-RI:'+str(round(RECHECK_INTERVAL, 2))+'-CIP:'+str(round(CHANGE_IN_PRICE, 2))+'-SL:'+str(round(STOP_LOSS, 2))+'-TP:'+str(round(TAKE_PROFIT, 2))+'-TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'-TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
-
-        unrealised_percent = 0
-
-        for coin in list(coins_bought):
-            LastPrice = float(last_price[coin]['price'])
-
-            # sell fee below would ofc only apply if transaction was closed at the current LastPrice
-            sellFee = (LastPrice * (TRADING_FEE/100))
-            BuyPrice = float(coins_bought[coin]['bought_at'])
-            buyFee = (BuyPrice * (TRADING_FEE/100))
-            PriceChange = float((LastPrice - BuyPrice) / BuyPrice * 100)
-            if len(coins_bought) > 0:
-               unrealised_percent = unrealised_percent + (PriceChange-(buyFee+sellFee))
+        #session calculations like unrealised potential etc
+        session_calculations()
