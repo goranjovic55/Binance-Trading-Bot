@@ -6,3 +6,4 @@ move telegrambot creds to creds.yml
 add tickers.blacklist implementation (add code that checks tickers against blacklist and ignores coins from blacklist) blacklist can be populated by bot based on stoplosses etc
 implement eur/dollar value of current held coins
 Add investment gained/unrealised profit as risk reward ratio ( could be used to dynamically adjust stoplosses on open trades)
+add write log to report function as log type
