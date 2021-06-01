@@ -574,22 +574,37 @@ def dynamic_performance_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOW
     return STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS;
 
 #various session calculations like uptime 24H gain profit risk to reward ratio unrealised profit etc
-def session_calculations():
+def session(type):
 
     global unrealised_percent
+    if type == 'calc':
+       unrealised_percent = 0
 
-    unrealised_percent = 0
+       for coin in list(coins_bought):
+           LastPrice = float(last_price[coin]['price'])
 
-    for coin in list(coins_bought):
-        LastPrice = float(last_price[coin]['price'])
+           # sell fee below would ofc only apply if transaction was closed at the current LastPrice
+           sellFee = (LastPrice * (TRADING_FEE/100))
+           BuyPrice = float(coins_bought[coin]['bought_at'])
+           buyFee = (BuyPrice * (TRADING_FEE/100))
+           PriceChange = float((LastPrice - BuyPrice) / BuyPrice * 100)
+           if len(coins_bought) > 0:
+              unrealised_percent = unrealised_percent + (PriceChange-(buyFee+sellFee))
 
-        # sell fee below would ofc only apply if transaction was closed at the current LastPrice
-        sellFee = (LastPrice * (TRADING_FEE/100))
-        BuyPrice = float(coins_bought[coin]['bought_at'])
-        buyFee = (BuyPrice * (TRADING_FEE/100))
-        PriceChange = float((LastPrice - BuyPrice) / BuyPrice * 100)
-        if len(coins_bought) > 0:
-           unrealised_percent = unrealised_percent + (PriceChange-(buyFee+sellFee))
+    if type == 'data':
+
+       session_info = {
+           'session_profit': session_profit,
+           'stop_loss': -STOP_LOSS,
+           'take_profit': TAKE_PROFIT,
+           'trailing_take_profit': TRAILING_TAKE_PROFIT,
+            }
+
+       # save the coins in a json file in the same directory
+       with open(session_dump_file_path, 'w') as file:
+           json.dump(session_info, file, indent=4)
+
+       print(f'wrote session data to file!!!')
 
 if __name__ == '__main__':
 
@@ -675,6 +690,7 @@ if __name__ == '__main__':
     #gogo MOD path to session info file and loading variables from previous sessions
     #sofar only used for session profit TODO implement to use other things too
     #session_profit is calculated in % wich is innacurate if QUANTITY is not the same!!!!!
+    session_dump_file_path = 'session_dump.json'
     session_info_file_path = 'session_info.json'
 
     if os.path.isfile(session_info_file_path) and os.stat(session_info_file_path).st_size!= 0:
@@ -747,4 +763,6 @@ if __name__ == '__main__':
         STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS = dynamic_performance_settings(dynamic_performance_type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS)
 
         #session calculations like unrealised potential etc
-        session_calculations()
+        session('calc')
+        
+#        session('data')
