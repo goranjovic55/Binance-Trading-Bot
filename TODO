@@ -8,3 +8,4 @@ add tickers.blacklist implementation (add code that checks tickers against black
 implement eur/dollar value of current held coins
 Fix float number of digits for reportessage profit 
 Implement unrealised profit as function
+Add dynamic_trade_settings reset to original based on pausebot if market changed
