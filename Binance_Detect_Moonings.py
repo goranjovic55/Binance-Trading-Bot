@@ -550,6 +550,7 @@ def report(type, reportline):
 
     return
 
+#function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
 def dynamic_performance_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS):
 
     global last_trade_won, last_trade_lost, dynamic_performance_type
@@ -578,6 +579,7 @@ def dynamic_performance_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOW
 
     return STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS;
 
+#various session calculations like uptime 24H gain profit risk to reward ratio unrealised profit etc
 def session_calculations():
 
     global unrealised_percent
