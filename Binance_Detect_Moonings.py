@@ -70,7 +70,8 @@ class txcolors:
 
 
 # tracks profit/loss each session
-global session_profit, unrealised_percent
+global session_profit, unrealised_percent, market_price, investment_value
+investment_value = 0
 session_profit = 0
 unrealised_percent = 0
 
@@ -84,6 +85,7 @@ dynamic_performance_type = 'none'
 sell_all_coins = False
 
 global INVESTMENT_TOTAL, CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN
+CURRENT_EXPOSURE = 0
 
 # print with timestamps
 old_out = sys.stdout
@@ -127,7 +129,7 @@ def decimals():
 def get_price(add_to_historical=True):
     '''Return the current price for all coins on binance'''
 
-    global historical_prices, hsp_head
+    global historical_prices, hsp_head, market_price
 
     initial_price = {}
     prices = client.get_all_tickers()
@@ -149,8 +151,8 @@ def get_price(add_to_historical=True):
 
         historical_prices[hsp_head] = initial_price
 
-    #print current price of your total investment in USDT
-    # print(f'USDT equivalent of your toatl investment {coin[USDTETH]}')
+    market_historic = client.get_historical_trades(symbol='ETHUSDT')
+    market_price = market_historic[0].get('price')
 
     return initial_price
 
@@ -528,13 +530,9 @@ def write_log(logline):
 
 def report(type, reportline):
 
-    global session_profit, INVESTMENT_TOTAL, CURRENT_EXPOSURE, NEW_BALANCE, INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent
+    global session_profit, INVESTMENT_TOTAL, CURRENT_EXPOSURE, NEW_BALANCE
+    global INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent, investment_value
 
-    INVESTMENT_TOTAL = (QUANTITY * TRADE_SLOTS)
-    CURRENT_EXPOSURE = (QUANTITY * len(coins_bought))
-    TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
-    NEW_BALANCE = (INVESTMENT_TOTAL + TOTAL_GAINS)
-    INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT_TOTAL) * 100
     SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'-RI:'+str(round(RECHECK_INTERVAL, 2))+'-CIP:'+str(round(CHANGE_IN_PRICE, 2))+'-SL:'+str(round(STOP_LOSS, 2))+'-TP:'+str(round(TAKE_PROFIT, 2))+'-TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'-TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
 
     if len(coins_bought) > 0:
@@ -544,10 +542,10 @@ def report(type, reportline):
 
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
-       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}% - Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> IT:{INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> G:{INVESTMENT_GAIN:.2f}%> W:{win_trade_count}> L:{loss_trade_count} <<{txcolors.DEFAULT}")
+       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {EXCHANGE}> IG:{INVESTMENT_GAIN:.2f}% <<{txcolors.DEFAULT}")
 
     if type == 'message':
-       report_string = 'SP:'+str(round(session_profit, 2))+'-IT:'+str(round(INVESTMENT_TOTAL, 4))+'-CE:'+str(round(CURRENT_EXPOSURE, 4))+'-NB:'+str(round(NEW_BALANCE, 4))+'-IG:'+str(round(INVESTMENT_GAIN, 4))+'%'+'-W:'+str(win_trade_count)+'-L:'+str(loss_trade_count)
+       report_string = 'SP:'+str(round(session_profit, 2))+'-CE:'+str(round(CURRENT_EXPOSURE, 4))+'-W:'+str(win_trade_count)+'-L:'+str(loss_trade_count)+'-IG:'+str(round(INVESTMENT_GAIN, 4))+'%>'+'-IT:'+str(round(INVESTMENT_TOTAL, 4))+'-NB:'+str(round(NEW_BALANCE, 4))+'-IV:'+str(round(investment_value, 4))+str(EXCHANGE)
        bot_message = SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
        bot_token = TELEGRAM_BOT_TOKEN
@@ -588,8 +586,17 @@ def dynamic_performance_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOW
 #various session calculations like uptime 24H gain profit risk to reward ratio unrealised profit etc
 def session(type):
 
-    global unrealised_percent
+    global unrealised_percent, investment_value
+    global NEW_BALANCE, INVESTMENT_TOTAL, TOTAL_GAINS, INVESTMENT_GAIN
+
+    if type == 'session':
+       INVESTMENT_TOTAL = (QUANTITY * TRADE_SLOTS)
+       TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
+       NEW_BALANCE = (INVESTMENT_TOTAL + TOTAL_GAINS)
+       INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT_TOTAL) * 100
+
     if type == 'calc':
+       CURRENT_EXPOSURE = (QUANTITY * len(coins_bought))
        unrealised_percent = 0
 
        for coin in list(coins_bought):
@@ -603,7 +610,9 @@ def session(type):
            if len(coins_bought) > 0:
               unrealised_percent = unrealised_percent + (PriceChange-(buyFee+sellFee))
 
-
+    #this number is your actual ETH or other coin value in correspondence to USDT aka your market investment_value
+    #it is important cuz your exchange aha ETH or BTC can vary and if you pause bot during that time you gain profit
+    investment_value = float(market_price) * NEW_BALANCE
 
     if type == 'data':
 
@@ -670,6 +679,7 @@ if __name__ == '__main__':
     DYNAMIC_WIN_LOSS_UP = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_UP']
     DYNAMIC_WIN_LOSS_DOWN = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_DOWN']
     STOP_LOSS_ON_PAUSE = parsed_config['trading_options']['STOP_LOSS_ON_PAUSE']
+    EXCHANGE = parsed_config['trading_options']['EXCHANGE']
 
     if DEBUG_SETTING or args.debug:
         DEBUG = True
@@ -769,6 +779,8 @@ if __name__ == '__main__':
     # seed initial prices
     get_price()
     while True:
+
+        session('session')
         orders, last_price, volume = buy()
         update_portfolio(orders, last_price, volume)
         coins_sold = sell_coins()
