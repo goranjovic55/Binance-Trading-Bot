@@ -79,8 +79,9 @@ global win_trade_count, loss_trade_count
 win_trade_count = 0
 loss_trade_count = 0
 
-global dynamic_performance_type
+global dynamic_performance_type, sell_all_coins
 dynamic_performance_type = 'none'
+sell_all_coins = 0
 
 global INVESTMENT_TOTAL, CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN
 
@@ -245,7 +246,7 @@ def external_signals():
 
 def pause_bot():
     '''Pause the script when external indicators detect a bearish trend in the market'''
-    global bot_paused, session_profit, hsp_head,dynamic_performance_type
+    global bot_paused, session_profit, hsp_head,dynamic_performance_type, sell_all_coins
     # start counting for how long the bot has been paused
     start_time = time.perf_counter()
 
@@ -254,6 +255,11 @@ def pause_bot():
         if bot_paused == False:
             print(f"{txcolors.WARNING}Buying paused due to negative market conditions, stop loss and take profit will continue to work...{txcolors.DEFAULT}")
             bot_paused = True
+
+        # sell all bought coins if bot is bot_paused
+        if STOP_LOSS_ON_PAUSE == True:
+           sell_all_coins = 1
+           print(f"{txcolors.WARNING}Buying paused due to negative market conditions, Selling all coins!!!!{txcolors.DEFAULT}")
 
         # Sell function needs to work even while paused
         coins_sold = sell_coins()
@@ -278,6 +284,7 @@ def pause_bot():
         if  bot_paused == True:
             print(f"{txcolors.WARNING}Resuming buying due to positive market conditions, total sleep time: {time_elapsed}{txcolors.DEFAULT}")
             dynamic_performance_type = 'reset'
+            sell_all_coins = 0
             bot_paused = False
 
     return
@@ -378,7 +385,7 @@ def buy():
 def sell_coins():
     '''sell coins that have reached the STOP LOSS or TAKE PROFIT threshold'''
 
-    global hsp_head, session_profit, win_trade_count, loss_trade_count, dynamic_performance_type
+    global hsp_head, session_profit, win_trade_count, loss_trade_count, dynamic_performance_type, sell_all_coins
 
     last_price = get_price(False) # don't populate rolling window
     #last_price = get_price(add_to_historical=True) # don't populate rolling window
@@ -406,7 +413,7 @@ def sell_coins():
             continue
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
-        if LastPrice < SL or LastPrice > TP and not USE_TRAILING_STOP_LOSS:
+        if sell_all_coins == 1 or LastPrice < SL or LastPrice > TP and not USE_TRAILING_STOP_LOSS:
             print(f"{txcolors.SELL_PROFIT if PriceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} : {PriceChange-(buyFee+sellFee):.2f}% Est: {(QUANTITY*(PriceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
             # try to create a real order
             try:
@@ -655,6 +662,7 @@ if __name__ == '__main__':
     SIGNALLING_MODULES = parsed_config['trading_options']['SIGNALLING_MODULES']
     DYNAMIC_WIN_LOSS_UP = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_UP']
     DYNAMIC_WIN_LOSS_DOWN = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_DOWN']
+    STOP_LOSS_ON_PAUSE = parsed_config['trading_options']['STOP_LOSS_ON_PAUSE']
 
     if DEBUG_SETTING or args.debug:
         DEBUG = True
@@ -764,5 +772,5 @@ if __name__ == '__main__':
 
         #session calculations like unrealised potential etc
         session('calc')
-        
+
 #        session('data')
