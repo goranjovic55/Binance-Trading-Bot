@@ -81,7 +81,7 @@ loss_trade_count = 0
 
 global dynamic_performance_type, sell_all_coins
 dynamic_performance_type = 'none'
-sell_all_coins = 0
+sell_all_coins = False
 
 global INVESTMENT_TOTAL, CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN
 
@@ -258,7 +258,7 @@ def pause_bot():
 
         # sell all bought coins if bot is bot_paused
         if STOP_LOSS_ON_PAUSE == True:
-           sell_all_coins = 1
+           sell_all_coins = True
            print(f"{txcolors.WARNING}Buying paused due to negative market conditions, Selling all coins!!!!{txcolors.DEFAULT}")
 
         # Sell function needs to work even while paused
@@ -284,7 +284,7 @@ def pause_bot():
         if  bot_paused == True:
             print(f"{txcolors.WARNING}Resuming buying due to positive market conditions, total sleep time: {time_elapsed}{txcolors.DEFAULT}")
             dynamic_performance_type = 'reset'
-            sell_all_coins = 0
+            sell_all_coins = True
             bot_paused = False
 
     return
@@ -413,7 +413,7 @@ def sell_coins():
             continue
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
-        if sell_all_coins == 1 or LastPrice < SL or LastPrice > TP and not USE_TRAILING_STOP_LOSS:
+        if sell_all_coins == True or LastPrice < SL or LastPrice > TP and not USE_TRAILING_STOP_LOSS:
             print(f"{txcolors.SELL_PROFIT if PriceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} : {PriceChange-(buyFee+sellFee):.2f}% Est: {(QUANTITY*(PriceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
             # try to create a real order
             try:
