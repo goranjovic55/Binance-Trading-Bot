@@ -149,6 +149,9 @@ def get_price(add_to_historical=True):
 
         historical_prices[hsp_head] = initial_price
 
+    #print current price of your total investment in USDT
+    # print(f'USDT equivalent of your toatl investment {coin[USDTETH]}')
+
     return initial_price
 
 
@@ -254,6 +257,9 @@ def pause_bot():
 
         if bot_paused == False:
             print(f"{txcolors.WARNING}Buying paused due to negative market conditions, stop loss and take profit will continue to work...{txcolors.DEFAULT}")
+            # sell all bought coins if bot is bot_paused
+            if STOP_LOSS_ON_PAUSE == True:
+               sell_all_coins = True
             bot_paused = True
 
         # sell all bought coins if bot is bot_paused
@@ -283,7 +289,7 @@ def pause_bot():
         if  bot_paused == True:
             print(f"{txcolors.WARNING}Resuming buying due to positive market conditions, total sleep time: {time_elapsed}{txcolors.DEFAULT}")
             dynamic_performance_type = 'reset'
-            sell_all_coins = True
+            sell_all_coins = False
             bot_paused = False
 
     return
@@ -596,6 +602,8 @@ def session(type):
            PriceChange = float((LastPrice - BuyPrice) / BuyPrice * 100)
            if len(coins_bought) > 0:
               unrealised_percent = unrealised_percent + (PriceChange-(buyFee+sellFee))
+
+
 
     if type == 'data':
 
