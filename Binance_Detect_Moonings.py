@@ -259,7 +259,6 @@ def pause_bot():
         # sell all bought coins if bot is bot_paused
         if STOP_LOSS_ON_PAUSE == True:
            sell_all_coins = True
-           print(f"{txcolors.WARNING}Buying paused due to negative market conditions, Selling all coins!!!!{txcolors.DEFAULT}")
 
         # Sell function needs to work even while paused
         coins_sold = sell_coins()
