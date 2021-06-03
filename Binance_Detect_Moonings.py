@@ -144,6 +144,8 @@ def get_price(add_to_historical=True):
             if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in FIATS):
                 initial_price[coin['symbol']] = { 'price': coin['price'], 'time': datetime.now()}
 
+    print(prices)
+
     if add_to_historical:
         hsp_head += 1
 
