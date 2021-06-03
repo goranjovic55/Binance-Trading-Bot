@@ -73,6 +73,7 @@ class txcolors:
 global session_profit, unrealised_percent, market_price, investment_value
 global investment_value_gain
 investment_value = 0
+investment_value_gain = 0
 session_profit = 0
 unrealised_percent = 0
 
@@ -87,6 +88,7 @@ sell_all_coins = False
 
 global INVESTMENT_TOTAL, CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN
 CURRENT_EXPOSURE = 0
+NEW_BALANCE = 0
 
 # print with timestamps
 old_out = sys.stdout
@@ -143,8 +145,6 @@ def get_price(add_to_historical=True):
         else:
             if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in FIATS):
                 initial_price[coin['symbol']] = { 'price': coin['price'], 'time': datetime.now()}
-
-    print(prices)
 
     if add_to_historical:
         hsp_head += 1
@@ -510,6 +510,8 @@ def update_portfolio(orders, last_price, volume):
         with open(coins_bought_file_path, 'w') as file:
             json.dump(coins_bought, file, indent=4)
 
+        session('save')
+
         print(f'Order with id {orders[coin][0]["orderId"]} placed and saved to file')
         # print balance report
 #        balance_report(f"report")
@@ -522,9 +524,7 @@ def remove_from_portfolio(coins_sold):
     with open(coins_bought_file_path, 'w') as file:
         json.dump(coins_bought, file, indent=4)
 
-    #save session info for through session portability
-    with open(session_info_file_path, 'w') as file:
-        json.dump(session_profit, file, indent=4)
+    session('save')
 
 def write_log(logline):
     timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
@@ -593,14 +593,14 @@ def session(type):
 
     global unrealised_percent, investment_value, investment_value_gain
     global NEW_BALANCE, INVESTMENT_TOTAL, TOTAL_GAINS, INVESTMENT_GAIN
+    global market_price, session_profit, win_trade_count, loss_trade_count
 
-    if type == 'session':
+    if type == 'calc':
+
        INVESTMENT_TOTAL = (QUANTITY * TRADE_SLOTS)
        TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
        NEW_BALANCE = (INVESTMENT_TOTAL + TOTAL_GAINS)
        INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT_TOTAL) * 100
-
-    if type == 'calc':
        CURRENT_EXPOSURE = (QUANTITY * len(coins_bought))
        unrealised_percent = 0
 
@@ -615,25 +615,50 @@ def session(type):
            if len(coins_bought) > 0:
               unrealised_percent = unrealised_percent + (PriceChange-(buyFee+sellFee))
 
-    #this number is your actual ETH or other coin value in correspondence to USDT aka your market investment_value
-    #it is important cuz your exchange aha ETH or BTC can vary and if you pause bot during that time you gain profit
-    investment_value = float(market_price) * NEW_BALANCE
-    investment_value_gain = float(market_price) * (NEW_BALANCE - INVESTMENT_TOTAL)
+       #this number is your actual ETH or other coin value in correspondence to USDT aka your market investment_value
+       #it is important cuz your exchange aha ETH or BTC can vary and if you pause bot during that time you gain profit
+       investment_value = float(market_price) * NEW_BALANCE
+       investment_value_gain = float(market_price) * (NEW_BALANCE - INVESTMENT_TOTAL)
 
-    if type == 'data':
+    if type == 'save':
 
+       session_info = {}
+       session_info_file_path = 'session_info.json'
        session_info = {
            'session_profit': session_profit,
-           'stop_loss': -STOP_LOSS,
-           'take_profit': TAKE_PROFIT,
-           'trailing_take_profit': TRAILING_TAKE_PROFIT,
+           'win_trade_count': win_trade_count,
+           'loss_trade_count': loss_trade_count,
+#           'investment_value': investment_value,
+           'new_balance': NEW_BALANCE,
             }
 
        # save the coins in a json file in the same directory
-       with open(session_dump_file_path, 'w') as file:
+       with open(session_info_file_path, 'w') as file:
            json.dump(session_info, file, indent=4)
 
-       print(f'wrote session data to file!!!')
+    if type == 'load':
+
+       session_info = {}
+       #gogo MOD path to session info file and loading variables from previous sessions
+       #sofar only used for session profit TODO implement to use other things too
+       #session_profit is calculated in % wich is innacurate if QUANTITY is not the same!!!!!
+       session_info_file_path = 'session_info.json'
+
+       if os.path.isfile(session_info_file_path) and os.stat(session_info_file_path).st_size!= 0:
+          json_file=open(session_info_file_path)
+          session_info=json.load(json_file)
+          json_file.close()
+
+          session_profit = session_info['session_profit']
+          win_trade_count = session_info['win_trade_count']
+          loss_trade_count = session_info['loss_trade_count']
+          #investment_value = session['investment_value']
+          NEW_BALANCE = session_info['new_balance']
+
+       INVESTMENT_TOTAL = (QUANTITY * TRADE_SLOTS)
+       TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
+       NEW_BALANCE = (INVESTMENT_TOTAL + TOTAL_GAINS)
+       INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT_TOTAL) * 100
 
 if __name__ == '__main__':
 
@@ -696,7 +721,6 @@ if __name__ == '__main__':
         print(f'Loaded config below\n{json.dumps(parsed_config, indent=4)}')
         print(f'Your credentials have been loaded from {creds_file}')
 
-
     # Authenticate with the client, Ensure API key is good before continuing
     if AMERICAN_USER:
         client = Client(access_key, secret_key, tld='us')
@@ -717,17 +741,6 @@ if __name__ == '__main__':
 
     # path to the saved coins_bought file
     coins_bought_file_path = 'coins_bought.json'
-
-    #gogo MOD path to session info file and loading variables from previous sessions
-    #sofar only used for session profit TODO implement to use other things too
-    #session_profit is calculated in % wich is innacurate if QUANTITY is not the same!!!!!
-    session_dump_file_path = 'session_dump.json'
-    session_info_file_path = 'session_info.json'
-
-    if os.path.isfile(session_info_file_path) and os.stat(session_info_file_path).st_size!= 0:
-       json_file=open(session_info_file_path)
-       session_profit=json.load(json_file)
-       json_file.close()
 
     # rolling window of prices; cyclical queue
     historical_prices = [None] * (TIME_DIFFERENCE * RECHECK_INTERVAL)
@@ -784,18 +797,18 @@ if __name__ == '__main__':
 
     # seed initial prices
     get_price()
+
+    session('load')
+
     while True:
 
-        session('session')
         orders, last_price, volume = buy()
         update_portfolio(orders, last_price, volume)
         coins_sold = sell_coins()
         remove_from_portfolio(coins_sold)
-
         #gogos MOD to adjust dynamically stoploss trailingstop loss and take profit based on wins
         STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS = dynamic_performance_settings(dynamic_performance_type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS)
-
         #session calculations like unrealised potential etc
         session('calc')
-
+#        session('save')
 #        session('data')

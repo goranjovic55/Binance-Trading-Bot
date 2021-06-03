@@ -1,0 +1,96 @@
+# These options apply to how the script will operate.
+script_options:
+  # Setting TEST_MODE to False will use REAL funds, use at your own risk!
+  TEST_MODE: True
+  # Save trades to a log file.
+  LOG_TRADES: True
+  # Specify the location of log file (default: trades.txt).
+  LOG_FILE: 'trades.txt'
+
+  # Set this to true if you are accessing binance from within the United States of America.
+  # Need to change TLD
+  AMERICAN_USER: False
+
+ #gogos MOD Telegram bot integration
+  TELEGRAM_BOT_TOKEN: ''
+  TELEGRAM_BOT_ID: ''
+
+
+# These options apply to the trading methods the script executes
+trading_options:
+
+  #exchange type for checking your exchange against USDT/BTC/BUSD/XRP etc
+  EXCHANGE: ETHUSDT
+
+  # select your base currency to use for trading pairs (for example USDT, ETH, BTC)
+  PAIR_WITH: ETH
+
+  # Total amount per trade (your base currency balance must be at least TRADE_SLOTS * QUANTITY)
+  # Binance uses a minimum of 10 USDT per trade, add a bit extra to enable selling if the price drops.
+  # USDT - Recommended: no less than 12. Suggested: 15 or more.
+  # ETH - Recommended: no less than 0.006.
+  QUANTITY: 0.021
+
+  # List of trading pairs to exclude
+  # by default we're excluding the most popular fiat pairs
+  FIATS:
+    - EURUSDT
+    - GBPUSDT
+    - JPYUSDT
+    - USDUSDT
+    - DOWN
+    - UP
+
+  # Maximum number of trade 'slots' at any time (your USDT balance must be at least TRADE_SLOTS * QUANTITY)
+  TRADE_SLOTS: 9
+
+  # the amount of time in MINUTES to calculate the difference from the current price (minimum: 1).
+  TIME_DIFFERENCE: 1
+
+  # Number of times to check for TP/SL during each TIME_DIFFERENCE (minimum: 1).
+  # Don't spam the Binance API, you will be banned (max 1200 requests per minute per IP).
+  RECHECK_INTERVAL: 3
+
+  # the difference in % between the first and second checks for the price.
+  CHANGE_IN_PRICE: 999
+
+  # define in % when to sell a coin that's not making a profit.
+  STOP_LOSS: 2.7
+
+  # define in % when to take profit on a profitable coin.
+  TAKE_PROFIT: 0.9
+
+  # Use custom tickers.txt list for filtering pairs.
+  CUSTOM_LIST: True
+
+  # Name of custom tickers list
+  TICKERS_LIST: 'tickers_ETH.txt'
+
+  # whether to use trailing stop loss or not; default is True
+  USE_TRAILING_STOP_LOSS: True
+
+  # when hit TAKE_PROFIT, move STOP_LOSS to TRAILING_STOP_LOSS percentage points below TAKE_PROFIT hence locking in profit
+  # when hit TAKE_PROFIT, move TAKE_PROFIT up by TRAILING_TAKE_PROFIT percentage points
+  TRAILING_STOP_LOSS: 0.20
+  TRAILING_TAKE_PROFIT: .1
+
+  # Trading fee in % per trade.
+  # If using 0.75% (using BNB for fees) you must have BNB in your account to cover trading fees.
+  # If using BNB for fees, it MUST be enabled in your Binance 'Dashboard' page (checkbox).
+  TRADING_FEE: .075
+
+  # show/hide additional data on bot screen. False = silent, True = spam (debug mode).
+  VERBOSE_MODE: False
+
+ #gogo MOD Dynamic perecent applied to SL and TP upon WIN or LOSS trade
+  DYNAMIC_WIN_LOSS_UP: 1
+  DYNAMIC_WIN_LOSS_DOWN : 1
+
+ #activate all stop losses on pausebot mod trigger
+  STOP_LOSS_ON_PAUSE: True
+
+  SIGNALLING_MODULES:
+
+    - pausebotmod
+    - custsignalmod
+#    - signalsamplemod
