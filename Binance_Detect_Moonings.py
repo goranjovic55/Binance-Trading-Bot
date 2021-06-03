@@ -70,7 +70,8 @@ class txcolors:
 
 
 # tracks profit/loss each session
-global session_profit, unrealised_percent, market_price, investment_value, investment_gain_value
+global session_profit, unrealised_percent, market_price, investment_value
+global investment_value_gain
 investment_value = 0
 session_profit = 0
 unrealised_percent = 0
@@ -531,7 +532,8 @@ def write_log(logline):
 def report(type, reportline):
 
     global session_profit, INVESTMENT_TOTAL, CURRENT_EXPOSURE, NEW_BALANCE
-    global INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent, investment_value
+    global INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent
+    global investment_value, investment_value_gain
 
     SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'-RI:'+str(round(RECHECK_INTERVAL, 2))+'-CIP:'+str(round(CHANGE_IN_PRICE, 2))+'-SL:'+str(round(STOP_LOSS, 2))+'-TP:'+str(round(TAKE_PROFIT, 2))+'-TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'-TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
 
@@ -542,10 +544,11 @@ def report(type, reportline):
 
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
-       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {EXCHANGE}> IG:{INVESTMENT_GAIN:.2f}%> IGV:{investment_gain_value:.{decimals()}f} {EXCHANGE} <<{txcolors.DEFAULT}")
+       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {EXCHANGE}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {EXCHANGE} <<{txcolors.DEFAULT}")
 
     if type == 'message':
-       report_string = 'SP:'+str(round(session_profit, 2))+'-CE:'+str(round(CURRENT_EXPOSURE, 4))+'-W:'+str(win_trade_count)+'-L:'+str(loss_trade_count)+'-IG:'+str(round(INVESTMENT_GAIN, 4))+'%>'+'-IT:'+str(round(INVESTMENT_TOTAL, 4))+'-NB:'+str(round(NEW_BALANCE, 4))+'-IV:'+str(round(investment_value, 4))+str(EXCHANGE)
+       report_string = 'SP:'+str(round(session_profit, 2))+'>CE:'+str(round(CURRENT_EXPOSURE, 4))+'>W:'+str(win_trade_count)+'>L:'+str(loss_trade_count)+'>IG:'+str(round(INVESTMENT_GAIN, 4))+'%'+'>IT:'+str(round(INVESTMENT_TOTAL, 4))+'>NB:'+str(round(NEW_BALANCE, 4))+'>IV:'+str(round(investment_value, 4))+str(EXCHANGE)+'>IGV:'+str(round(investment_value_gain, 4))+'>IVP:'+str(round(investment_value_gain, 4))
+
        bot_message = SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
        bot_token = TELEGRAM_BOT_TOKEN
@@ -586,7 +589,7 @@ def dynamic_performance_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOW
 #various session calculations like uptime 24H gain profit risk to reward ratio unrealised profit etc
 def session(type):
 
-    global unrealised_percent, investment_value, investment_gain_value
+    global unrealised_percent, investment_value, investment_value_gain
     global NEW_BALANCE, INVESTMENT_TOTAL, TOTAL_GAINS, INVESTMENT_GAIN
 
     if type == 'session':
@@ -613,7 +616,7 @@ def session(type):
     #this number is your actual ETH or other coin value in correspondence to USDT aka your market investment_value
     #it is important cuz your exchange aha ETH or BTC can vary and if you pause bot during that time you gain profit
     investment_value = float(market_price) * NEW_BALANCE
-    investment_gain_value = float(market_price) * (NEW_BALANCE - INVESTMENT_TOTAL)
+    investment_value_gain = float(market_price) * (NEW_BALANCE - INVESTMENT_TOTAL)
 
     if type == 'data':
 
