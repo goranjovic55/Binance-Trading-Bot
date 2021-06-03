@@ -69,7 +69,7 @@ class txcolors:
     NOTICE = '\033[96m'
 
 
-# tracks profit/loss each session
+# tracks profit/loss each session.
 global session_profit, unrealised_percent, market_price, investment_value, investment_gain_value
 investment_value = 0
 session_profit = 0
