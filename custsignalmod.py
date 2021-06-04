@@ -22,9 +22,9 @@ import threading
 
 OSC_INDICATORS = ['MACD', 'Stoch.RSI', 'Mom', 'BBP', 'AO', 'RSI'] # Indicators to use in Oscillator analysis
 OSC_THRESHOLD = 3 # Must be less or equal to number of items in OSC_INDICATORS 
-MA_INDICATORS = ['EMA10', 'EMA20', 'EMA100', 'VWMA', 'HullMA', 'Ichimoku'] # Indicators to use in Moving averages analysis
-MA_THRESHOLD = 5 # Must be less or equal to number of items in MA_INDICATORS 
-INTERVAL = Interval.INTERVAL_1_MINUTE #Timeframe for analysis
+MA_INDICATORS = ['VWMA', 'HullMA', 'Ichimoku'] # Indicators to use in Moving averages analysis
+MA_THRESHOLD = 2 # Must be less or equal to number of items in MA_INDICATORS 
+INTERVAL = Interval.INTERVAL_5_MINUTES #Timeframe for analysis
 
 EXCHANGE = 'BINANCE'
 SCREENER = 'CRYPTO'
