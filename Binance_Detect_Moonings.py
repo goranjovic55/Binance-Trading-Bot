@@ -537,7 +537,7 @@ def report(type, reportline):
     global INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent
     global investment_value, investment_value_gain
 
-    SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'>RI:'+str(round(RECHECK_INTERVAL, 2))+'>CIP:'+str(round(CHANGE_IN_PRICE_MIN, 2))+'-'+str(round(CHANGE_IN_PRICE_MAX))+'>SL:'+str(round(STOP_LOSS, 2))+'-TP:'+str(round(TAKE_PROFIT, 2))+'-TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'-TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
+    SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'>RI:'+str(round(RECHECK_INTERVAL, 2))+'>CIP:'+str(round(CHANGE_IN_PRICE_MIN, 2))+'-'+str(round(CHANGE_IN_PRICE_MAX, 2))+'>SL:'+str(round(STOP_LOSS, 2))+'>TP:'+str(round(TAKE_PROFIT, 2))+'>TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'>TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
 
     if len(coins_bought) > 0:
         UNREALISED_PERCENT = unrealised_percent/len(coins_bought)
