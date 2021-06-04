@@ -195,7 +195,7 @@ def wait_for_price():
         threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (float(max_price[coin]['price']) - float(min_price[coin]['price'])) / float(min_price[coin]['price']) * 100
 
         # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
-        if threshold_check > CHANGE_IN_PRICE:
+        if threshold_check > CHANGE_IN_PRICE_MIN and threshold_check < CHANGE_IN_PRICE_MAX:
             coins_up +=1
 
             if coin not in volatility_cooloff:
@@ -212,7 +212,7 @@ def wait_for_price():
                 else:
                     print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes, but you are using all available trade slots!{txcolors.DEFAULT}")
 
-        elif threshold_check < CHANGE_IN_PRICE:
+        elif threshold_check < CHANGE_IN_PRICE_MIN and threshold_check > CHANGE_IN_PRICE_MAX:
             coins_down +=1
 
         else:
@@ -537,7 +537,7 @@ def report(type, reportline):
     global INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent
     global investment_value, investment_value_gain
 
-    SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'-RI:'+str(round(RECHECK_INTERVAL, 2))+'-CIP:'+str(round(CHANGE_IN_PRICE, 2))+'-SL:'+str(round(STOP_LOSS, 2))+'-TP:'+str(round(TAKE_PROFIT, 2))+'-TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'-TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
+    SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'>RI:'+str(round(RECHECK_INTERVAL, 2))+'>CIP:'+str(round(CHANGE_IN_PRICE_MIN, 2))+'-'+str(round(CHANGE_IN_PRICE_MAX))+'>SL:'+str(round(STOP_LOSS, 2))+'-TP:'+str(round(TAKE_PROFIT, 2))+'-TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'-TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
 
     if len(coins_bought) > 0:
         UNREALISED_PERCENT = unrealised_percent/len(coins_bought)
@@ -697,7 +697,8 @@ if __name__ == '__main__':
     FIATS = parsed_config['trading_options']['FIATS']
     TIME_DIFFERENCE = parsed_config['trading_options']['TIME_DIFFERENCE']
     RECHECK_INTERVAL = parsed_config['trading_options']['RECHECK_INTERVAL']
-    CHANGE_IN_PRICE = parsed_config['trading_options']['CHANGE_IN_PRICE']
+    CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN']
+    CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX']
     STOP_LOSS = parsed_config['trading_options']['STOP_LOSS']
     TAKE_PROFIT = parsed_config['trading_options']['TAKE_PROFIT']
     CUSTOM_LIST = parsed_config['trading_options']['CUSTOM_LIST']
