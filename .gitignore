@@ -5,6 +5,6 @@ coins_bought.json
 trades.txt
 signals/custsignalsmod.exs
 signals/paused.exc
-.venv
+.venv/*
 __pycache__
 config.yml
