@@ -208,16 +208,16 @@ def wait_for_price():
                       if coin not in volatility_cooloff:
                          volatility_cooloff[coin] = datetime.now() - timedelta(minutes=TIME_DIFFERENCE)
 
-                        # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
-                         if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=TIME_DIFFERENCE):
-                            volatility_cooloff[coin] = datetime.now()
+                      # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
+                      if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=TIME_DIFFERENCE):
+                         volatility_cooloff[coin] = datetime.now()
 
-                      if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
-                         volatile_coins[coin] = round(threshold_check, 3)
-                         print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes, and coin {excoin} recived a signal... calculating {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
+                         if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
+                            volatile_coins[coin] = round(threshold_check, 3)
+                            print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes, and coin {excoin} recived a signal... calculating {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
 
-                      else:
-                         print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes, , and coin {excoin} recived a signal... but you are using all available trade slots!{txcolors.DEFAULT}")
+                         else:
+                            print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes, , and coin {excoin} recived a signal... but you are using all available trade slots!{txcolors.DEFAULT}")
 
         elif threshold_check < CHANGE_IN_PRICE_MIN and threshold_check > CHANGE_IN_PRICE_MAX:
              coins_down +=1
@@ -719,6 +719,8 @@ if __name__ == '__main__':
     DYNAMIC_WIN_LOSS_DOWN = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_DOWN']
     STOP_LOSS_ON_PAUSE = parsed_config['trading_options']['STOP_LOSS_ON_PAUSE']
     EXCHANGE = parsed_config['trading_options']['EXCHANGE']
+    PERCENT_SIGNAL_BUY = parsed_config['trading_options']['PERCENT_SIGNAL_BUY']
+
 
     if DEBUG_SETTING or args.debug:
         DEBUG = True

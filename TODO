@@ -9,3 +9,4 @@ add write log to report function as log type
 !!!add pausebotmod and custsignalsmod intervals from config.yml!!!
 !!! make list creating function that creates list based on volume !!!
 !!! make signals and % price change mix as buy order !!
+!!! fix bot not starting if there is no telegram creds !!!
