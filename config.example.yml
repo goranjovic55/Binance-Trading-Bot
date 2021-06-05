@@ -12,8 +12,8 @@ script_options:
   AMERICAN_USER: False
 
  #gogos MOD Telegram bot integration
-  TELEGRAM_BOT_TOKEN: ''
-  TELEGRAM_BOT_ID: ''
+    TELEGRAM_BOT_TOKEN: '12345678907:abcdefghijklmnoprstuvz-ABCDEFG'
+    TELEGRAM_BOT_ID: '0123456789'
 
 # These options apply to the trading methods the script executes
 trading_options:

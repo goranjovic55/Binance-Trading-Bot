@@ -7,4 +7,5 @@ Add investment gained/unrealised profit as risk reward ratio ( could be used to 
 add write log to report function as log type
 !!!add % investment value profit in current session (cumulative trading + market coin hodl and rebalance)!!!
 !!!add pausebotmod and custsignalsmod intervals from config.yml!!!
-!!! modufy tickers and signals for inverse mirroring with eth !!!
+!!! make list creating function that creates list based on volume !!!
+!!! make signals and % price change mix as buy order !!
