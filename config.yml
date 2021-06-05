@@ -92,5 +92,5 @@ trading_options:
   SIGNALLING_MODULES:
 
 #    - pausebotmod
-#    - custsignalmod
-#    - signalsamplemod
+    - custsignalmod
+    - signalsamplemod

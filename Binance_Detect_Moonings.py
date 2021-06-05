@@ -198,22 +198,29 @@ def wait_for_price():
         if threshold_check > CHANGE_IN_PRICE_MIN and threshold_check < CHANGE_IN_PRICE_MAX:
             coins_up +=1
 
-            if coin not in volatility_cooloff:
-                volatility_cooloff[coin] = datetime.now() - timedelta(minutes=TIME_DIFFERENCE)
+            if os.path.exists('signals/custsignalmod.exs') or os.path.exists('signals/signalsample.exs'):
+               externals = external_signals()
 
-            # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
-            if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=TIME_DIFFERENCE):
-                volatility_cooloff[coin] = datetime.now()
+               for excoin in externals:
 
-                if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
-                    volatile_coins[coin] = round(threshold_check, 3)
-                    print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes, calculating {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
+                   if excoin == coin:
 
-                else:
-                    print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes, but you are using all available trade slots!{txcolors.DEFAULT}")
+                      if coin not in volatility_cooloff:
+                         volatility_cooloff[coin] = datetime.now() - timedelta(minutes=TIME_DIFFERENCE)
+
+                        # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
+                         if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=TIME_DIFFERENCE):
+                            volatility_cooloff[coin] = datetime.now()
+
+                      if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
+                         volatile_coins[coin] = round(threshold_check, 3)
+                         print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes, and coin {excoin} recived a signal... calculating {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
+
+                      else:
+                         print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes, , and coin {excoin} recived a signal... but you are using all available trade slots!{txcolors.DEFAULT}")
 
         elif threshold_check < CHANGE_IN_PRICE_MIN and threshold_check > CHANGE_IN_PRICE_MAX:
-            coins_down +=1
+             coins_down +=1
 
         else:
             coins_unchanged +=1
@@ -222,14 +229,14 @@ def wait_for_price():
     #print(f'Up: {coins_up} Down: {coins_down} Unchanged: {coins_unchanged}')
 
     # Here goes new code for external signalling
-    externals = external_signals()
-    exnumber = 0
+#    externals = external_signals()
+#    exnumber = 0
 
-    for excoin in externals:
-        if excoin not in volatile_coins and excoin not in coins_bought and (len(coins_bought) + exnumber) < TRADE_SLOTS:
-            volatile_coins[excoin] = 1
-            exnumber +=1
-            print(f"External signal received on {excoin}, calculating {QUANTITY} {PAIR_WITH} value of {excoin} for purchase!")
+#    for excoin in externals:
+#        if excoin not in volatile_coins and excoin not in coins_bought and (len(coins_bought) + exnumber) < TRADE_SLOTS:
+#            volatile_coins[excoin] = 1
+#            exnumber +=1
+#            print(f"External signal received on {excoin}, calculating {QUANTITY} {PAIR_WITH} value of {excoin} for purchase!")
 
     return volatile_coins, len(volatile_coins), historical_prices[hsp_head]
 
