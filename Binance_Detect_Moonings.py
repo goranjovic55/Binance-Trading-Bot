@@ -160,7 +160,7 @@ def get_price(add_to_historical=True):
     return initial_price
 
 
-def wait_for_price():
+def wait_for_price(type):
     '''calls the initial price and ensures the correct amount of time has passed
     before reading the current price again'''
 
@@ -194,32 +194,63 @@ def wait_for_price():
 
         threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (float(max_price[coin]['price']) - float(min_price[coin]['price'])) / float(min_price[coin]['price']) * 100
 
-        # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
-        if threshold_check > CHANGE_IN_PRICE_MIN and threshold_check < CHANGE_IN_PRICE_MAX:
-            coins_up +=1
+        if type == 'percent_mix_signal':
 
-            if os.path.exists('signals/custsignalmod.exs') or os.path.exists('signals/signalsample.exs'):
-               externals = external_signals()
+           # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
+           if threshold_check > CHANGE_IN_PRICE_MIN and threshold_check < CHANGE_IN_PRICE_MAX:
+               coins_up +=1
 
-               for excoin in externals:
+               if os.path.exists('signals/custsignalmod.exs') or os.path.exists('signals/signalsample.exs'):
+                  externals = external_signals()
 
-                   if excoin == coin:
+                  for excoin in externals:
 
-                      if coin not in volatility_cooloff:
-                         volatility_cooloff[coin] = datetime.now() - timedelta(minutes=TIME_DIFFERENCE)
+                      if excoin == coin:
 
-                      # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
-                      if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=TIME_DIFFERENCE):
-                         volatility_cooloff[coin] = datetime.now()
+                         if coin not in volatility_cooloff:
+                            volatility_cooloff[coin] = datetime.now() - timedelta(minutes=TIME_DIFFERENCE)
 
-                         if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
-                            volatile_coins[coin] = round(threshold_check, 3)
-                            print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes, and coin {excoin} recived a signal... calculating {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
+                         # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
+                         if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=TIME_DIFFERENCE):
+                            volatility_cooloff[coin] = datetime.now()
 
-                         else:
-                            print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes, , and coin {excoin} recived a signal... but you are using all available trade slots!{txcolors.DEFAULT}")
+                            if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
+                               volatile_coins[coin] = round(threshold_check, 3)
+                               print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes, and coin {excoin} recived a signal... calculating {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
 
-        elif threshold_check < CHANGE_IN_PRICE_MIN and threshold_check > CHANGE_IN_PRICE_MAX:
+                            else:
+                               print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes, , and coin {excoin} recived a signal... but you are using all available trade slots!{txcolors.DEFAULT}")
+
+        if type == 'percent_and_signal':
+
+           # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
+           if threshold_check > CHANGE_IN_PRICE_MIN and threshold_check < CHANGE_IN_PRICE_MAX:
+              coins_up +1
+
+              if coin not in volatility_cooloff:
+                 volatility_cooloff[coin] = datetime.now() - timedelta(minutes=TIME_DIFFERENCE)
+
+            # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
+              if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=TIME_DIFFERENCE):
+                 volatility_cooloff[coin] = datetime.now()
+
+                 if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
+                    volatile_coins[coin] = round(threshold_check, 3)
+                    print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
+
+                 else:
+                   print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes but you are using all available trade slots!{txcolors.DEFAULT}")
+
+           externals = external_signals()
+           exnumber = 0
+
+           for excoin in externals:
+               if excoin not in volatile_coins and excoin not in coins_bought and (len(coins_bought) + exnumber) < TRADE_SLOTS:
+                  volatile_coins[excoin] = 1
+                  exnumber +=1
+                  print(f"External signal received on {excoin}, calculating {QUANTITY} {PAIR_WITH} value of {excoin} for purchase!")
+
+        if threshold_check < CHANGE_IN_PRICE_MIN and threshold_check > CHANGE_IN_PRICE_MAX:
              coins_down +=1
 
         else:
@@ -310,7 +341,12 @@ def pause_bot():
 def convert_volume():
     '''Converts the volume given in QUANTITY from USDT to the each coin's volume'''
 
-    volatile_coins, number_of_coins, last_price = wait_for_price()
+    #added feature to buy only if percent and signal triggers uses PERCENT_SIGNAL_BUY true or false from config
+    if PERCENT_SIGNAL_BUY == True:
+       volatile_coins, number_of_coins, last_price = wait_for_price('percent_mix_signal')
+    else:
+       volatile_coins, number_of_coins, last_price = wait_for_price('percent_and_signal')
+
     lot_size = {}
     volume = {}
 
@@ -667,6 +703,54 @@ def session(type):
        NEW_BALANCE = (INVESTMENT_TOTAL + TOTAL_GAINS)
        INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT_TOTAL) * 100
 
+def tickers_list(type):
+
+    global historical_prices, hsp_head
+
+    tickers_list_volume = {}
+    tickers_list_price_change = {}
+
+# get all info on tickers from binance
+    tickers_binance = client.get_ticker()
+
+#create list with voleume and change in price on our pairs
+    for coin in tickers_binance:
+
+        if CUSTOM_LIST:
+           if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in FIATS):
+              tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
+              tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
+
+        else:
+           if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in FIATS):
+              tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
+              tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
+
+#sort tickers by descending order volume and price
+    sorted_tickers_list_volume = sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True)
+    sorted_tickers_list_price_change = sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True)
+
+#    print(list(sorted_tickers_list_volume))
+#    print(dict(sorted_tickers_list_volume))
+
+#    for key, value in (dict(sorted_tickers_list_volume)).iteritems() :
+#        print(key, value)
+#    with open('tickers_volume.txt', 'w') as outFile:
+#         for d in sorted_tickers_list_volume:
+#            line = str(value)
+#            outFile.write(line)
+
+#people = {1: {'Name': 'John', 'Age': '27', 'Sex': 'Male'},
+#          2: {'Name': 'Marie', 'Age': '22', 'Sex': 'Female'}}
+
+#    for k in sorted_tickers_list_volume[0].values():
+#        print(k)
+
+#    print(sorted_tickers_list_price_change)
+#    f.write('tickers_pricechange.txt')
+#    for value in sorted_tickers_list_price_change:
+#        f.write(str(value.get('symbol')))
+
 if __name__ == '__main__':
 
     # Load arguments then parse settings
@@ -820,5 +904,6 @@ if __name__ == '__main__':
         STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS = dynamic_performance_settings(dynamic_performance_type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS)
         #session calculations like unrealised potential etc
         session('calc')
+        tickers_list('create')
 #        session('save')
 #        session('data')

@@ -90,7 +90,7 @@ trading_options:
   STOP_LOSS_ON_PAUSE: False
 
  #mix % and signals for Buying
-  PERCENT_SIGNAL_BUY: True
+  PERCENT_SIGNAL_BUY: False
 
   SIGNALLING_MODULES:
 

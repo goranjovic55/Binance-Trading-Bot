@@ -88,6 +88,9 @@ trading_options:
  #activate all stop losses on pausebot mod trigger
   STOP_LOSS_ON_PAUSE: False
 
+  #mix % and signals for Buying
+  PERCENT_SIGNAL_BUY: True
+
   SIGNALLING_MODULES:
 
     - pausebotmod
