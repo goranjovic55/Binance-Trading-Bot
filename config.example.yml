@@ -91,6 +91,10 @@ trading_options:
   #if you want to add mixed put to true it only buys if signal and percent triggers then
   PERCENT_SIGNAL_BUY: False
 
+ #sort list by volume or price_change
+  SORT_LIST_TYPE: volume
+
+
   SIGNALLING_MODULES:
 
     - pausebotmod

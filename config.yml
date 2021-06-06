@@ -39,7 +39,7 @@ trading_options:
     - UP
 
   # Maximum number of trade 'slots' at any time (your USDT balance must be at least TRADE_SLOTS * QUANTITY)
-  TRADE_SLOTS: 17
+  TRADE_SLOTS: 9
 
   # the amount of time in MINUTES to calculate the difference from the current price (minimum: 1).
   TIME_DIFFERENCE: 1
@@ -69,7 +69,7 @@ trading_options:
 
   # when hit TAKE_PROFIT, move STOP_LOSS to TRAILING_STOP_LOSS percentage points below TAKE_PROFIT hence locking in profit
   # when hit TAKE_PROFIT, move TAKE_PROFIT up by TRAILING_TAKE_PROFIT percentage points
-  TRAILING_STOP_LOSS: 0.9
+  TRAILING_STOP_LOSS: 0.3
   TRAILING_TAKE_PROFIT: .01
 
   # Trading fee in % per trade.
@@ -90,8 +90,11 @@ trading_options:
  #mix % and signals for Buying
   PERCENT_SIGNAL_BUY: False
 
+ #sort list by volume or price_change
+  SORT_LIST_TYPE: volume
+
   SIGNALLING_MODULES:
 
 #    - pausebotmod
-    - custsignalmod
-    - signalsamplemod
+#    - custsignalmod
+#   - signalsamplemod

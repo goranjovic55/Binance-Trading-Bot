@@ -1,15 +1,12 @@
 add running time and %gain in last 24H
 add possibility to stop bot if reaches specific -% for security and send message to admin
 add script to make service out of python systemctl in bash
-move telegrambot creds to creds.yml
 add tickers.blacklist implementation (add code that checks tickers against blacklist and ignores coins from blacklist) blacklist can be populated by bot based on stoplosses etc
 Add investment gained/unrealised profit as risk reward ratio ( could be used to dynamically adjust stoplosses on open trades)
 add write log to report function as log type
 add % investment value profit in current session (cumulative trading + market coin hodl and rebalance)!!!
 add pausebotmod and custsignalsmod intervals from config.yml!!!
-make list creating function that creates list based on volume !!!
 fix bot not starting if there is no telegram creds !!!
 fix in get price market_historic = client.get_historical_trades(symbol='ETHUSDT') to EXCHANGE from config
 merge write_log and report with switch
-change dynamic_performance_settings to dynamic with corresponding switches
 us version has BNBETH key issues check that

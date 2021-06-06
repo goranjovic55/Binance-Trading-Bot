@@ -83,9 +83,10 @@ global win_trade_count, loss_trade_count
 win_trade_count = 0
 loss_trade_count = 0
 
-global dynamic, sell_all_coins
+global dynamic, sell_all_coins, tickers_list_changed
 dynamic = 'none'
 sell_all_coins = False
+tickers_list_changed = False
 
 global INVESTMENT_TOTAL, CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN
 CURRENT_EXPOSURE = 0
@@ -520,6 +521,8 @@ def sell_coins():
                 #print balance report
                 report('message', f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
 
+                tickers_list(SORT_LIST_TYPE)
+
             continue
 
         # no action; print once every TIME_DIFFERENCE
@@ -600,7 +603,7 @@ def report(type, reportline):
        bot_token = TELEGRAM_BOT_TOKEN
        bot_chatID = TELEGRAM_BOT_ID
 
-       print(f'Bot Token: {TELEGRAM_BOT_TOKEN} Bot ID: {TELEGRAM_BOT_ID}')
+#       print(f'Bot Token: {TELEGRAM_BOT_TOKEN} Bot ID: {TELEGRAM_BOT_ID}')
 
        send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
        response = requests.get(send_text)
@@ -708,7 +711,7 @@ def session(type):
 
 def tickers_list(type):
 
-    global historical_prices, hsp_head
+    global historical_prices, hsp_head, tickers_list_changed
 
     tickers_list_volume = {}
     tickers_list_price_change = {}
@@ -730,29 +733,24 @@ def tickers_list(type):
               tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
 
 #sort tickers by descending order volume and price
-    sorted_tickers_list_volume = sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True)
-    sorted_tickers_list_price_change = sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True)
+    list_tickers_volume = list(sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True))
+    list_tickers_price_change = list(sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True))
 
-#    print(list(sorted_tickers_list_volume))
-#    print(dict(sorted_tickers_list_volume))
+    if type == 'volume' and CUSTOM_LIST:
+    #write sorted lists to files
 
-#    for key, value in (dict(sorted_tickers_list_volume)).iteritems() :
-#        print(key, value)
-#    with open('tickers_volume.txt', 'w') as outFile:
-#         for d in sorted_tickers_list_volume:
-#            line = str(value)
-#            outFile.write(line)
+       with open (TICKERS_LIST, 'w') as f:
+            for sublist in list_tickers_volume:
+               f.writelines(str(sublist[0])[:-3]+'\n')
+       tickers_list_changed = True
 
-#people = {1: {'Name': 'John', 'Age': '27', 'Sex': 'Male'},
-#          2: {'Name': 'Marie', 'Age': '22', 'Sex': 'Female'}}
+    if type == 'price_change':
+    #write sorted list to files
 
-#    for k in sorted_tickers_list_volume[0].values():
-#        print(k)
-
-#    print(sorted_tickers_list_price_change)
-#    f.write('tickers_pricechange.txt')
-#    for value in sorted_tickers_list_price_change:
-#        f.write(str(value.get('symbol')))
+       with open (TICKERS_LIST, 'w') as f:
+            for sublist in list_tickers_price_change:
+               f.writelines(str(sublist[0])[:-3]+'\n')
+       tickers_list_changed = True
 
 if __name__ == '__main__':
 
@@ -806,6 +804,7 @@ if __name__ == '__main__':
     STOP_LOSS_ON_PAUSE = parsed_config['trading_options']['STOP_LOSS_ON_PAUSE']
     EXCHANGE = parsed_config['trading_options']['EXCHANGE']
     PERCENT_SIGNAL_BUY = parsed_config['trading_options']['PERCENT_SIGNAL_BUY']
+    SORT_LIST_TYPE = parsed_config['trading_options']['SORT_LIST_TYPE']
 
     if DEBUG_SETTING or args.debug:
         DEBUG = True
@@ -899,9 +898,19 @@ if __name__ == '__main__':
     # seed initial prices
     get_price()
 
+#load previous session stuff
     session('load')
 
+#sort tickers list by volume
+    tickers_list(SORT_LIST_TYPE)
+
     while True:
+
+#reload tickers list by volume if triggered recreation
+        if tickers_list_changed == True :
+           tickers=[line.strip() for line in open(TICKERS_LIST)]
+           tickers_list_changed = False
+#           print(f'Tickers list changed and loaded: {tickers}')
 
         orders, last_price, volume = buy()
         update_portfolio(orders, last_price, volume)
@@ -911,6 +920,3 @@ if __name__ == '__main__':
         STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS = dynamic(dynamic, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS)
         #session calculations like unrealised potential etc
         session('calc')
-        tickers_list('create')
-#        session('save')
-#        session('data')
