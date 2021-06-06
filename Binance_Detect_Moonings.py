@@ -54,7 +54,8 @@ from helpers.parameters import (
 
 # Load creds modules
 from helpers.handle_creds import (
-    load_correct_creds, test_api_key
+    load_correct_creds, test_api_key,
+    load_telegram_creds
 )
 
 
@@ -82,8 +83,8 @@ global win_trade_count, loss_trade_count
 win_trade_count = 0
 loss_trade_count = 0
 
-global dynamic_performance_type, sell_all_coins
-dynamic_performance_type = 'none'
+global dynamic, sell_all_coins
+dynamic = 'none'
 sell_all_coins = False
 
 global INVESTMENT_TOTAL, CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN
@@ -292,7 +293,7 @@ def external_signals():
 
 def pause_bot():
     '''Pause the script when external indicators detect a bearish trend in the market'''
-    global bot_paused, session_profit, hsp_head,dynamic_performance_type, sell_all_coins
+    global bot_paused, session_profit, hsp_head, dynamic, sell_all_coins
     # start counting for how long the bot has been paused
     start_time = time.perf_counter()
 
@@ -331,7 +332,7 @@ def pause_bot():
         # resume the bot and ser pause_bot to False
         if  bot_paused == True:
             print(f"{txcolors.WARNING}Resuming buying due to positive market conditions, total sleep time: {time_elapsed}{txcolors.DEFAULT}")
-            dynamic_performance_type = 'reset'
+            dynamic = 'reset'
             sell_all_coins = False
             bot_paused = False
 
@@ -502,11 +503,11 @@ def sell_coins():
                 #gogo MOD to trigger trade lost or won and to count lost or won trades
                 if profit > 0:
                    win_trade_count = win_trade_count + 1
-                   dynamic_performance_type = 'adjust_up'
+                   dynamic = 'performance_adjust_up'
                    write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
                 else:
                    loss_trade_count = loss_trade_count + 1
-                   dynamic_performance_type = 'adjust_down'
+                   dynamic = 'performance_adjust_down'
                    write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
 
                 # LastPrice (10) - BuyPrice (5) = 5
@@ -599,22 +600,24 @@ def report(type, reportline):
        bot_token = TELEGRAM_BOT_TOKEN
        bot_chatID = TELEGRAM_BOT_ID
 
+       print(f'Bot Token: {TELEGRAM_BOT_TOKEN} Bot ID: {TELEGRAM_BOT_ID}')
+
        send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
        response = requests.get(send_text)
 
 #function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
-def dynamic_performance_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS):
+def dynamic(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS):
 
     global last_trade_won, last_trade_lost, dynamic_performance_type
 
-    if type == 'adjust_up':
+    if type == 'performance_adjust_up':
       STOP_LOSS = STOP_LOSS + (STOP_LOSS * DYNAMIC_WIN_LOSS_UP) / 100
       TAKE_PROFIT = TAKE_PROFIT + (TAKE_PROFIT * DYNAMIC_WIN_LOSS_UP) / 100
       TRAILING_STOP_LOSS = TRAILING_STOP_LOSS + (TRAILING_STOP_LOSS * DYNAMIC_WIN_LOSS_UP) / 100
       dynamic_performance_type = 'none'
       print(f'{txcolors.NOTICE}>> Last Trade WON Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f}  - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} <<{txcolors.DEFAULT}')
 
-    if type == 'adjust_down':
+    if type == 'performance_adjust_down':
       STOP_LOSS = STOP_LOSS - (STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
       TAKE_PROFIT = TAKE_PROFIT - (TAKE_PROFIT * DYNAMIC_WIN_LOSS_DOWN) / 100
       TRAILING_STOP_LOSS = TRAILING_STOP_LOSS - (TRAILING_STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
@@ -778,8 +781,7 @@ if __name__ == '__main__':
     LOG_FILE = parsed_config['script_options'].get('LOG_FILE')
     DEBUG_SETTING = parsed_config['script_options'].get('DEBUG')
     AMERICAN_USER = parsed_config['script_options'].get('AMERICAN_USER')
-    TELEGRAM_BOT_TOKEN = parsed_config['script_options']['TELEGRAM_BOT_TOKEN']
-    TELEGRAM_BOT_ID = parsed_config['script_options']['TELEGRAM_BOT_ID']
+    TELEGRAM_BOT =  parsed_config['script_options'].get('TELEGRAM_BOT')
 
     # Load trading vars
     PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
@@ -805,12 +807,17 @@ if __name__ == '__main__':
     EXCHANGE = parsed_config['trading_options']['EXCHANGE']
     PERCENT_SIGNAL_BUY = parsed_config['trading_options']['PERCENT_SIGNAL_BUY']
 
-
     if DEBUG_SETTING or args.debug:
         DEBUG = True
     # Load creds for correct environment
     access_key, secret_key = load_correct_creds(parsed_creds)
 
+    # Telegram_Bot enabled? # **added by*Coding60plus
+
+    if TELEGRAM_BOT:
+       TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID = load_telegram_creds(parsed_creds)
+
+    # Telegram_Bot enabled? # **added by*Coding60plus
     if DEBUG:
         print(f'Loaded config below\n{json.dumps(parsed_config, indent=4)}')
         print(f'Your credentials have been loaded from {creds_file}')
@@ -901,7 +908,7 @@ if __name__ == '__main__':
         coins_sold = sell_coins()
         remove_from_portfolio(coins_sold)
         #gogos MOD to adjust dynamically stoploss trailingstop loss and take profit based on wins
-        STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS = dynamic_performance_settings(dynamic_performance_type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS)
+        STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS = dynamic(dynamic, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS)
         #session calculations like unrealised potential etc
         session('calc')
         tickers_list('create')

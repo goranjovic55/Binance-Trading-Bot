@@ -11,9 +11,8 @@ script_options:
   # Need to change TLD
   AMERICAN_USER: False
 
- #gogos MOD Telegram bot integration
-    TELEGRAM_BOT_TOKEN: '12345678907:abcdefghijklmnoprstuvz-ABCDEFG'
-    TELEGRAM_BOT_ID: '0123456789'
+  # gogos MOD Telegram bot integration
+  TELEGRAM_BOT: True # **added/changed by Coding60plus
 
 # These options apply to the trading methods the script executes
 trading_options:
@@ -88,8 +87,9 @@ trading_options:
  #activate all stop losses on pausebot mod trigger
   STOP_LOSS_ON_PAUSE: False
 
-  #mix % and signals for Buying
-  PERCENT_SIGNAL_BUY: True
+  #mix % and signals for Buying by default False
+  #if you want to add mixed put to true it only buys if signal and percent triggers then
+  PERCENT_SIGNAL_BUY: False
 
   SIGNALLING_MODULES:
 

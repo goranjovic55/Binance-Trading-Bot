@@ -10,7 +10,6 @@ add pausebotmod and custsignalsmod intervals from config.yml!!!
 make list creating function that creates list based on volume !!!
 fix bot not starting if there is no telegram creds !!!
 fix in get price market_historic = client.get_historical_trades(symbol='ETHUSDT') to EXCHANGE from config
-@@@@@@ add in wait for price if switch so we can choose if we want just percentage just signals or both
 merge write_log and report with switch
 change dynamic_performance_settings to dynamic with corresponding switches
 us version has BNBETH key issues check that

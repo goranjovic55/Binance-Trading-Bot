@@ -11,10 +11,8 @@ script_options:
   # Need to change TLD
   AMERICAN_USER: False
 
- #gogos MOD Telegram bot integration
-  TELEGRAM_BOT_TOKEN: '1826715767:AAE5bm2PxZuCTLcWOE6WU4JAERUQ-F58GJM'
-  TELEGRAM_BOT_ID: '496371304'
-
+# gogos MOD Telegram bot integration
+  TELEGRAM_BOT: True # **added/changed by Coding60plus
 
 # These options apply to the trading methods the script executes
 trading_options:
@@ -83,8 +81,8 @@ trading_options:
   VERBOSE_MODE: False
 
  #gogo MOD Dynamic perecent applied to SL and TP upon WIN or LOSS trade
-  DYNAMIC_WIN_LOSS_UP: 1
-  DYNAMIC_WIN_LOSS_DOWN : 1
+  DYNAMIC_WIN_LOSS_UP: 10
+  DYNAMIC_WIN_LOSS_DOWN : 10
 
  #activate all stop losses on pausebot mod trigger
   STOP_LOSS_ON_PAUSE: False
