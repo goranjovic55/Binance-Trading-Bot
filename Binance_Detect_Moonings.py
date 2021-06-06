@@ -88,7 +88,7 @@ dynamic = 'none'
 sell_all_coins = False
 tickers_list_changed = False
 
-global INVESTMENT_TOTAL, CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN
+global CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN
 CURRENT_EXPOSURE = 0
 NEW_BALANCE = 0
 
@@ -581,7 +581,7 @@ def write_log(logline):
 
 def report(type, reportline):
 
-    global session_profit, INVESTMENT_TOTAL, CURRENT_EXPOSURE, NEW_BALANCE
+    global session_profit, CURRENT_EXPOSURE, NEW_BALANCE
     global INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent
     global investment_value, investment_value_gain
 
@@ -594,10 +594,10 @@ def report(type, reportline):
 
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
-       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {EXCHANGE}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {EXCHANGE} <<{txcolors.DEFAULT}")
+       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {EXCHANGE}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {EXCHANGE} <<{txcolors.DEFAULT}")
 
     if type == 'message':
-       report_string = 'SP:'+str(round(session_profit, 2))+'>CE:'+str(round(CURRENT_EXPOSURE, 4))+'>W:'+str(win_trade_count)+'>L:'+str(loss_trade_count)+'>IG:'+str(round(INVESTMENT_GAIN, 4))+'%'+'>IT:'+str(round(INVESTMENT_TOTAL, 4))+'>NB:'+str(round(NEW_BALANCE, 4))+'>IV:'+str(round(investment_value, 4))+str(EXCHANGE)+'>IGV:'+str(round(investment_value_gain, 4))+'>IVP:'+str(round(investment_value_gain, 4))
+       report_string = 'SP:'+str(round(session_profit, 2))+'>CE:'+str(round(CURRENT_EXPOSURE, 4))+'>W:'+str(win_trade_count)+'>L:'+str(loss_trade_count)+'>IG:'+str(round(INVESTMENT_GAIN, 4))+'%'+'>IT:'+str(round(INVESTMENT, 4))+'>NB:'+str(round(NEW_BALANCE, 4))+'>IV:'+str(round(investment_value, 4))+str(EXCHANGE)+'>IGV:'+str(round(investment_value_gain, 4))+'>IVP:'+str(round(investment_value_gain, 4))
 
        bot_message = SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
@@ -647,10 +647,9 @@ def session(type):
 
     if type == 'calc':
 
-       INVESTMENT_TOTAL = (QUANTITY * TRADE_SLOTS)
        TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
-       NEW_BALANCE = (INVESTMENT_TOTAL + TOTAL_GAINS)
-       INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT_TOTAL) * 100
+       NEW_BALANCE = (INVESTMENT + TOTAL_GAINS)
+       INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT) * 100
        CURRENT_EXPOSURE = (QUANTITY * len(coins_bought))
        unrealised_percent = 0
 
@@ -668,7 +667,7 @@ def session(type):
        #this number is your actual ETH or other coin value in correspondence to USDT aka your market investment_value
        #it is important cuz your exchange aha ETH or BTC can vary and if you pause bot during that time you gain profit
        investment_value = float(market_price) * NEW_BALANCE
-       investment_value_gain = float(market_price) * (NEW_BALANCE - INVESTMENT_TOTAL)
+       investment_value_gain = float(market_price) * (NEW_BALANCE - INVESTMENT)
 
     if type == 'save':
 
@@ -705,10 +704,9 @@ def session(type):
           #investment_value = session['investment_value']
           NEW_BALANCE = session_info['new_balance']
 
-       INVESTMENT_TOTAL = (QUANTITY * TRADE_SLOTS)
        TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
-       NEW_BALANCE = (INVESTMENT_TOTAL + TOTAL_GAINS)
-       INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT_TOTAL) * 100
+       NEW_BALANCE = (INVESTMENT + TOTAL_GAINS)
+       INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT) * 100
 
 def tickers_list(type):
 
@@ -786,7 +784,7 @@ if __name__ == '__main__':
 
     # Load trading vars
     PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
-    QUANTITY = parsed_config['trading_options']['QUANTITY']
+    INVESTMENT = parsed_config['trading_options']['INVESTMENT']
     TRADE_SLOTS = parsed_config['trading_options']['TRADE_SLOTS']
     FIATS = parsed_config['trading_options']['FIATS']
     TIME_DIFFERENCE = parsed_config['trading_options']['TIME_DIFFERENCE']
@@ -808,6 +806,8 @@ if __name__ == '__main__':
     EXCHANGE = parsed_config['trading_options']['EXCHANGE']
     PERCENT_SIGNAL_BUY = parsed_config['trading_options']['PERCENT_SIGNAL_BUY']
     SORT_LIST_TYPE = parsed_config['trading_options']['SORT_LIST_TYPE']
+
+    QUANTITY = INVESTMENT/TRADE_SLOTS
 
     if DEBUG_SETTING or args.debug:
         DEBUG = True

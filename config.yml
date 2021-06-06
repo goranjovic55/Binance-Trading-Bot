@@ -27,7 +27,10 @@ trading_options:
   # Binance uses a minimum of 10 USDT per trade, add a bit extra to enable selling if the price drops.
   # USDT - Recommended: no less than 12. Suggested: 15 or more.
   # ETH - Recommended: no less than 0.006.
-  QUANTITY: 0.0116
+  #QUANTITY: 0.0116
+  #total invested capital quantity gets calculated based on trade TRADE_SLOTS
+  INVESTMENT: 0.2
+
   # List of trading pairs to exclude
   # by default we're excluding the most popular fiat pairs
   FIATS:
@@ -88,13 +91,13 @@ trading_options:
   STOP_LOSS_ON_PAUSE: False
 
  #mix % and signals for Buying
-  PERCENT_SIGNAL_BUY: False
+  PERCENT_SIGNAL_BUY: True
 
  #sort list by volume or price_change
   SORT_LIST_TYPE: volume
 
   SIGNALLING_MODULES:
 
-#    - pausebotmod
+    - pausebotmod
     - custsignalmod
     - signalsamplemod
