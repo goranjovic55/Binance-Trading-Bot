@@ -333,6 +333,7 @@ def pause_bot():
         # resume the bot and ser pause_bot to False
         if  bot_paused == True:
             print(f"{txcolors.WARNING}Resuming buying due to positive market conditions, total sleep time: {time_elapsed}{txcolors.DEFAULT}")
+            tickers_list(SORT_LIST_TYPE)
             dynamic = 'reset'
             sell_all_coins = False
             bot_paused = False
@@ -743,6 +744,7 @@ def tickers_list(type):
             for sublist in list_tickers_volume:
                f.writelines(str(sublist[0])[:-3]+'\n')
        tickers_list_changed = True
+       print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
     if type == 'price_change':
     #write sorted list to files
@@ -751,6 +753,7 @@ def tickers_list(type):
             for sublist in list_tickers_price_change:
                f.writelines(str(sublist[0])[:-3]+'\n')
        tickers_list_changed = True
+       print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
 if __name__ == '__main__':
 
