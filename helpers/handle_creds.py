@@ -4,6 +4,7 @@ def load_correct_creds(creds):
 def load_telegram_creds(creds):
     return creds['telegram']['TELEGRAM_BOT_TOKEN'], creds['telegram']['TELEGRAM_BOT_ID']
 
+
 def test_api_key(client, BinanceAPIException):
     """Checks to see if API keys supplied returns errors
 
