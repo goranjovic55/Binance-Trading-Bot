@@ -609,7 +609,7 @@ def report(type, reportline):
        response = requests.get(send_text)
 
 #function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
-def dynamic(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS):
+def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS):
 
     global last_trade_won, last_trade_lost, dynamic_performance_type
 
@@ -917,6 +917,6 @@ if __name__ == '__main__':
         coins_sold = sell_coins()
         remove_from_portfolio(coins_sold)
         #gogos MOD to adjust dynamically stoploss trailingstop loss and take profit based on wins
-        STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS = dynamic(dynamic, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS)
+        STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS = dynamic_settings(dynamic, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS)
         #session calculations like unrealised potential etc
         session('calc')
