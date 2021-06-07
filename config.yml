@@ -53,7 +53,7 @@ trading_options:
 
   # the difference in % between the first and second checks for the price.
   CHANGE_IN_PRICE_MIN: 0.1
-  CHANGE_IN_PRICE_MAX: 0.3
+  CHANGE_IN_PRICE_MAX: 10
 
   # define in % when to sell a coin that's not making a profit.
   STOP_LOSS: 0.9
@@ -99,5 +99,5 @@ trading_options:
   SIGNALLING_MODULES:
 
 #    - pausebotmod
-    - custsignalmod
-    - signalsamplemod
+#    - custsignalmod
+#    - signalsamplemod

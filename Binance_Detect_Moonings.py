@@ -83,7 +83,7 @@ global win_trade_count, loss_trade_count
 win_trade_count = 0
 loss_trade_count = 0
 
-global dynamic, sell_all_coins, tickers_list_changed
+global dynamic, sell_all_coins, tickers_list_changed, exchange_symbol
 dynamic = 'none'
 sell_all_coins = False
 tickers_list_changed = False
@@ -134,7 +134,7 @@ def decimals():
 def get_price(add_to_historical=True):
     '''Return the current price for all coins on binance'''
 
-    global historical_prices, hsp_head, market_price
+    global historical_prices, hsp_head, market_price, exchange_symbol
 
     initial_price = {}
     prices = client.get_all_tickers()
@@ -159,6 +159,7 @@ def get_price(add_to_historical=True):
     if is_fiat():
 
         market_price = 1
+        exchange_symbol = PAIR_WITH
 
     else:
         exchange_symbol = PAIR_WITH + 'USDT'
@@ -263,19 +264,6 @@ def wait_for_price(type):
 
         else:
             coins_unchanged +=1
-
-    # Disabled until fix
-    #print(f'Up: {coins_up} Down: {coins_down} Unchanged: {coins_unchanged}')
-
-    # Here goes new code for external signalling
-#    externals = external_signals()
-#    exnumber = 0
-
-#    for excoin in externals:
-#        if excoin not in volatile_coins and excoin not in coins_bought and (len(coins_bought) + exnumber) < TRADE_SLOTS:
-#            volatile_coins[excoin] = 1
-#            exnumber +=1
-#            print(f"External signal received on {excoin}, calculating {QUANTITY} {PAIR_WITH} value of {excoin} for purchase!")
 
     return volatile_coins, len(volatile_coins), historical_prices[hsp_head]
 
@@ -591,7 +579,7 @@ def report(type, reportline):
 
     global session_profit, CURRENT_EXPOSURE, NEW_BALANCE
     global INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent
-    global investment_value, investment_value_gain
+    global investment_value, investment_value_gain, exchange_symbol
 
     SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'>RI:'+str(round(RECHECK_INTERVAL, 2))+'>CIP:'+str(round(CHANGE_IN_PRICE_MIN, 2))+'-'+str(round(CHANGE_IN_PRICE_MAX, 2))+'>SL:'+str(round(STOP_LOSS, 2))+'>TP:'+str(round(TAKE_PROFIT, 2))+'>TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'>TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
 
@@ -602,10 +590,10 @@ def report(type, reportline):
 
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
-       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {EXCHANGE}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {EXCHANGE} <<{txcolors.DEFAULT}")
+       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol} <<{txcolors.DEFAULT}")
 
     if type == 'message':
-       report_string = 'SP:'+str(round(session_profit, 2))+'>CE:'+str(round(CURRENT_EXPOSURE, 4))+'>W:'+str(win_trade_count)+'>L:'+str(loss_trade_count)+'>IG:'+str(round(INVESTMENT_GAIN, 4))+'%'+'>IT:'+str(round(INVESTMENT, 4))+'>NB:'+str(round(NEW_BALANCE, 4))+'>IV:'+str(round(investment_value, 4))+str(EXCHANGE)+'>IGV:'+str(round(investment_value_gain, 4))+'>IVP:'+str(round(investment_value_gain, 4))
+       report_string = 'SP:'+str(round(session_profit, 2))+'>CE:'+str(round(CURRENT_EXPOSURE, 4))+'>W:'+str(win_trade_count)+'>L:'+str(loss_trade_count)+'>IG:'+str(round(INVESTMENT_GAIN, 4))+'%'+'>IT:'+str(round(INVESTMENT, 4))+'>NB:'+str(round(NEW_BALANCE, 4))+'>IV:'+str(round(investment_value, 4))+str(exchange_symbol)+'>IGV:'+str(round(investment_value_gain, 4))+'>IVP:'+str(round(investment_value_gain, 4))
 
        bot_message = SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
@@ -757,7 +745,7 @@ def tickers_list(type):
 
        with open (TICKERS_LIST, 'w') as f:
             for sublist in list_tickers_price_change:
-               f.writelines(str(sublist[0])[:-3]+'\n')
+               f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
        tickers_list_changed = True
        print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
