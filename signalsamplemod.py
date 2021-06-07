@@ -8,10 +8,6 @@ DEFAULT_CONFIG_FILE = 'config.yml'
 config_file = args.config if args.config else DEFAULT_CONFIG_FILE
 parsed_config = load_config(config_file)
 
-
-
-
-
 from tradingview_ta import TA_Handler, Interval, Exchange
 # use for environment variables
 import os
@@ -26,7 +22,7 @@ MY_EXCHANGE = 'BINANCE'
 MY_SCREENER = 'CRYPTO'
 MY_FIRST_INTERVAL = Interval.INTERVAL_1_MINUTE
 MY_SECOND_INTERVAL = Interval.INTERVAL_5_MINUTES
-TA_BUY_THRESHOLD = 16 # How many of the 26 indicators to indicate a buy
+TA_BUY_THRESHOLD = 17 # How many of the 26 indicators to indicate a buy
 PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
 TICKERS = parsed_config['trading_options']['TICKERS_LIST']
 TIME_TO_WAIT = parsed_config['trading_options']['TIME_DIFFERENCE'] # Minutes to wait between analysis
@@ -58,9 +54,9 @@ def analyze(pairs):
             interval=MY_SECOND_INTERVAL,
             timeout= 10
         )
-    
+
     for pair in pairs:
-       
+
         try:
             first_analysis = first_handler[pair].get_analysis()
             second_analysis = second_handler[pair].get_analysis()
@@ -72,7 +68,7 @@ def analyze(pairs):
                     print (f'First handler: {first_handler[pair]}')
                     print (f'Second handler: {second_handler[pair]}')
                     tacheckS = 0
-                
+
         first_tacheck = first_analysis.summary['BUY']
         second_tacheck = second_analysis.summary['BUY']
         if FULL_LOG:
@@ -88,7 +84,7 @@ def analyze(pairs):
                 print(f'Signalsample: Signal detected on {pair}')
                 with open('signals/signalsample.exs','a+') as f:
                     f.write(pair + '\n')
-    print(f'Signalsample: Max signal by {taMaxCoin} at {taMax} on shortest timeframe') 
+    print(f'Signalsample: Max signal by {taMaxCoin} at {taMax} on shortest timeframe')
 
     return signal_coins
 
@@ -98,8 +94,8 @@ def do_work():
 
     pairs=[line.strip() for line in open(TICKERS)]
     for line in open(TICKERS):
-        pairs=[line.strip() + PAIR_WITH for line in open(TICKERS)] 
-    
+        pairs=[line.strip() + PAIR_WITH for line in open(TICKERS)]
+
     while True:
         print(f'Signalsample: Analyzing {len(pairs)} coins')
         signal_coins = analyze(pairs)

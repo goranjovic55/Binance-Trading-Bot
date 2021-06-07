@@ -84,9 +84,9 @@ trading_options:
   VERBOSE_MODE: False
 
  #gogo MOD Dynamic perecent applied to SL and TP upon WIN or LOSS trade
+  DYNAMIC_SETTINGS: True
   DYNAMIC_WIN_LOSS_UP: 10
   DYNAMIC_WIN_LOSS_DOWN : 10
-  DYNAMIC_PRICE_ADJUST: True
 
  #activate all stop losses on pausebot mod trigger
   STOP_LOSS_ON_PAUSE: False
