@@ -156,8 +156,14 @@ def get_price(add_to_historical=True):
 
         historical_prices[hsp_head] = initial_price
 
-    market_historic = client.get_historical_trades(symbol='ETHUSDT')
-    market_price = market_historic[0].get('price')
+    if is_fiat():
+
+       market_price = 1
+
+    else:
+        exchange_symbol = PAIR_WITH + 'USDT'
+        market_historic = client.get_historical_trades(symbol=exchange_symbol)
+        market_price = market_historic[0].get('price')
 
     return initial_price
 

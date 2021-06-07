@@ -1,0 +1,2 @@
+XMRETH
+EZETH

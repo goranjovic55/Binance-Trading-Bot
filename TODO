@@ -6,8 +6,8 @@ Add investment gained/unrealised profit as risk reward ratio ( could be used to 
 add write log to report function as log type
 add % investment value profit in current session (cumulative trading + market coin hodl and rebalance)!!!
 add pausebotmod and custsignalsmod intervals from config.yml!!!
-fix bot not starting if there is no telegram creds !!!
 fix in get price market_historic = client.get_historical_trades(symbol='ETHUSDT') to EXCHANGE from config
 merge write_log and report with switch
 us version has BNBETH key issues check that
 add copying of tickers that are recreated to signalsample and reloading
+fix list creation slicing -3 to regex of pairwith
