@@ -389,50 +389,57 @@ def buy():
 
     for coin in volume:
 
-        print(f"{txcolors.BUY}Preparing to buy {volume[coin]} {coin}{txcolors.DEFAULT}")
+        # only buy if the there are no active trades on the coin
+        if coin not in coins_bought:
+            print(f"{txcolors.BUY}Preparing to buy {volume[coin]} {coin}{txcolors.DEFAULT}")
 
-        if TEST_MODE:
-            orders[coin] = [{
-                'symbol': coin,
-                'orderId': 0,
-                'time': datetime.now().timestamp()
-            }]
+            if TEST_MODE:
+                orders[coin] = [{
+                    'symbol': coin,
+                    'orderId': 0,
+                    'time': datetime.now().timestamp()
+                }]
 
-            # Log trade
-            write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
-        continue
-
-        # try to create a real order if the test orders did not raise an exception
-        try:
-            buy_limit = client.create_order(
-                symbol = coin,
-                side = 'BUY',
-                type = 'MARKET',
-                quantity = volume[coin]
-            )
-
-        # error handling here in case position cannot be placed
-        except Exception as e:
-            print(e)
-
-        # run the else block if the position has been placed and return order info
-        else:
-            orders[coin] = client.get_all_orders(symbol=coin, limit=1)
-
-            # binance sometimes returns an empty list, the code will wait here until binance returns the order
-            while orders[coin] == []:
-                print('Binance is being slow in returning the order, calling the API again...')
-
-                orders[coin] = client.get_all_orders(symbol=coin, limit=1)
-                time.sleep(1)
-
-            else:
-                print('Order returned, saving order to file')
-
-                # Log trade
+                # Log trades
                 write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
-    return orders, last_price, volume
 
+                continue
+
+            # try to create a real order if the test orders did not raise an exception
+            try:
+                buy_limit = client.create_order(
+                    symbol = coin,
+                    side = 'BUY',
+                    type = 'MARKET',
+                    quantity = volume[coin]
+                )
+
+            # error handling here in case position cannot be placed
+            except Exception as e:
+                print(e)
+
+            # run the else block if the position has been placed and return order info
+            else:
+                orders[coin] = client.get_all_orders(symbol=coin, limit=1)
+
+                # binance sometimes returns an empty list, the code will wait here until binance returns the order
+                while orders[coin] == []:
+                    print('Binance is being slow in returning the order, calling the API again...')
+
+                    orders[coin] = client.get_all_orders(symbol=coin, limit=1)
+                    time.sleep(1)
+
+                else:
+                    print('Order returned, saving order to file')
+
+                    # Log trade
+                    write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
+
+
+        else:
+            print(f'Signal detected, but there is already an active trade on {coin}')
+
+    return orders, last_price, volume
 
 def sell_coins():
     '''sell coins that have reached the STOP LOSS or TAKE PROFIT threshold'''
