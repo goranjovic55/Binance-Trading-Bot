@@ -52,11 +52,11 @@ trading_options:
   RECHECK_INTERVAL: 6
 
   # the difference in % between the first and second checks for the price.
-  CHANGE_IN_PRICE_MIN: 0.1
-  CHANGE_IN_PRICE_MAX: 0.3
+  CHANGE_IN_PRICE_MIN: -1.9
+  CHANGE_IN_PRICE_MAX: -0.9
 
   # define in % when to sell a coin that's not making a profit.
-  STOP_LOSS: 0.9
+  STOP_LOSS: 0.2
 
   # define in % when to take profit on a profitable coin.
   TAKE_PROFIT: 0.01
@@ -86,6 +86,7 @@ trading_options:
  #gogo MOD Dynamic perecent applied to SL and TP upon WIN or LOSS trade
   DYNAMIC_WIN_LOSS_UP: 10
   DYNAMIC_WIN_LOSS_DOWN : 10
+  DYNAMIC_PRICE_ADJUST: True
 
  #activate all stop losses on pausebot mod trigger
   STOP_LOSS_ON_PAUSE: False
