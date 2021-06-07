@@ -806,7 +806,6 @@ if __name__ == '__main__':
     DYNAMIC_WIN_LOSS_DOWN = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_DOWN']
     DYNAMIC_SETTINGS = parsed_config['trading_options']['DYNAMIC_SETTINGS']
     STOP_LOSS_ON_PAUSE = parsed_config['trading_options']['STOP_LOSS_ON_PAUSE']
-    EXCHANGE = parsed_config['trading_options']['EXCHANGE']
     PERCENT_SIGNAL_BUY = parsed_config['trading_options']['PERCENT_SIGNAL_BUY']
     SORT_LIST_TYPE = parsed_config['trading_options']['SORT_LIST_TYPE']
 

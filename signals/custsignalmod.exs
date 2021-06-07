@@ -1,2 +1,0 @@
-REPETH
-CDTETH
