@@ -158,7 +158,7 @@ def get_price(add_to_historical=True):
 
     if is_fiat():
 
-       market_price = 1
+        market_price = 1
 
     else:
         exchange_symbol = PAIR_WITH + 'USDT'
@@ -748,7 +748,7 @@ def tickers_list(type):
 
        with open (TICKERS_LIST, 'w') as f:
             for sublist in list_tickers_volume:
-               f.writelines(str(sublist[0])[:-3]+'\n')
+               f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
        tickers_list_changed = True
        print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
