@@ -10,4 +10,3 @@ fix in get price market_historic = client.get_historical_trades(symbol='ETHUSDT'
 merge write_log and report with switch
 us version has BNBETH key issues check that
 add copying of tickers that are recreated to signalsample and reloading
-fix list creation slicing -3 to regex of pairwith

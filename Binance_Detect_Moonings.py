@@ -601,13 +601,13 @@ def report(type, reportline):
 
        bot_message = SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
-       bot_token = TELEGRAM_BOT_TOKEN
-       bot_chatID = TELEGRAM_BOT_ID
+       if TELEGRAM_BOT:
+          bot_token = TELEGRAM_BOT_TOKEN
+          bot_chatID = TELEGRAM_BOT_ID
 
 #       print(f'Bot Token: {TELEGRAM_BOT_TOKEN} Bot ID: {TELEGRAM_BOT_ID}')
-
-       send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
-       response = requests.get(send_text)
+          send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
+          response = requests.get(send_text)
 
 #function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
 def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN):
