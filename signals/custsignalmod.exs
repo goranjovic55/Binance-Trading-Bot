@@ -1,2 +1,0 @@
-QLCETH
-BLZETH

@@ -173,6 +173,9 @@ def wait_for_price(type):
     '''calls the initial price and ensures the correct amount of time has passed
     before reading the current price again'''
 
+    market_resistance = 0
+    market_support = 0
+
     global historical_prices, hsp_head, volatility_cooloff
     volatile_coins = {}
     externals = {}
@@ -189,7 +192,7 @@ def wait_for_price(type):
 
         time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
 
-    report('console', '.')
+#    report('console', '.')
 
     # retrieve latest prices
     get_price()
@@ -202,6 +205,13 @@ def wait_for_price(type):
         max_price = max(historical_prices, key = lambda x: -1 if x is None else float(x[coin]['price']))
 
         threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (float(max_price[coin]['price']) - float(min_price[coin]['price'])) / float(min_price[coin]['price']) * 100
+
+        if threshold_check > 0:
+            market_resistance = market_resistance + threshold_check
+            coins_up = coins_up +1
+        else:
+            market_support = market_support - threshold_check
+            coins_down = coins_down +1
 
         if type == 'percent_mix_signal':
 
@@ -264,6 +274,11 @@ def wait_for_price(type):
 
         else:
             coins_unchanged +=1
+
+    market_resistance = market_resistance / coins_up
+    market_support = market_support / coins_down
+
+    report('console', f" MR:{market_resistance:.4f}/MS:{market_support:.4f} ")
 
     return volatile_coins, len(volatile_coins), historical_prices[hsp_head]
 
@@ -597,7 +612,7 @@ def report(type, reportline):
 
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
-       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol} <<{txcolors.DEFAULT}")
+       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol}> {reportline} <<{txcolors.DEFAULT}")
 
     if type == 'message':
        report_string = 'SP:'+str(round(session_profit, 2))+'>CE:'+str(round(CURRENT_EXPOSURE, 4))+'>W:'+str(win_trade_count)+'>L:'+str(loss_trade_count)+'>IG:'+str(round(INVESTMENT_GAIN, 4))+'%'+'>IT:'+str(round(INVESTMENT, 4))+'>NB:'+str(round(NEW_BALANCE, 4))+'>IV:'+str(round(investment_value, 4))+str(exchange_symbol)+'>IGV:'+str(round(investment_value_gain, 4))+'>IVP:'+str(round(investment_value_gain, 4))
