@@ -93,6 +93,7 @@ trading_options:
 
  #MODS SETTINGS_STRING
   PAUSEBOTMOD_THRESHOLD: 14
+  SIGNALSAMPLEMOD_THRESHOLD : 18
 
  #sort list by volume or price_change
   SORT_LIST_TYPE: volume
