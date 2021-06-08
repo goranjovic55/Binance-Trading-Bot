@@ -79,7 +79,9 @@ session_profit = 0
 unrealised_percent = 0
 
 #gogo MOD WIN/LOSS COunter and global dynamic stoploss and takeprofit and trailing takeprofit etc
-global win_trade_count, loss_trade_count
+global win_trade_count, loss_trade_count, market_support, market_resistance
+market_support = 0
+market_resistance = 0
 win_trade_count = 0
 loss_trade_count = 0
 
@@ -173,10 +175,11 @@ def wait_for_price(type):
     '''calls the initial price and ensures the correct amount of time has passed
     before reading the current price again'''
 
+    global historical_prices, hsp_head, volatility_cooloff, market_support, market_resistance
+
     market_resistance = 0
     market_support = 0
 
-    global historical_prices, hsp_head, volatility_cooloff
     volatile_coins = {}
     externals = {}
 
@@ -660,6 +663,14 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
         CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN']
         print(f'{txcolors.NOTICE}>> DYNAMIC SETTINGS RESET - STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}CIP:{CHANGE_IN_PRICE_MIN:.4f}/{CHANGE_IN_PRICE_MAX:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} <<{txcolors.DEFAULT}')
         dynamic = 'none'
+
+     if CHANGE_IN_PRICE_MIN > 0:
+        CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN'] - (CHANGE_IN_PRICE_MIN * market_support)
+        CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX'] - (CHANGE_IN_PRICE_MAX * market_support)
+
+     if CHANGE_IN_PRICE_MAX < 0:
+        CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN'] + (CHANGE_IN_PRICE_MIN * market_support)
+        CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX'] + (CHANGE_IN_PRICE_MAX * market_support)
 
     return STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN
 
