@@ -91,6 +91,9 @@ trading_options:
  #mix % and signals for Buying
   PERCENT_SIGNAL_BUY: True
 
+ #MODS SETTINGS_STRING
+  PAUSEBOTMOD_THRESHOLD: 14
+
  #sort list by volume or price_change
   SORT_LIST_TYPE: volume
 

@@ -17,9 +17,9 @@ INTERVAL = Interval.INTERVAL_1_MINUTE #Timeframe for analysis
 
 EXCHANGE = 'BINANCE'
 SCREENER = 'CRYPTO'
-SYMBOL = parsed_config['trading_options']['EXCHANGE']
+SYMBOL = parsed_config['trading_options']['PAIR_WITH'] + 'USDT'
 TYPE = 'SELL'
-THRESHOLD = 7 # 7 of 15 MA's indicating sell
+THRESHOLD = parsed_config['trading_options']['PAUSEBOTMOD_THRESHOLD'] # 7 of 15 MA's indicating sell
 TIME_TO_WAIT = parsed_config['trading_options']['TIME_DIFFERENCE'] # Minutes to wait between analysis
 FULL_LOG = parsed_config['trading_options']['VERBOSE_MODE'] # List analysis result to console
 
