@@ -35,8 +35,6 @@ trading_options:
     - GBPUSDT
     - JPYUSDT
     - USDUSDT
-    - DOWN
-    - UP
 
   # Maximum number of trade 'slots' at any time (your USDT balance must be at least TRADE_SLOTS * QUANTITY)
   TRADE_SLOTS: 3
