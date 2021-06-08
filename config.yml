@@ -35,11 +35,9 @@ trading_options:
     - GBPUSDT
     - JPYUSDT
     - USDUSDT
-    - DOWN
-    - UP
 
   # Maximum number of trade 'slots' at any time (your USDT balance must be at least TRADE_SLOTS * QUANTITY)
-  TRADE_SLOTS: 16
+  TRADE_SLOTS: 1
 
   # the amount of time in MINUTES to calculate the difference from the current price (minimum: 1).
   TIME_DIFFERENCE: 1
@@ -49,8 +47,8 @@ trading_options:
   RECHECK_INTERVAL: 9
 
   # the difference in % between the first and second checks for the price.
-  CHANGE_IN_PRICE_MIN: 0.1
-  CHANGE_IN_PRICE_MAX: 5
+  CHANGE_IN_PRICE_MIN: -1.9
+  CHANGE_IN_PRICE_MAX: -0.9
 
   # define in % when to sell a coin that's not making a profit.
   STOP_LOSS: 0.2
@@ -89,7 +87,7 @@ trading_options:
   STOP_LOSS_ON_PAUSE: False
 
  #mix % and signals for Buying
-  PERCENT_SIGNAL_BUY: False
+  PERCENT_SIGNAL_BUY: True
 
  #MODS SETTINGS_STRING
   PAUSEBOTMOD_THRESHOLD: 14
