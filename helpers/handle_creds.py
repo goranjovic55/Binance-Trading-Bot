@@ -2,7 +2,7 @@ def load_correct_creds(creds):
     return creds['prod']['access_key'], creds['prod']['secret_key']
 
 def load_telegram_creds(creds):
-    return creds['telegram']['TELEGRAM_BOT_TOKEN'], creds['telegram']['TELEGRAM_BOT_ID']
+    return creds['telegram']['TELEGRAM_BOT_TOKEN'], creds['telegram']['TELEGRAM_BOT_ID'], creds['telegram']['DISCORD_WEBHOOK']
 
 
 def test_api_key(client, BinanceAPIException):

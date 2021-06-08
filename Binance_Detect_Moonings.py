@@ -630,6 +630,12 @@ def report(type, reportline):
           send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
           response = requests.get(send_text)
 
+        #Webhook of my channel. Click on edit channel --> Webhooks --> Creates webhook
+       mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
+       data = {"content": bot_message}
+       response = requests.post(mUrl, json=data)
+       print(response.content)
+
 #function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
 def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN):
 
@@ -669,8 +675,8 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
          CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX'] - (CHANGE_IN_PRICE_MAX * market_support)
 
       if CHANGE_IN_PRICE_MAX < 0:
-         CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN'] + (CHANGE_IN_PRICE_MIN * market_support)
-         CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX'] + (CHANGE_IN_PRICE_MAX * market_support)
+        CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN'] + (CHANGE_IN_PRICE_MIN * market_support)
+        CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX'] + (CHANGE_IN_PRICE_MAX * market_support)
 
     return STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN
 
@@ -853,7 +859,7 @@ if __name__ == '__main__':
     # Telegram_Bot enabled? # **added by*Coding60plus
 
     if TELEGRAM_BOT:
-       TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID = load_telegram_creds(parsed_creds)
+       TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
 
     # Telegram_Bot enabled? # **added by*Coding60plus
     if DEBUG:
