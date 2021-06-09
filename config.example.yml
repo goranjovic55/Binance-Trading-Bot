@@ -12,7 +12,7 @@ script_options:
   AMERICAN_USER: False
 
 # gogos MOD Telegram bot integration
-  TELEGRAM_BOT: True # **added/changed by Coding60plus
+  BOT_MESSAGE_REPORTS: True # **added/changed by Coding60plus
 
 # These options apply to the trading methods the script executes
 trading_options:

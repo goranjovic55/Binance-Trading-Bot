@@ -10,7 +10,7 @@ test:
 
 #creds for telegrambot
 telegram:
-        TELEGRAM_BOT_TOKEN: '1234567890:ABCDEFGIJKLMNOPZ-UVQWZX'
-        TELEGRAM_BOT_ID: '123456789'
+        TELEGRAM_BOT_TOKEN: ''
+        TELEGRAM_BOT_ID: ''
 discord:
         DISCORD_WEBHOOK: ''

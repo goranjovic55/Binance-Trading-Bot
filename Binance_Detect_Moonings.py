@@ -622,7 +622,7 @@ def report(type, reportline):
 
        bot_message = SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
-       if TELEGRAM_BOT:
+       if TELEGRAM_BOT_TOKEN:
           bot_token = TELEGRAM_BOT_TOKEN
           bot_chatID = TELEGRAM_BOT_ID
 
@@ -630,11 +630,12 @@ def report(type, reportline):
           send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
           response = requests.get(send_text)
 
-        #Webhook of my channel. Click on edit channel --> Webhooks --> Creates webhook
-       mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
-       data = {"content": bot_message}
-       response = requests.post(mUrl, json=data)
-       print(response.content)
+       if DISCORD_WEBHOOK:
+          #Webhook of my channel. Click on edit channel --> Webhooks --> Creates webhook
+          mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
+          data = {"content": bot_message}
+          response = requests.post(mUrl, json=data)
+          print(response.content)
 
 #function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
 def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN):
@@ -822,7 +823,7 @@ if __name__ == '__main__':
     LOG_FILE = parsed_config['script_options'].get('LOG_FILE')
     DEBUG_SETTING = parsed_config['script_options'].get('DEBUG')
     AMERICAN_USER = parsed_config['script_options'].get('AMERICAN_USER')
-    TELEGRAM_BOT =  parsed_config['script_options'].get('TELEGRAM_BOT')
+    BOT_MESSAGE_REPORTS =  parsed_config['script_options'].get('BOT_MESSAGE_REPORTS')
 
     # Load trading vars
     PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
@@ -858,7 +859,7 @@ if __name__ == '__main__':
 
     # Telegram_Bot enabled? # **added by*Coding60plus
 
-    if TELEGRAM_BOT:
+    if BOT_MESSAGE_REPORTS:
        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
 
     # Telegram_Bot enabled? # **added by*Coding60plus
