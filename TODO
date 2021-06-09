@@ -7,7 +7,6 @@ add write log to report function as log type
 add % investment value profit in current session (cumulative trading + market coin hodl and rebalance)!!!
 us version has BNBETH key issues check that
 add copying of tickers that are recreated to signalsample and reloading
-implement discord with bot id to do automatic testing
 add session runtime or uptime
 add cip to info if dynamics are on so we see in realtime what exchange_symbol
 add % amplifying for cip market resistance and support calculations
