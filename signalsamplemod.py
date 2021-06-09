@@ -61,12 +61,14 @@ def analyze(pairs):
             first_analysis = first_handler[pair].get_analysis()
             second_analysis = second_handler[pair].get_analysis()
         except Exception as e:
-                    print("Signalsample:")
-                    print("Exception:")
-                    print(e)
-                    print (f'Coin: {pair}')
-                    print (f'First handler: {first_handler[pair]}')
-                    print (f'Second handler: {second_handler[pair]}')
+#                    print("Signalsample:")
+#                    print("Exception:")
+#                    print(e)
+#                    print (f'Coin: {pair}')
+#                    print (f'First handler: {first_handler[pair]}')
+#                    print (f'Second handler: {second_handler[pair]}')
+#                    print('')
+                    dont_print_on_exception = True
                     tacheckS = 0
 
         first_tacheck = first_analysis.summary['BUY']

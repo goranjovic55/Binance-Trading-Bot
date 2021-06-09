@@ -90,11 +90,11 @@ trading_options:
   STOP_LOSS_ON_PAUSE: False
 
  #mix % and signals for Buying
-  PERCENT_SIGNAL_BUY: False
+  PERCENT_SIGNAL_BUY: True
 
  #MODS SETTINGS_STRING
   PAUSEBOTMOD_THRESHOLD: 14
-  SIGNALSAMPLEMOD_THRESHOLD : 17
+  SIGNALSAMPLEMOD_THRESHOLD : 1
 
  #sort list by volume or price_change
   SORT_LIST_TYPE: volume

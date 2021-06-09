@@ -760,9 +760,16 @@ def tickers_list(type):
 
 # get all info on tickers from binance
     tickers_binance = client.get_ticker()
+    tickers_pairwith = {}
+    tickers_new = {}
 
 #create list with voleume and change in price on our pairs
     for coin in tickers_binance:
+
+        if PAIR_WITH in coin['symbol']:
+           tickers_pairwith[coin['symbol']] = coin['symbol']
+           if tickers_pairwith[coin['symbol']].endswith(PAIR_WITH):
+              tickers_new[coin['symbol']] = tickers_pairwith[coin['symbol']]
 
         if CUSTOM_LIST:
            if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in FIATS):
@@ -777,6 +784,15 @@ def tickers_list(type):
 #sort tickers by descending order volume and price
     list_tickers_volume = list(sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True))
     list_tickers_price_change = list(sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True))
+    list_tickers_new = list(tickers_new)
+
+    if type == 'create':
+
+       with open (TICKERS_LIST, 'w') as f:
+            for ele in list_tickers_new:
+               f.writelines(str(ele.replace(PAIR_WITH,''))+'\n')
+       tickers_list_changed = True
+       print(f'>> Tickers CREATED from binance tickers!!!{TICKERS_LIST} <<')
 
     if type == 'volume' and CUSTOM_LIST:
     #write sorted lists to files
@@ -949,7 +965,8 @@ if __name__ == '__main__':
     session('load')
 
 #sort tickers list by volume
-    tickers_list(SORT_LIST_TYPE)
+    tickers_list('create')
+    tickers_list('volume')
 
     while True:
 

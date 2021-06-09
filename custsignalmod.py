@@ -53,11 +53,13 @@ def analyze(pairs):
         try:
             analysis = handler[pair].get_analysis()
         except Exception as e:
-            print("Signalsample:")
-            print("Exception:")
-            print(e)
-            print (f'Coin: {pair}')
-            print (f'handler: {handler[pair]}')
+#            print("Signalsample:")
+#            print("Exception:")
+#            print(e)
+#            print (f'Coin: {pair}')
+#            print (f'handler: {handler[pair]}')
+#             print('')
+             dont_print_on_exception = True
 
         oscCheck=0
         maCheck=0
