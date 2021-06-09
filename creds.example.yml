@@ -12,5 +12,7 @@ test:
 telegram:
         TELEGRAM_BOT_TOKEN: ''
         TELEGRAM_BOT_ID: ''
+        
+#this is used to give bot performance to discord channel
 discord:
-        DISCORD_WEBHOOK: ''
+        DISCORD_WEBHOOK: '/852094287763472385/GbKS-0n-EvNUcl6iekXIp-XJI5g0wRee1zrMg_94Jkacx9r6cuDE6L2D0BT-2Tu554MF'
