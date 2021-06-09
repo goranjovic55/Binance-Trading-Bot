@@ -763,29 +763,6 @@ def tickers_list(type):
     tickers_pairwith = {}
     tickers_new = {}
 
-#create list with voleume and change in price on our pairs
-    for coin in tickers_binance:
-
-        if PAIR_WITH in coin['symbol']:
-           tickers_pairwith[coin['symbol']] = coin['symbol']
-           if tickers_pairwith[coin['symbol']].endswith(PAIR_WITH):
-              tickers_new[coin['symbol']] = tickers_pairwith[coin['symbol']]
-
-        if CUSTOM_LIST:
-           if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in FIATS):
-              tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
-              tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
-
-        else:
-           if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in FIATS):
-              tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
-              tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
-
-#sort tickers by descending order volume and price
-    list_tickers_volume = list(sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True))
-    list_tickers_price_change = list(sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True))
-    list_tickers_new = list(tickers_new)
-
 #pull coins from trading view and create a list
     if type == 'create_ta':
 
@@ -808,6 +785,30 @@ def tickers_list(type):
                f.writelines(str(ele.replace(PAIR_WITH,''))+'\n')
        tickers_list_changed = True
        print(f'>> Tickers CREATED from binance tickers!!!{TICKERS_LIST} <<')
+
+    if type == 'volume' or type == 'price_change':
+#       create list with voleume and change in price on our pairs
+           for coin in tickers_binance:
+
+               if PAIR_WITH in coin['symbol']:
+                  tickers_pairwith[coin['symbol']] = coin['symbol']
+                  if tickers_pairwith[coin['symbol']].endswith(PAIR_WITH):
+                     tickers_new[coin['symbol']] = tickers_pairwith[coin['symbol']]
+
+               if CUSTOM_LIST:
+                  if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in FIATS):
+                     tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
+                     tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
+
+               else:
+                  if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in FIATS):
+                     tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
+                     tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
+
+       #sort tickers by descending order volume and price
+           list_tickers_volume = list(sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True))
+           list_tickers_price_change = list(sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True))
+           list_tickers_new = list(tickers_new)
 
     if type == 'volume' and CUSTOM_LIST:
     #write sorted lists to files
@@ -912,6 +913,11 @@ if __name__ == '__main__':
     if api_ready is not True:
        exit(f'{txcolors.SELL_LOSS}{msg}{txcolors.DEFAULT}')
 
+    #sort tickers list by volume
+    if LIST_AUTOCREATE:
+       tickers_list('create_ta')
+       tickers=[line.strip() for line in open(TICKERS_LIST)]
+
     # Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
     if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]
 
@@ -959,12 +965,6 @@ if __name__ == '__main__':
         except:
             if DEBUG: print(f'{txcolors.WARNING}Could not remove external signalling file {filename}{txcolors.DEFAULT}')
 
-    #sort tickers list by volume
-    if LIST_AUTOCREATE:
-       tickers_list('create_ta')
-       tickers=[line.strip() for line in open(TICKERS_LIST)]
-
-
     # load signalling modules
     try:
         if len(SIGNALLING_MODULES) > 0:
@@ -985,6 +985,8 @@ if __name__ == '__main__':
 
 #load previous session stuff
     session('load')
+
+    tickers_list('volume')
 
     while True:
 
