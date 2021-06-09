@@ -278,8 +278,8 @@ def wait_for_price(type):
         else:
             coins_unchanged +=1
 
-    market_resistance = market_resistance / coins_up
-    market_support = market_support / coins_down
+    if coins_up != 0: maket_resistance = market_resistance / coins_up
+    if coins_down != 0: market_support = market_support / coins_down
 
     report('console', f" MR:{market_resistance:.4f}/MS:{market_support:.4f} ")
 
@@ -622,7 +622,7 @@ def report(type, reportline):
 
        bot_message = BOT_ID + SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
-       if TELEGRAM_BOT_TOKEN:
+       if BOT_MESSAGE_REPORTS and TELEGRAM_BOT_TOKEN:
           bot_token = TELEGRAM_BOT_TOKEN
           bot_chatID = TELEGRAM_BOT_ID
 
@@ -630,7 +630,7 @@ def report(type, reportline):
           send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
           response = requests.get(send_text)
 
-       if DISCORD_WEBHOOK:
+       if BOT_MESSAGE_REPORTS and DISCORD_WEBHOOK:
           #Webhook of my channel. Click on edit channel --> Webhooks --> Creates webhook
           mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
           data = {"content": bot_message}
