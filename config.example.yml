@@ -15,7 +15,7 @@ script_options:
   BOT_MESSAGE_REPORTS: True # **added/changed by Coding60plus
 
 #Bot id for BOT_MESSAGE_REPORTS
-  BOT_ID: 'gogo >>'
+  BOT_ID: 'gogo_LCR >>'
 
 # These options apply to the trading methods the script executes
 trading_options:

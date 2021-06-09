@@ -792,10 +792,11 @@ def tickers_list(type):
        response = requests.get('https://scanner.tradingview.com/crypto/scan')
        ta_data = response.json()
        signals_file = open(TICKERS_LIST,'w')
-       for i in ta_data['data']:
-          if i['s'][:7]=='BINANCE' and i['s'][-len(PAIR_WITH):] == PAIR_WITH and (i['s'][-len(PAIR_WITH)-2:-len(PAIR_WITH)]) != 'UP' and (i['s'][-len(PAIR_WITH)-4:-len(PAIR_WITH)]) != 'DOWN':
-            signals_file.write(i['s'][8:] + '\n')
-       signals_file.close()
+
+       with open (TICKERS_LIST, 'w') as f:
+           for i in ta_data['data']:
+              if i['s'][:7]=='BINANCE' and i['s'][-len(PAIR_WITH):] == PAIR_WITH and (i['s'][-len(PAIR_WITH)-2:-len(PAIR_WITH)]) != 'UP' and (i['s'][-len(PAIR_WITH)-4:-len(PAIR_WITH)]) != 'DOWN':
+                 f.writelines(str(i['s'][8:].replace(PAIR_WITH,''))+'\n')
        tickers_list_changed = True
        print(f'>> Tickers CREATED from TradingView tickers!!!{TICKERS_LIST} <<')
 
@@ -958,6 +959,12 @@ if __name__ == '__main__':
         except:
             if DEBUG: print(f'{txcolors.WARNING}Could not remove external signalling file {filename}{txcolors.DEFAULT}')
 
+    #sort tickers list by volume
+    if LIST_AUTOCREATE:
+       tickers_list('create_ta')
+       tickers=[line.strip() for line in open(TICKERS_LIST)]
+
+
     # load signalling modules
     try:
         if len(SIGNALLING_MODULES) > 0:
@@ -978,12 +985,6 @@ if __name__ == '__main__':
 
 #load previous session stuff
     session('load')
-
-#sort tickers list by volume
-    if LIST_AUTOCREATE:
-       tickers_list('create_ta')
-
-    tickers_list('volume')
 
     while True:
 
