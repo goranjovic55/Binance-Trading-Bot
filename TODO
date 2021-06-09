@@ -11,6 +11,5 @@ implement discord with bot id to do automatic testing
 add session runtime or uptime
 add cip to info if dynamics are on so we see in realtime what exchange_symbol
 add % amplifying for cip market resistance and support calculations
-implement bot id and separate discord from TELEGRAM_BOT_TOKEN
 add runtime/uptime
 add number of restarts
