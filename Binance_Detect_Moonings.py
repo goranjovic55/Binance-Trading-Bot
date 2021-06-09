@@ -786,7 +786,21 @@ def tickers_list(type):
     list_tickers_price_change = list(sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True))
     list_tickers_new = list(tickers_new)
 
-    if type == 'create':
+#pull coins from trading view and create a list
+    if type == 'create_ta':
+
+       response = requests.get('https://scanner.tradingview.com/crypto/scan')
+       ta_data = response.json()
+       signals_file = open(TICKERS_LIST,'w')
+       for i in ta_data['data']:
+          if i['s'][:7]=='BINANCE' and i['s'][-len(PAIR_WITH):] == PAIR_WITH and (i['s'][-len(PAIR_WITH)-2:-len(PAIR_WITH)]) != 'UP' and (i['s'][-len(PAIR_WITH)-4:-len(PAIR_WITH)]) != 'DOWN':
+            signals_file.write(i['s'][8:] + '\n')
+       signals_file.close()
+       tickers_list_changed = True
+       print(f'>> Tickers CREATED from TradingView tickers!!!{TICKERS_LIST} <<')
+
+#pull coins from binance and create list
+    if type == 'create_b':
 
        with open (TICKERS_LIST, 'w') as f:
             for ele in list_tickers_new:
@@ -967,7 +981,7 @@ if __name__ == '__main__':
 
 #sort tickers list by volume
     if LIST_AUTOCREATE:
-       tickers_list('create')
+       tickers_list('create_ta')
 
     tickers_list('volume')
 
