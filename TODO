@@ -8,7 +8,6 @@ add % investment value profit in current session (cumulative trading + market co
 us version has BNBETH key issues check that
 add copying of tickers that are recreated to signalsample and reloading
 add session runtime or uptime
-add cip to info if dynamics are on so we see in realtime what exchange_symbol
 add % amplifying for cip market resistance and support calculations
 add runtime/uptime
 add number of restarts
