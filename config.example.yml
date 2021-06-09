@@ -97,6 +97,7 @@ trading_options:
  SIGNALSAMPLEMOD_THRESHOLD : 18
 
  #sort list by volume or price_change
+  LIST_AUTOCREATE: True
   SORT_LIST_TYPE: volume
 
   SIGNALLING_MODULES:

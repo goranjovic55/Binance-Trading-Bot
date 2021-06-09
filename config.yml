@@ -51,7 +51,7 @@ trading_options:
 
   # the difference in % between the first and second checks for the price.
   CHANGE_IN_PRICE_MIN: -1.9
-  CHANGE_IN_PRICE_MAX: -0.1
+  CHANGE_IN_PRICE_MAX: -0.9
 
   # define in % when to sell a coin that's not making a profit.
   STOP_LOSS: 0.2
@@ -94,9 +94,10 @@ trading_options:
 
  #MODS SETTINGS_STRING
   PAUSEBOTMOD_THRESHOLD: 14
-  SIGNALSAMPLEMOD_THRESHOLD : 1
+  SIGNALSAMPLEMOD_THRESHOLD : 17
 
  #sort list by volume or price_change
+  LIST_AUTOCREATE: True
   SORT_LIST_TYPE: volume
 
   SIGNALLING_MODULES:

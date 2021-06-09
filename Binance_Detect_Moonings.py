@@ -866,6 +866,7 @@ if __name__ == '__main__':
     STOP_LOSS_ON_PAUSE = parsed_config['trading_options']['STOP_LOSS_ON_PAUSE']
     PERCENT_SIGNAL_BUY = parsed_config['trading_options']['PERCENT_SIGNAL_BUY']
     SORT_LIST_TYPE = parsed_config['trading_options']['SORT_LIST_TYPE']
+    LIST_AUTOCREATE = parsed_config['trading_options']['LIST_AUTOCREATE']
 
     QUANTITY = INVESTMENT/TRADE_SLOTS
 
@@ -965,7 +966,9 @@ if __name__ == '__main__':
     session('load')
 
 #sort tickers list by volume
-    tickers_list('create')
+    if LIST_AUTOCREATE:
+       tickers_list('create')
+
     tickers_list('volume')
 
     while True:
