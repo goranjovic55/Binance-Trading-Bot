@@ -13,7 +13,8 @@ script_options:
 
 # gogos MOD Telegram bot integration
   BOT_MESSAGE_REPORTS: True # **added/changed by Coding60plus
-
+# Reporting style, use 'fancy' for more verbose reporting of results
+  REPORT_STYLE: fancy
 #Bot id for BOT_MESSAGE_REPORTS
   BOT_ID: '>>'
 
