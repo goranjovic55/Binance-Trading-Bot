@@ -618,16 +618,7 @@ def report(type, reportline):
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
        print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol}> {reportline} <<{txcolors.DEFAULT}")
-
-    if type == 'message':
-       report_string = 'SP:'+str(round(session_profit, 2))+'>CE:'+str(round(CURRENT_EXPOSURE, 4))+'>W:'+str(win_trade_count)+'>L:'+str(loss_trade_count)+'>IG:'+str(round(INVESTMENT_GAIN, 4))+'%'+'>IT:'+str(round(INVESTMENT, 4))+'>NB:'+str(round(NEW_BALANCE, 4))+'>IV:'+str(round(investment_value, 4))+str(exchange_symbol)+'>IGV:'+str(round(investment_value_gain, 4))+'>IVP:'+str(round(investment_value_gain, 4))
-
-       bot_message = BOT_ID + SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
-
-       if BOT_MESSAGE_REPORTS and TELEGRAM_BOT_TOKEN:
-          bot_token = TELEGRAM_BOT_TOKEN
-          bot_chatID = TELEGRAM_BOT_ID
-        
+    
     #More fancy/verbose report style
     if type == 'fancy':
        print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. << \n"
@@ -644,16 +635,25 @@ def report(type, reportline):
        ,f"Investment Value Gain:  {txcolors.SELL_PROFIT if investment_value_gain >= 0 else txcolors.SELL_LOSS}{investment_value_gain:.{decimals()}f} USDT\n"
        ,f"{reportline} {txcolors.DEFAULT}")
     
-#       print(f'Bot Token: {TELEGRAM_BOT_TOKEN} Bot ID: {TELEGRAM_BOT_ID}')
-          send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
-          response = requests.get(send_text)
+    if type == 'message':
+       if BOT_MESSAGE_REPORTS:
 
-       if BOT_MESSAGE_REPORTS and DISCORD_WEBHOOK:
-          #Webhook of my channel. Click on edit channel --> Webhooks --> Creates webhook
-          mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
-          data = {"content": bot_message}
-          response = requests.post(mUrl, json=data)
-          print(response.content)
+          report_string = 'SP:'+str(round(session_profit, 2))+'>CE:'+str(round(CURRENT_EXPOSURE, 4))+'>W:'+str(win_trade_count)+'>L:'+str(loss_trade_count)+'>IG:'+str(round(INVESTMENT_GAIN, 4))+'%'+'>IT:'+str(round(INVESTMENT, 4))+'>NB:'+str(round(NEW_BALANCE, 4))+'>IV:'+str(round(investment_value, 4))+str(exchange_symbol)+'>IGV:'+str(round(investment_value_gain, 4))+'>IVP:'+str(round(investment_value_gain, 4))
+
+          bot_message = BOT_ID + SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
+
+          if TELEGRAM_BOT_TOKEN:
+             bot_token = TELEGRAM_BOT_TOKEN
+             bot_chatID = TELEGRAM_BOT_ID
+             send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
+             response = requests.get(send_text)
+
+          if DISCORD_WEBHOOK:
+             #Webhook of my channel. Click on edit channel --> Webhooks --> Creates webhook
+             mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
+             data = {"content": bot_message}
+             response = requests.post(mUrl, json=data)
+             print(response.content)
 
 #function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
 def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN):
@@ -910,7 +910,7 @@ if __name__ == '__main__':
     LIST_AUTOCREATE = parsed_config['trading_options']['LIST_AUTOCREATE']
     LIST_CREATE_TYPE = parsed_config['trading_options']['LIST_CREATE_TYPE']
     IGNORE_LIST = parsed_config['trading_options']['IGNORE_LIST']
-    REPORT_STYLE = parsed_config['script_options']['REPORT_SYLE']
+    REPORT_STYLE = parsed_config['script_options']['REPORT_STYLE']
     
     QUANTITY = INVESTMENT/TRADE_SLOTS
 
