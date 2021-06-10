@@ -12,7 +12,7 @@ script_options:
   AMERICAN_USER: False
 
 # gogos MOD Telegram bot integration
-  BOT_MESSAGE_REPORTS: False # **added/changed by Coding60plus
+  BOT_MESSAGE_REPORTS: True # **added/changed by Coding60plus
 
 #Bot id for BOT_MESSAGE_REPORTS
   BOT_ID: '>>'
@@ -40,7 +40,7 @@ trading_options:
     - USDUSDT
 
   # Maximum number of trade 'slots' at any time (your USDT balance must be at least TRADE_SLOTS * QUANTITY)
-  TRADE_SLOTS: 1
+  TRADE_SLOTS: 30
 
   # the amount of time in MINUTES to calculate the difference from the current price (minimum: 1).
   TIME_DIFFERENCE: 1
@@ -104,8 +104,8 @@ trading_options:
   SIGNALLING_MODULES:
 
     - pausebotmod
-    - custsignalmod
-    - signalsamplemod
+#    - custsignalmod
+#    - signalsamplemod
     - rsi_signalmod_nigec
     - rsi_stoch_signalmod_djcommie
     - ta_indicator_signalmod_firewatch
