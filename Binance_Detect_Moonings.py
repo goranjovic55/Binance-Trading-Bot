@@ -910,7 +910,7 @@ if __name__ == '__main__':
     LIST_AUTOCREATE = parsed_config['trading_options']['LIST_AUTOCREATE']
     LIST_CREATE_TYPE = parsed_config['trading_options']['LIST_CREATE_TYPE']
     IGNORE_LIST = parsed_config['trading_options']['IGNORE_LIST']
-    REPORT_STYLE = parsed_config['trading_options']['REPORT_SYLE']
+    REPORT_STYLE = parsed_config['script_options']['REPORT_SYLE']
     
     QUANTITY = INVESTMENT/TRADE_SLOTS
 
