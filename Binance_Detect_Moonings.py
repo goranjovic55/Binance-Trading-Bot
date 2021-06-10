@@ -281,7 +281,9 @@ def wait_for_price(type):
     if coins_up != 0: maket_resistance = market_resistance / coins_up
     if coins_down != 0: market_support = market_support / coins_down
 
-    report('console', f" MR:{market_resistance:.4f}/MS:{market_support:.4f} ")
+    if REPORT_STYLE == 'fancy' and hsp_head == 1:
+      report('fancy',f"Market Resistance:      {txcolors.DEFAULT}{market_resistance:.4f}\n Market Support:         {txcolors.DEFAULT}{market_support:.4f}")
+    else: report('console', f" MR:{market_resistance:.4f}/MS:{market_support:.4f} ")
 
     return volatile_coins, len(volatile_coins), historical_prices[hsp_head]
 
@@ -625,7 +627,23 @@ def report(type, reportline):
        if BOT_MESSAGE_REPORTS and TELEGRAM_BOT_TOKEN:
           bot_token = TELEGRAM_BOT_TOKEN
           bot_chatID = TELEGRAM_BOT_ID
-
+        
+    #More fancy/verbose report style
+    if type == 'fancy':
+       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. << \n"
+       ,f"Profit on unsold coins: {txcolors.SELL_PROFIT if UNREALISED_PERCENT >= 0 else txcolors.SELL_LOSS}{UNREALISED_PERCENT:.2f}%\n"
+       ,f"Session Pofit:          {txcolors.SELL_PROFIT if session_profit >= 0 else txcolors.SELL_LOSS}{session_profit:.2f}%\n"
+       ,f"Est. total gains:       {txcolors.SELL_PROFIT if TOTAL_GAINS >= 0 else txcolors.SELL_LOSS}{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}\n"
+       ,f"Trades won:             {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{win_trade_count}\n"
+       ,f"Trades lost:            {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{loss_trade_count}\n"
+       ,f"Investment:             {txcolors.DEFAULT}{INVESTMENT:.{decimals()}f} {PAIR_WITH}\n"
+       ,f"Current Exposure:       {txcolors.DEFAULT}{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}\n"
+       ,f"New Balance:            {txcolors.SELL_PROFIT if NEW_BALANCE >= INVESTMENT else txcolors.SELL_LOSS}{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}\n"
+       ,f"Initial Investment:     {txcolors.SELL_PROFIT if investment_value >= INVESTMENT else txcolors.SELL_LOSS}{investment_value:.2f} USDT\n"
+       ,f"Investment Gain:        {txcolors.SELL_PROFIT if INVESTMENT_GAIN >= 0 else txcolors.SELL_LOSS}{INVESTMENT_GAIN:.2f}%\n"
+       ,f"Investment Value Gain:  {txcolors.SELL_PROFIT if investment_value_gain >= 0 else txcolors.SELL_LOSS}{investment_value_gain:.{decimals()}f} USDT\n"
+       ,f"{reportline} {txcolors.DEFAULT}")
+    
 #       print(f'Bot Token: {TELEGRAM_BOT_TOKEN} Bot ID: {TELEGRAM_BOT_ID}')
           send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
           response = requests.get(send_text)
@@ -892,7 +910,8 @@ if __name__ == '__main__':
     LIST_AUTOCREATE = parsed_config['trading_options']['LIST_AUTOCREATE']
     LIST_CREATE_TYPE = parsed_config['trading_options']['LIST_CREATE_TYPE']
     IGNORE_LIST = parsed_config['trading_options']['IGNORE_LIST']
-
+    REPORT_STYLE = parsed_config['trading_options']['REPORT_SYLE']
+    
     QUANTITY = INVESTMENT/TRADE_SLOTS
 
     if DEBUG_SETTING or args.debug:
