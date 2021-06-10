@@ -197,12 +197,6 @@ def wait_for_price(type):
 
         time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
 
-#    report('console', '.')
-
-    prehistorical_prices = historical_prices
-
-    print(prehistorical_prices)
-
     # retrieve latest prices
     get_price()
 
