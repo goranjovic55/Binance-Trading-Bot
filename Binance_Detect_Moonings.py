@@ -772,7 +772,7 @@ def tickers_list(type):
 
        with open (TICKERS_LIST, 'w') as f:
            for i in ta_data['data']:
-              if i['s'][:7]=='BINANCE' and i['s'][-len(PAIR_WITH):] == PAIR_WITH and (i['s'][-len(PAIR_WITH)-2:-len(PAIR_WITH)]) != 'UP' and (i['s'][-len(PAIR_WITH)-4:-len(PAIR_WITH)]) != 'DOWN':
+              if i['s'][:7]=='BINANCE' and i['s'][-len(PAIR_WITH):] == PAIR_WITH and (i['s'][-len(PAIR_WITH)-2:-len(PAIR_WITH)]) != 'UP' and (i['s'][-len(PAIR_WITH)-4:-len(PAIR_WITH)]) != 'DOWN' and i['s'][8:-len(PAIR_WITH)] not in ignorelist:
                  f.writelines(str(i['s'][8:].replace(PAIR_WITH,''))+'\n')
        tickers_list_changed = True
        print(f'>> Tickers CREATED from TradingView tickers!!!{TICKERS_LIST} <<')
