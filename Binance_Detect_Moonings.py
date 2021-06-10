@@ -85,7 +85,8 @@ market_resistance = 0
 win_trade_count = 0
 loss_trade_count = 0
 
-global dynamic, sell_all_coins, tickers_list_changed, exchange_symbol
+global dynamic, sell_all_coins, tickers_list_changed, exchange_symbol, price_list_counter
+price_list_counter = 0
 dynamic = 'none'
 sell_all_coins = False
 tickers_list_changed = False
@@ -93,6 +94,7 @@ tickers_list_changed = False
 global CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN
 CURRENT_EXPOSURE = 0
 NEW_BALANCE = 0
+
 
 # print with timestamps
 old_out = sys.stdout
@@ -175,7 +177,7 @@ def wait_for_price(type):
     '''calls the initial price and ensures the correct amount of time has passed
     before reading the current price again'''
 
-    global historical_prices, hsp_head, volatility_cooloff, market_support, market_resistance
+    global historical_prices, prehistorical_prices, hsp_head, volatility_cooloff, market_support, market_resistance
 
     market_resistance = 0
     market_support = 0
@@ -194,8 +196,6 @@ def wait_for_price(type):
         # sleep for exactly the amount of time required
 
         time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
-
-#    report('console', '.')
 
     # retrieve latest prices
     get_price()

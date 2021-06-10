@@ -3,8 +3,7 @@ session_info.json
 test_coins_bought.json
 coins_bought.json
 trades.txt
-signals/custsignalsmod.exs
-signals/paused.exc
+signals/*
 .venv
 __pycache__
 config.yml

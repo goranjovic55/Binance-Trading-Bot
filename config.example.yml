@@ -109,3 +109,6 @@ trading_options:
     - pausebotmod
     - custsignalmod
     - signalsamplemod
+    - rsi_signalmod_nigec
+    - rsi_stoch_signalmod_djcommie
+    - ta_indicator_signalmod_firewatch
