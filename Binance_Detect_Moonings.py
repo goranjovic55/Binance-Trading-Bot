@@ -891,6 +891,7 @@ if __name__ == '__main__':
     SORT_LIST_TYPE = parsed_config['trading_options']['SORT_LIST_TYPE']
     LIST_AUTOCREATE = parsed_config['trading_options']['LIST_AUTOCREATE']
     LIST_CREATE_TYPE = parsed_config['trading_options']['LIST_CREATE_TYPE']
+    IGNORE_LIST = parsed_config['trading_options']['IGNORE_LIST']
 
     QUANTITY = INVESTMENT/TRADE_SLOTS
 
@@ -933,6 +934,9 @@ if __name__ == '__main__':
 
     # Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
     if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]
+    
+    # Load coins to be ignored from file
+    ignorelist=[line.strip() for line in open(IGNORE_LIST)]
 
     # try to load all the coins bought by the bot if the file exists and is not empty
     coins_bought = {}
