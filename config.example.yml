@@ -98,6 +98,7 @@ trading_options:
 
  #sort list by volume or price_change
   LIST_AUTOCREATE: True
+  LIST_CREATE_TYPE: Binance
   SORT_LIST_TYPE: volume
 
   SIGNALLING_MODULES:

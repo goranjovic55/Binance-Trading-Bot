@@ -15,7 +15,7 @@ script_options:
   BOT_MESSAGE_REPORTS: False # **added/changed by Coding60plus
 
 #Bot id for BOT_MESSAGE_REPORTS
-  BOT_ID: 'gogo_LCR>>'
+  BOT_ID: '>>'
 
 # These options apply to the trading methods the script executes
 trading_options:
@@ -40,7 +40,7 @@ trading_options:
     - USDUSDT
 
   # Maximum number of trade 'slots' at any time (your USDT balance must be at least TRADE_SLOTS * QUANTITY)
-  TRADE_SLOTS: 30
+  TRADE_SLOTS: 1
 
   # the amount of time in MINUTES to calculate the difference from the current price (minimum: 1).
   TIME_DIFFERENCE: 1
@@ -50,8 +50,8 @@ trading_options:
   RECHECK_INTERVAL: 6
 
   # the difference in % between the first and second checks for the price.
-  CHANGE_IN_PRICE_MIN: 0.3
-  CHANGE_IN_PRICE_MAX: 0.9
+  CHANGE_IN_PRICE_MIN: -1.9
+  CHANGE_IN_PRICE_MAX: -0.9
 
   # define in % when to sell a coin that's not making a profit.
   STOP_LOSS: 0.2
@@ -90,7 +90,7 @@ trading_options:
   STOP_LOSS_ON_PAUSE: False
 
  #mix % and signals for Buying
-  PERCENT_SIGNAL_BUY: False
+  PERCENT_SIGNAL_BUY: True
 
  #MODS SETTINGS_STRING
   PAUSEBOTMOD_THRESHOLD: 14
@@ -98,10 +98,11 @@ trading_options:
 
  #sort list by volume or price_change
   LIST_AUTOCREATE: True
+  LIST_CREATE_TYPE: tradingview
   SORT_LIST_TYPE: volume
 
   SIGNALLING_MODULES:
 
-#    - pausebotmod
-#    - custsignalmod
-#    - signalsamplemod
+    - pausebotmod
+    - custsignalmod
+    - signalsamplemod
