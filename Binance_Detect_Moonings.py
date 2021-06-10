@@ -890,6 +890,7 @@ if __name__ == '__main__':
     PERCENT_SIGNAL_BUY = parsed_config['trading_options']['PERCENT_SIGNAL_BUY']
     SORT_LIST_TYPE = parsed_config['trading_options']['SORT_LIST_TYPE']
     LIST_AUTOCREATE = parsed_config['trading_options']['LIST_AUTOCREATE']
+    LIST_CREATE_TYPE = parsed_config['trading_options']['LIST_CREATE_TYPE']
 
     QUANTITY = INVESTMENT/TRADE_SLOTS
 
@@ -922,8 +923,13 @@ if __name__ == '__main__':
 
     #sort tickers list by volume
     if LIST_AUTOCREATE:
-       tickers_list('create_b')
-       tickers=[line.strip() for line in open(TICKERS_LIST)]
+       if LIST_CREATE_TYPE == 'binance':
+          tickers_list('create_b')
+          tickers=[line.strip() for line in open(TICKERS_LIST)]
+
+       if LIST_CREATE_TYPE == 'tradingview':
+          tickers_list('create_ta')
+          tickers=[line.strip() for line in open(TICKERS_LIST)]
 
     # Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
     if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]
