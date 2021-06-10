@@ -1,2 +1,0 @@
-LSKETH
-ZILETH
