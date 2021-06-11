@@ -41,7 +41,7 @@ trading_options:
     - USDUSDT
 
   # Maximum number of trade 'slots' at any time (your USDT balance must be at least TRADE_SLOTS * QUANTITY)
-  TRADE_SLOTS: 3
+  TRADE_SLOTS: 1
 
   # the amount of time in MINUTES to calculate the difference from the current price (minimum: 1).
   TIME_DIFFERENCE: 1
@@ -65,7 +65,7 @@ trading_options:
 
   # Name of custom tickers list
   TICKERS_LIST: 'tickers_ETH.txt'
-  
+
   # Name of list that cointains currencies to be ignored
   IGNORE_LIST: 'ignorelist.txt'
 
@@ -100,16 +100,19 @@ trading_options:
   PAUSEBOTMOD_THRESHOLD: 14
   SIGNALSAMPLEMOD_THRESHOLD : 18
 
+# multiplier for HOLDING_TIME_LIMIT wich gives acrtual TIME_DIFFERENCE * HOLDING_TIME_LIMIT_MULTIPLIER when to start lowering STOP_LOSS
+  HOLDING_INTERVAL_LIMIT: 3
+
  #sort list by volume or price_change
   LIST_AUTOCREATE: True
-  LIST_CREATE_TYPE: Binance
+  LIST_CREATE_TYPE: tradingview
   SORT_LIST_TYPE: volume
 
   SIGNALLING_MODULES:
 
     - pausebotmod
-    - custsignalmod
-    - signalsamplemod
+#    - custsignalmod
+#    - signalsamplemod
     - rsi_signalmod_nigec
     - rsi_stoch_signalmod_djcommie
     - ta_indicator_signalmod_firewatch

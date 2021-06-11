@@ -64,7 +64,7 @@ SCREENER = 'CRYPTO'
 PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
 TICKERS = parsed_config['trading_options']['TICKERS_LIST']
 TIME_TO_WAIT = 1 # Minutes to wait between analysis
-FULL_LOG = True # List analysis result to console
+FULL_LOG = False # List analysis result to console
 
 ########################################
 # Do NOT edit settings below these lines
@@ -150,16 +150,16 @@ def analyze(pairs):
           if (BUY_SIGS >= MA_SUMMARY) and (BUY_SIGS2 >= MA_SUMMARY2) and (STOCH_K > STOCH_K1):
             if (oscCheck >= OSC_THRESHOLD and maCheck >= MA_THRESHOLD):
                 signal_coins[pair] = pair
-                print(f'\033[92mSignals RSI: {pair} - Buy Signal Detected | {BUY_SIGS}_{BUY_SIGS2}/26')
+#                print(f'\033[92mSignals RSI: {pair} - Buy Signal Detected | {BUY_SIGS}_{BUY_SIGS2}/26')
                 with open('signals/custsignalmod.exs','a+') as f:
                     f.write(pair + '\n')
-          else:
-            print(f'Signals RSI: {pair} - Stoch/RSI ok, not enough buy signals | {BUY_SIGS}_{BUY_SIGS2}/26 | {STOCH_DIFF}/{RSI_DIFF} | {STOCH_K}')
+#          else:
+#            print(f'Signals RSI: {pair} - Stoch/RSI ok, not enough buy signals | {BUY_SIGS}_{BUY_SIGS2}/26 | {STOCH_DIFF}/{RSI_DIFF} | {STOCH_K}')
 
         if SELL_COINS:
          if (BUY_SIGS < SIGNALS_SELL) and (BUY_SIGS2 < SIGNALS_SELL) and (STOCH_DIFF < STOCH_SELL) and (RSI_DIFF < RSI_SELL) and (STOCH_K < STOCH_K1):
           #signal_coins[pair] = pair
-          print(f'\033[33mSignals RSI: {pair} - Sell Signal Detected | {BUY_SIGS}_{BUY_SIGS2}/26')
+#          print(f'\033[33mSignals RSI: {pair} - Sell Signal Detected | {BUY_SIGS}_{BUY_SIGS2}/26')
           with open('signals/custsignalmod.sell','a+') as f:
              f.write(pair + '\n')
          #else:
@@ -177,7 +177,7 @@ def do_work():
 
     while True:
         if not threading.main_thread().is_alive(): exit()
-        print(f'Signals RSI: Analyzing {len(pairs)} coins')
+#        print(f'Signals RSI: Analyzing {len(pairs)} coins')
         signal_coins = analyze(pairs)
-        print(f'Signals RSI: {len(signal_coins)} coins with Buy Signals. Waiting {TIME_TO_WAIT} minutes for next analysis.')
+#        print(f'Signals RSI: {len(signal_coins)} coins with Buy Signals. Waiting {TIME_TO_WAIT} minutes for next analysis.')
         time.sleep((TIME_TO_WAIT*60))

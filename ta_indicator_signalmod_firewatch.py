@@ -111,14 +111,14 @@ def analyze(pairs):
             (third_recommendation == "BUY" or third_recommendation == "STRONG_BUY"):
                 if first_RSI <= 67 and second_RSI <= 67 and third_RSI <= 67:
                     signal_coins[pair] = pair
-                    print(f'buysellcustsignal: Buy Signal detected on {pair}')
+#                    print(f'buysellcustsignal: Buy Signal detected on {pair}')
                     with open('signals/signalsample.exs','a+') as f:
                         f.write(pair + '\n')
 
         if (first_recommendation == "SELL" or first_recommendation == "STRONG_SELL") and (second_recommendation == "SELL" or second_recommendation == "STRONG_SELL") and \
             (third_recommendation == "SELL" or third_recommendation == "STRONG_SELL"):
                 #signal_coins[pair] = pair
-                print(f'buysellcustsignal: Sell Signal detected on {pair}')
+#                print(f'buysellcustsignal: Sell Signal detected on {pair}')
                 with open('signals/signalsample.sell','a+') as f:
                     f.write(pair + '\n')
 
@@ -136,11 +136,11 @@ def do_work():
         pairs=[line.strip() + PAIR_WITH for line in open(TICKERS)]
 
     while True:
-        print(f'buysellcustsignal: Analyzing {len(pairs)} coins')
+#        print(f'buysellcustsignal: Analyzing {len(pairs)} coins')
         signal_coins = analyze(pairs)
-        if len(signal_coins) == 0:
-            print(f'buysellcustsignal: No coins above {TA_BUY_THRESHOLD} threshold on three timeframes. Waiting {TIME_TO_WAIT} minutes for next analysis')
-        else:
-            print(f'buysellcustsignal: {len(signal_coins)} coins above {TA_BUY_THRESHOLD} treshold on three timeframes. Waiting {TIME_TO_WAIT} minutes for next analysis')
+#        if len(signal_coins) == 0:
+#            print(f'buysellcustsignal: No coins above {TA_BUY_THRESHOLD} threshold on three timeframes. Waiting {TIME_TO_WAIT} minutes for next analysis')
+#        else:
+#            print(f'buysellcustsignal: {len(signal_coins)} coins above {TA_BUY_THRESHOLD} treshold on three timeframes. Waiting {TIME_TO_WAIT} minutes for next analysis')
 
         time.sleep((TIME_TO_WAIT*60))
