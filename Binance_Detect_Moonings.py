@@ -422,7 +422,7 @@ def buy():
                 }]
 
                 # Log trades
-                write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
+                write_log(f"Buy;{volume[coin]};{coin};{last_price[coin]['price']};")
 
                 continue
 
@@ -454,7 +454,7 @@ def buy():
                     print('Order returned, saving order to file')
 
                     # Log trade
-                    write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
+                    write_log(f"Buy;{volume[coin]};{coin};{last_price[coin]['price']};")
 
 
         else:
@@ -530,12 +530,11 @@ def sell_coins():
                 if profit > 0:
                    win_trade_count = win_trade_count + 1
                    dynamic = 'performance_adjust_up'
-                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
+                   write_log(f"Sell;{coins_sold[coin]['volume']};{coin};{BuyPrice:.{8}f};{(coins_sold[coin]['volume'] * BuyPrice):.{8}f};{buyFee:.{8}f};{LastPrice:.{8}f};{(coins_sold[coin]['volume'] * LastPrice):.{8}f};{sellFee:.{8}f};{PriceChange:.{8}f};{profit:.{8}f}")
                 else:
                    loss_trade_count = loss_trade_count + 1
                    dynamic = 'performance_adjust_down'
-                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
-
+                   write_log(f"Sell;{coins_sold[coin]['volume']};{coin};{BuyPrice:.{8}f};{(coins_sold[coin]['volume'] * BuyPrice):.{8}f};{buyFee:.{8}f};{LastPrice:.{8}f};{(coins_sold[coin]['volume'] * LastPrice):.{8}f};{sellFee:.{8}f};{PriceChange:.{8}f};{profit:.{8}f}")
                 # LastPrice (10) - BuyPrice (5) = 5
                 # 5 * coins_sold (1) = 5
                 # 5 * (1-(0.07875)) = 4.60625
@@ -601,7 +600,7 @@ def remove_from_portfolio(coins_sold):
 def write_log(logline):
     timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
     with open(LOG_FILE,'a+') as f:
-        f.write(timestamp + ' ' + logline + '\n')
+        f.write(timestamp + ';' + logline + '\n')
 
 def report(type, reportline):
 
@@ -944,6 +943,10 @@ if __name__ == '__main__':
     
     # Load coins to be ignored from file
     ignorelist=[line.strip() for line in open(IGNORE_LIST)]
+    
+    # Populate headers in trade log file if needed
+    if not os.path.isfile(LOG_FILE):
+      open(LOG_FILE,'w+').write('timestamp;Action;Volume;Coin;BuyPrice;BuyValue;BuyFee;SellPrice;SellValue;SellFee;GrossProfit;NetProfit;\n')
     
     #sort tickers list by volume
     if LIST_AUTOCREATE:
