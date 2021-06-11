@@ -494,8 +494,12 @@ def sell_coins():
             continue
 
         if TL < datetime.now().timestamp():
-           coins_bought[coin]['stop_loss'] = float(coins_bought[coin]['stop_loss']) + (float(coins_bought[coin]['stop_loss']) * 10) / 100
-           print(f'Coin stoploss changed due to max hold time')
+           if PriceChange < 0:
+              coins_bought[coin]['stop_loss'] = float(coins_bought[coin]['stop_loss']) + (float(coins_bought[coin]['stop_loss']) * 10) / 100
+              print(f'Coin stoploss changed due to max hold time')
+           if PriceChange > 0:
+              coins_bought[coin]['stop_loss'] = float(coins_bought[coin]['stop_loss']) - (float(coins_bought[coin]['stop_loss']) * 10) / 100
+              print(f'Coin stoploss changed due to max hold time')
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
         if sell_all_coins == True or LastPrice < SL or LastPrice > TP and not USE_TRAILING_STOP_LOSS:
