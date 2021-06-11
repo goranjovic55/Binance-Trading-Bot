@@ -475,6 +475,7 @@ def sell_coins():
         # define stop loss and take profit
         TP = float(coins_bought[coin]['bought_at']) + (float(coins_bought[coin]['bought_at']) * coins_bought[coin]['take_profit']) / 100
         SL = float(coins_bought[coin]['bought_at']) + (float(coins_bought[coin]['bought_at']) * coins_bought[coin]['stop_loss']) / 100
+        TL = float(coins_bought[coin]['timestamp']) + HOLDING_TIME_LIMIT
 
         LastPrice = float(last_price[coin]['price'])
         # sell fee below would ofc only apply if transaction was closed at the current LastPrice
@@ -491,6 +492,10 @@ def sell_coins():
             coins_bought[coin]['stop_loss'] = coins_bought[coin]['take_profit'] - TRAILING_STOP_LOSS
             if DEBUG: print(f"{coin} TP reached, adjusting TP {coins_bought[coin]['take_profit']:.{decimals()}f}  and SL {coins_bought[coin]['stop_loss']:.{decimals()}f} accordingly to lock-in profit")
             continue
+
+        if TL < datetime.now().timestamp():
+           coins_bought[coin]['stop_loss'] = float(coins_bought[coin]['stop_loss']) + (float(coins_bought[coin]['stop_loss']) * 10) / 100
+           print(f'Coin stoploss changed due to max hold time')
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
         if sell_all_coins == True or LastPrice < SL or LastPrice > TP and not USE_TRAILING_STOP_LOSS:
@@ -619,7 +624,7 @@ def report(type, reportline):
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
        print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol}> {reportline} <<{txcolors.DEFAULT}")
-    
+
     #More fancy/verbose report style
     if type == 'fancy':
        print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. << \n"
@@ -635,7 +640,7 @@ def report(type, reportline):
        ,f"Investment Gain:        {txcolors.SELL_PROFIT if INVESTMENT_GAIN >= 0 else txcolors.SELL_LOSS}{INVESTMENT_GAIN:.2f}%\n"
        ,f"Investment Value Gain:  {txcolors.SELL_PROFIT if investment_value_gain >= 0 else txcolors.SELL_LOSS}{investment_value_gain:.{decimals()}f} USDT\n"
        ,f"{reportline} {txcolors.DEFAULT}")
-    
+
     if type == 'message':
        if BOT_MESSAGE_REPORTS:
 
@@ -912,7 +917,10 @@ if __name__ == '__main__':
     LIST_CREATE_TYPE = parsed_config['trading_options']['LIST_CREATE_TYPE']
     IGNORE_LIST = parsed_config['trading_options']['IGNORE_LIST']
     REPORT_STYLE = parsed_config['script_options']['REPORT_STYLE']
-    
+    HOLDING_INTERVAL_LIMIT = parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
+
+
+    HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60) * HOLDING_TIME_INTERVAL
     QUANTITY = INVESTMENT/TRADE_SLOTS
 
     if DEBUG_SETTING or args.debug:
@@ -941,10 +949,10 @@ if __name__ == '__main__':
     api_ready, msg = test_api_key(client, BinanceAPIException)
     if api_ready is not True:
        exit(f'{txcolors.SELL_LOSS}{msg}{txcolors.DEFAULT}')
-    
+
     # Load coins to be ignored from file
     ignorelist=[line.strip() for line in open(IGNORE_LIST)]
-    
+
     #sort tickers list by volume
     if LIST_AUTOCREATE:
        if LIST_CREATE_TYPE == 'binance':
@@ -957,7 +965,7 @@ if __name__ == '__main__':
 
     # Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
     if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]
-    
+
     # try to load all the coins bought by the bot if the file exists and is not empty
     coins_bought = {}
 
@@ -1019,7 +1027,7 @@ if __name__ == '__main__':
 
     # seed initial prices
     get_price()
-    
+
     READ_TIMEOUT_COUNT=0
     CONNECTION_ERROR_COUNT = 0
     #load previous session stuff
@@ -1041,7 +1049,7 @@ if __name__ == '__main__':
             READ_TIMEOUT_COUNT += 1
             print(f'We got a timeout error from from binance. Going to re-loop. Current Count: {READ_TIMEOUT_COUNT}')
         except ConnectionError as ce:
-            CONNECTION_ERROR_COUNT +=1 
+            CONNECTION_ERROR_COUNT +=1
             print(f'{txcolors.WARNING}We got a timeout error from from binance. Going to re-loop. Current Count: {CONNECTION_ERROR_COUNT}\n{ce}{txcolors.DEFAULT}')
         #gogos MOD to adjust dynamically stoploss trailingstop loss and take profit based on wins
         STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN = dynamic_settings(dynamic, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN)

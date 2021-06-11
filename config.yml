@@ -15,7 +15,9 @@ script_options:
   BOT_MESSAGE_REPORTS: True # **added/changed by Coding60plus
 
 #Bot id for BOT_MESSAGE_REPORTS
-  BOT_ID: '>>'
+  BOT_ID: '#gogo_ETH_CSG_HLD>>'
+
+  REPORT_STYLE: fancy
 
 # These options apply to the trading methods the script executes
 trading_options:
@@ -40,7 +42,7 @@ trading_options:
     - USDUSDT
 
   # Maximum number of trade 'slots' at any time (your USDT balance must be at least TRADE_SLOTS * QUANTITY)
-  TRADE_SLOTS: 30
+  TRADE_SLOTS: 1
 
   # the amount of time in MINUTES to calculate the difference from the current price (minimum: 1).
   TIME_DIFFERENCE: 1
@@ -64,7 +66,7 @@ trading_options:
 
   # Name of custom tickers list
   TICKERS_LIST: 'tickers_ETH.txt'
-  
+
   # Name of list that cointains currencies to be ignored
   IGNORE_LIST: 'ignorelist.txt'
 
@@ -93,11 +95,14 @@ trading_options:
   STOP_LOSS_ON_PAUSE: False
 
  #mix % and signals for Buying
-  PERCENT_SIGNAL_BUY: True
+  PERCENT_SIGNAL_BUY: False
 
  #MODS SETTINGS_STRING
   PAUSEBOTMOD_THRESHOLD: 14
   SIGNALSAMPLEMOD_THRESHOLD : 17
+
+# multiplier for HOLDING_TIME_LIMIT wich gives acrtual TIME_DIFFERENCE * HOLDING_TIME_LIMIT_MULTIPLIER when to start lowering STOP_LOSS
+  HOLDING_INTERVAL_LIMIT: 3
 
  #sort list by volume or price_change
   LIST_AUTOCREATE: True
