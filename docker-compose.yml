@@ -1,0 +1,9 @@
+version: "3.9"
+
+services:
+    g0g0:
+        build: ./
+        tty: yes
+        volumes:
+            - "./:/usr/src/app"
+        command: python3 "Binance_Detect_Moonings.py"

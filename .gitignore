@@ -7,3 +7,5 @@ signals/*
 .venv
 __pycache__
 config.yml
+dockerfile
+docker-compose.yml

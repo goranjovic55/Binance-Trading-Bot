@@ -13,7 +13,8 @@ script_options:
 
 # gogos MOD Telegram bot integration
   BOT_MESSAGE_REPORTS: True # **added/changed by Coding60plus
-
+# Reporting style, use 'fancy' for more verbose reporting of results
+  REPORT_STYLE: fancy
 #Bot id for BOT_MESSAGE_REPORTS
   BOT_ID: '>>'
 
@@ -64,6 +65,9 @@ trading_options:
 
   # Name of custom tickers list
   TICKERS_LIST: 'tickers_ETH.txt'
+  
+  # Name of list that cointains currencies to be ignored
+  IGNORE_LIST: 'ignorelist.txt'
 
   # whether to use trailing stop loss or not; default is True
   USE_TRAILING_STOP_LOSS: True

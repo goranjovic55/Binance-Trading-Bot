@@ -36,6 +36,7 @@ init()
 # needed for the binance API / websockets / Exception handling
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
+from requests.exceptions import ReadTimeout, ConnectionError
 
 # used for dates
 from datetime import date, datetime, timedelta
@@ -281,7 +282,9 @@ def wait_for_price(type):
     if coins_up != 0: maket_resistance = market_resistance / coins_up
     if coins_down != 0: market_support = market_support / coins_down
 
-    report('console', f" MR:{market_resistance:.4f}/MS:{market_support:.4f} ")
+    if REPORT_STYLE == 'fancy' and hsp_head == 1:
+      report('fancy',f"Market Resistance:      {txcolors.DEFAULT}{market_resistance:.4f}\n Market Support:         {txcolors.DEFAULT}{market_support:.4f}")
+    else: report('console', f" MR:{market_resistance:.4f}/MS:{market_support:.4f} ")
 
     return volatile_coins, len(volatile_coins), historical_prices[hsp_head]
 
@@ -616,7 +619,23 @@ def report(type, reportline):
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
        print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol}> {reportline} <<{txcolors.DEFAULT}")
-
+    
+    #More fancy/verbose report style
+    if type == 'fancy':
+       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. << \n"
+       ,f"Profit on unsold coins: {txcolors.SELL_PROFIT if UNREALISED_PERCENT >= 0 else txcolors.SELL_LOSS}{UNREALISED_PERCENT:.2f}%\n"
+       ,f"Session Pofit:          {txcolors.SELL_PROFIT if session_profit >= 0 else txcolors.SELL_LOSS}{session_profit:.2f}%\n"
+       ,f"Est. total gains:       {txcolors.SELL_PROFIT if TOTAL_GAINS >= 0 else txcolors.SELL_LOSS}{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}\n"
+       ,f"Trades won:             {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{win_trade_count}\n"
+       ,f"Trades lost:            {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{loss_trade_count}\n"
+       ,f"Investment:             {txcolors.DEFAULT}{INVESTMENT:.{decimals()}f} {PAIR_WITH}\n"
+       ,f"Current Exposure:       {txcolors.DEFAULT}{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}\n"
+       ,f"New Balance:            {txcolors.SELL_PROFIT if NEW_BALANCE >= INVESTMENT else txcolors.SELL_LOSS}{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}\n"
+       ,f"Initial Investment:     {txcolors.SELL_PROFIT if investment_value >= INVESTMENT else txcolors.SELL_LOSS}{investment_value:.2f} USDT\n"
+       ,f"Investment Gain:        {txcolors.SELL_PROFIT if INVESTMENT_GAIN >= 0 else txcolors.SELL_LOSS}{INVESTMENT_GAIN:.2f}%\n"
+       ,f"Investment Value Gain:  {txcolors.SELL_PROFIT if investment_value_gain >= 0 else txcolors.SELL_LOSS}{investment_value_gain:.{decimals()}f} USDT\n"
+       ,f"{reportline} {txcolors.DEFAULT}")
+    
     if type == 'message':
        if BOT_MESSAGE_REPORTS:
 
@@ -772,7 +791,7 @@ def tickers_list(type):
 
        with open (TICKERS_LIST, 'w') as f:
            for i in ta_data['data']:
-              if i['s'][:7]=='BINANCE' and i['s'][-len(PAIR_WITH):] == PAIR_WITH and (i['s'][-len(PAIR_WITH)-2:-len(PAIR_WITH)]) != 'UP' and (i['s'][-len(PAIR_WITH)-4:-len(PAIR_WITH)]) != 'DOWN':
+              if i['s'][:7]=='BINANCE' and i['s'][-len(PAIR_WITH):] == PAIR_WITH and (i['s'][-len(PAIR_WITH)-2:-len(PAIR_WITH)]) != 'UP' and (i['s'][-len(PAIR_WITH)-4:-len(PAIR_WITH)]) != 'DOWN' and i['s'][8:-len(PAIR_WITH)] not in ignorelist:
                  f.writelines(str(i['s'][8:].replace(PAIR_WITH,''))+'\n')
        tickers_list_changed = True
        print(f'>> Tickers CREATED from TradingView tickers!!!{TICKERS_LIST} <<')
@@ -891,7 +910,9 @@ if __name__ == '__main__':
     SORT_LIST_TYPE = parsed_config['trading_options']['SORT_LIST_TYPE']
     LIST_AUTOCREATE = parsed_config['trading_options']['LIST_AUTOCREATE']
     LIST_CREATE_TYPE = parsed_config['trading_options']['LIST_CREATE_TYPE']
-
+    IGNORE_LIST = parsed_config['trading_options']['IGNORE_LIST']
+    REPORT_STYLE = parsed_config['script_options']['REPORT_STYLE']
+    
     QUANTITY = INVESTMENT/TRADE_SLOTS
 
     if DEBUG_SETTING or args.debug:
@@ -920,7 +941,10 @@ if __name__ == '__main__':
     api_ready, msg = test_api_key(client, BinanceAPIException)
     if api_ready is not True:
        exit(f'{txcolors.SELL_LOSS}{msg}{txcolors.DEFAULT}')
-
+    
+    # Load coins to be ignored from file
+    ignorelist=[line.strip() for line in open(IGNORE_LIST)]
+    
     #sort tickers list by volume
     if LIST_AUTOCREATE:
        if LIST_CREATE_TYPE == 'binance':
@@ -933,7 +957,7 @@ if __name__ == '__main__':
 
     # Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
     if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]
-
+    
     # try to load all the coins bought by the bot if the file exists and is not empty
     coins_bought = {}
 
@@ -995,23 +1019,30 @@ if __name__ == '__main__':
 
     # seed initial prices
     get_price()
-
-#load previous session stuff
+    
+    READ_TIMEOUT_COUNT=0
+    CONNECTION_ERROR_COUNT = 0
+    #load previous session stuff
     session('load')
 
     while True:
 
-#reload tickers list by volume if triggered recreation
+        #reload tickers list by volume if triggered recreation
         if tickers_list_changed == True :
            tickers=[line.strip() for line in open(TICKERS_LIST)]
            tickers_list_changed = False
 #           print(f'Tickers list changed and loaded: {tickers}')
-
-        orders, last_price, volume = buy()
-        update_portfolio(orders, last_price, volume)
-        coins_sold = sell_coins()
-        remove_from_portfolio(coins_sold)
-
+        try:
+          orders, last_price, volume = buy()
+          update_portfolio(orders, last_price, volume)
+          coins_sold = sell_coins()
+          remove_from_portfolio(coins_sold)
+        except ReadTimeout as rt:
+            READ_TIMEOUT_COUNT += 1
+            print(f'We got a timeout error from from binance. Going to re-loop. Current Count: {READ_TIMEOUT_COUNT}')
+        except ConnectionError as ce:
+            CONNECTION_ERROR_COUNT +=1 
+            print(f'{txcolors.WARNING}We got a timeout error from from binance. Going to re-loop. Current Count: {CONNECTION_ERROR_COUNT}\n{ce}{txcolors.DEFAULT}')
         #gogos MOD to adjust dynamically stoploss trailingstop loss and take profit based on wins
         STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN = dynamic_settings(dynamic, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN)
         #session calculations like unrealised potential etc
