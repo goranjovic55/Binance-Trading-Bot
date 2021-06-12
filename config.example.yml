@@ -101,7 +101,8 @@ trading_options:
   SIGNALSAMPLEMOD_THRESHOLD : 18
 
 # multiplier for HOLDING_TIME_LIMIT wich gives acrtual TIME_DIFFERENCE * HOLDING_TIME_LIMIT_MULTIPLIER when to start lowering STOP_LOSS
-  HOLDING_INTERVAL_LIMIT: 15
+  HOLDING_INTERVAL_LIMIT: 1
+  HOLDING_TAKE_PROFIT: 3
 
  #sort list by volume or price_change
   LIST_AUTOCREATE: True
