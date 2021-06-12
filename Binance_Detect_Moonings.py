@@ -14,6 +14,7 @@ or others connected with the program.
 
 
 # use for environment variables
+from genericpath import exists
 import os
 
 # use if needed to pass args to external modules
@@ -403,21 +404,32 @@ def convert_volume():
     return volume, last_price
 
 
+def test_order_id():
+    import random
+    """returns a fake order id by hashing the current time"""
+    test_order_id_number = random.randint(100000000,999999999)
+    return test_order_id_number
+
+
 def buy():
     '''Place Buy market orders for each volatile coin found'''
+    global UNIQUE_BUYS
     volume, last_price = convert_volume()
     orders = {}
 
     for coin in volume:
+        BUYABLE = True
+        if (UNIQUE_BUYS == True) and (coin in coins_bought) :
+            BUYABLE = False
 
         # only buy if the there are no active trades on the coin
-        if coin not in coins_bought:
+        if BUYABLE:
             print(f"{txcolors.BUY}Preparing to buy {volume[coin]} {coin}{txcolors.DEFAULT}")
 
             if TEST_MODE:
                 orders[coin] = [{
                     'symbol': coin,
-                    'orderId': 0,
+                    'orderId': test_order_id(),
                     'time': datetime.now().timestamp()
                 }]
 
@@ -462,6 +474,7 @@ def buy():
 
     return orders, last_price, volume
 
+
 def sell_coins():
     '''sell coins that have reached the STOP LOSS or TAKE PROFIT threshold'''
 
@@ -475,13 +488,29 @@ def sell_coins():
         # define stop loss and take profit
         TP = float(coins_bought[coin]['bought_at']) + (float(coins_bought[coin]['bought_at']) * coins_bought[coin]['take_profit']) / 100
         SL = float(coins_bought[coin]['bought_at']) + (float(coins_bought[coin]['bought_at']) * coins_bought[coin]['stop_loss']) / 100
-
+        #
         LastPrice = float(last_price[coin]['price'])
-        # sell fee below would ofc only apply if transaction was closed at the current LastPrice
         sellFee = (coins_bought[coin]['volume'] * LastPrice) * (TRADING_FEE/100)
         BuyPrice = float(coins_bought[coin]['bought_at'])
         buyFee = (coins_bought[coin]['volume'] * BuyPrice) * (TRADING_FEE/100)
         PriceChange = float((LastPrice - BuyPrice) / BuyPrice * 100)
+        PriceChangeWithFee = float(((LastPrice - BuyPrice) - (sellFee + buyFee) ) / BuyPrice * 100)
+        #
+        # maths here for anyone to double check.
+        # assuming BNB used so TRADING_FEE = 0.075:
+        #
+        # bought: 10 coin @ 20 each = 200
+        # buyFee = (10 * 20) * (0.075/100) = 0.15
+        #
+        # sold: 10 coin  @ 40 each = 400
+        # sellFee = (10 * 40) * (0.075/100) = 0.3
+        #
+        # PriceChange = ((40 - 20) / 20) * 100
+        # = 100 (%)
+        #
+        # or, with fee:
+        # PriceChangeWithFee = (((40 - 20) - (0.3 + 0.15) ) / 20) * 100
+        # 97.75 (%)
 
         # check that the price is above the take profit and readjust SL and TP accordingly if trialing stop loss used
         if LastPrice > TP and USE_TRAILING_STOP_LOSS:
@@ -494,7 +523,7 @@ def sell_coins():
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
         if sell_all_coins == True or LastPrice < SL or LastPrice > TP and not USE_TRAILING_STOP_LOSS:
-            print(f"{txcolors.SELL_PROFIT if PriceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} : {PriceChange-(buyFee+sellFee):.2f}% Est: {(QUANTITY*(PriceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
+            print(f"{txcolors.SELL_PROFIT if PriceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} : {PriceChangeWithFee:.2f}% Est: {(QUANTITY * PriceChangeWithFee) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
             # try to create a real order
             try:
 
@@ -519,33 +548,22 @@ def sell_coins():
                 volatility_cooloff[coin] = datetime.now()
 
                 # Log trade
-                # adding maths as this is really hurting my brain
-                # example here for buying 1x coin at 5 and selling at 10
-                # if buy is 5, fee is 0.00375
-                # if sell is 10, fee is 0.0075
-                # for the above, buyFee + sellFee = 0.07875
-                profit = ((LastPrice - BuyPrice) * coins_sold[coin]['volume']) * (1-(buyFee + sellFee))
+                profit = ((LastPrice - BuyPrice) * coins_sold[coin]['volume']) - (buyFee + sellFee)
 
                 #gogo MOD to trigger trade lost or won and to count lost or won trades
                 if profit > 0:
                    win_trade_count = win_trade_count + 1
                    dynamic = 'performance_adjust_up'
-                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
                 else:
                    loss_trade_count = loss_trade_count + 1
                    dynamic = 'performance_adjust_down'
-                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
 
-                # LastPrice (10) - BuyPrice (5) = 5
-                # 5 * coins_sold (1) = 5
-                # 5 * (1-(0.07875)) = 4.60625
-                # profit = 4.60625, it seems ok!
-#                write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PAIR_WITH} ({PriceChange-(buyFee+sellFee):.2f}%)")
-                session_profit = session_profit + (PriceChange-(buyFee+sellFee))
-
-                #print balance report
-                report('message', f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
-
+                REPORT = f"SELL: {coins_sold[coin]['volume']} {coin} - Bought at {BuyPrice:.{decimals()}f}, sold at {LastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({PriceChangeWithFee:.2f}%)"
+                
+                write_log(REPORT)
+                session_profit = session_profit + profit
+                
+                report(REPORT)
                 tickers_list(SORT_LIST_TYPE)
 
             continue
@@ -562,8 +580,6 @@ def sell_coins():
 
 def update_portfolio(orders, last_price, volume):
 
-    global session_profit
-
     '''add every coin bought to our portfolio for tracking/selling later'''
     if DEBUG: print(orders)
     for coin in orders:
@@ -576,27 +592,32 @@ def update_portfolio(orders, last_price, volume):
             'volume': volume[coin],
             'stop_loss': -STOP_LOSS,
             'take_profit': TAKE_PROFIT,
-             }
+            }
 
         # save the coins in a json file in the same directory
         with open(coins_bought_file_path, 'w') as file:
             json.dump(coins_bought, file, indent=4)
 
+        print(f'Order for {orders[coin][0]["symbol"]} with ID {orders[coin][0]["orderId"]} placed and saved to file.')
+
         session('save')
 
-        print(f'Order with id {orders[coin][0]["orderId"]} placed and saved to file')
-        # print balance report
-#        balance_report(f"report")
 
 def remove_from_portfolio(coins_sold):
     '''Remove coins sold due to SL or TP from portfolio'''
-    for coin in coins_sold:
-        coins_bought.pop(coin)
+    for coin,data in coins_sold.items():
+        symbol = coin
+        order_id = data['orderid']
+        # code below created by getsec <3
+        for bought_coin, bought_coin_data in coins_bought.items():
+            if bought_coin_data['orderid'] == order_id:
+                print(f"Sold {bought_coin}, removed order ID {order_id} from history.")
+                coins_bought.pop(bought_coin)
+                with open(coins_bought_file_path, 'w') as file:
+                    json.dump(coins_bought, file, indent=4)
+                break
 
-    with open(coins_bought_file_path, 'w') as file:
-        json.dump(coins_bought, file, indent=4)
-
-    session('save')
+        session('save')
 
 def write_log(logline):
     timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
@@ -608,18 +629,34 @@ def report(type, reportline):
     global session_profit, CURRENT_EXPOSURE, NEW_BALANCE
     global INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent
     global investment_value, investment_value_gain, exchange_symbol
+    try: # does it exist?
+        investment_value_gain
+    except NameError: # if not, set to 0
+        investment_value_gain = 0
+
+    WON = win_trade_count
+    LOST = loss_trade_count
+    DECIMALS = int(decimals())
+    INVESTMENT_TOTAL = round((QUANTITY * TRADE_SLOTS), DECIMALS)
+    TOTAL_GAINS = round(TOTAL_GAINS, DECIMALS)
+    INVESTMENT_VALUE_GAIN = round(investment_value_gain, DECIMALS)
 
     SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'>RI:'+str(round(RECHECK_INTERVAL, 2))+'>CIP:'+str(round(CHANGE_IN_PRICE_MIN, 2))+'-'+str(round(CHANGE_IN_PRICE_MAX, 2))+'>SL:'+str(round(STOP_LOSS, 2))+'>TP:'+str(round(TAKE_PROFIT, 2))+'>TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'>TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
 
     if len(coins_bought) > 0:
-        UNREALISED_PERCENT = unrealised_percent/len(coins_bought)
+        UNREALISED_PERCENT = round(unrealised_percent/len(coins_bought), 2)
     else:
         UNREALISED_PERCENT = 0
-
+    if (win_trade_count > 0) and (loss_trade_count > 0):
+        WIN_LOSS_PERCENT = round((win_trade_count  / (win_trade_count  + loss_trade_count)) * 100, 2)
+    else:
+        WIN_LOSS_PERCENT = 100
+        
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
-       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol}> {reportline} <<{txcolors.DEFAULT}")
-    
+        # print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol}> {reportline} <<{txcolors.DEFAULT}")
+        print(f"{txcolors.NOTICE}>> Tade slots: {len(coins_bought)}/{TRADE_SLOTS} ({CURRENT_EXPOSURE:g}/{INVESTMENT_TOTAL:g} {PAIR_WITH}) - Open: {UNREALISED_PERCENT:.2f}% - Closed: {session_profit:.2f}% - Est: {TOTAL_GAINS:g} {PAIR_WITH} - W/L: {WON}/{LOST} - Value: {investment_value:.2f} {exchange_symbol} - Gain: {INVESTMENT_GAIN:.2f}% ( {str(INVESTMENT_VALUE_GAIN)} {exchange_symbol}){txcolors.DEFAULT}")
+
     #More fancy/verbose report style
     if type == 'fancy':
        print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. << \n"
@@ -733,19 +770,19 @@ def session(type):
 
     if type == 'save':
 
-       session_info = {}
-       session_info_file_path = 'session_info.json'
-       session_info = {
-           'session_profit': session_profit,
-           'win_trade_count': win_trade_count,
-           'loss_trade_count': loss_trade_count,
-#           'investment_value': investment_value,
-           'new_balance': NEW_BALANCE,
+        session_info = {}
+        session_info_file_path = 'session_info.json'
+        session_info = {
+            'session_profit': session_profit,
+            'win_trade_count': win_trade_count,
+            'loss_trade_count': loss_trade_count,
+            # 'investment_value': investment_value,
+            'new_balance': NEW_BALANCE,
             }
 
-       # save the coins in a json file in the same directory
-       with open(session_info_file_path, 'w') as file:
-           json.dump(session_info, file, indent=4)
+        # save the coins in a json file in the same directory
+        with open(session_info_file_path, 'w') as file:
+            json.dump(session_info, file, indent=4)
 
     if type == 'load':
 
@@ -883,6 +920,7 @@ if __name__ == '__main__':
     AMERICAN_USER = parsed_config['script_options'].get('AMERICAN_USER')
     BOT_MESSAGE_REPORTS =  parsed_config['script_options'].get('BOT_MESSAGE_REPORTS')
     BOT_ID = parsed_config['script_options'].get('BOT_ID')
+    UNIQUE_BUYS = parsed_config['script_options'].get('UNIQUE_BUYS')
 
     # Load trading vars
     PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
@@ -985,8 +1023,8 @@ if __name__ == '__main__':
     if not TEST_MODE:
         if not args.notimeout: # if notimeout skip this (fast for dev tests)
             print('WARNING: test mode is disabled in the configuration, you are using live funds.')
-            print('WARNING: Waiting 30 seconds before live trading as a security measure!')
-            time.sleep(30)
+            print('WARNING: Waiting 10 seconds before live trading as a security measure!')
+            time.sleep(10)
 
     signals = glob.glob("signals/*.exs")
     for filename in signals:

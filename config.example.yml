@@ -24,13 +24,25 @@ trading_options:
   # select your base currency to use for trading pairs (for example USDT, ETH, BTC)
   PAIR_WITH: ETH
 
-  # Total amount per trade (your base currency balance must be at least TRADE_SLOTS * QUANTITY)
-  # Binance uses a minimum of 10 USDT per trade, add a bit extra to enable selling if the price drops.
-  # USDT - Recommended: no less than 12. Suggested: 15 or more.
-  # ETH - Recommended: no less than 0.006.
-  #QUANTITY: 0.0116
-  #total invested capital quantity gets calculated based on trade TRADE_SLOTS
-  INVESTMENT: 0.2
+  # INVESTMENT = total amount for each trade
+  # (how much of your PAIR_WITH should be used for each of TRADE SLOTS)
+  # Note: your base currency balance must be at least TRADE_SLOTS * INVESTMENT).
+  # Binance uses specifies a min value per trade, add a bit extra above their 'min trade value'
+  # ..to enable selling if the price drops.
+  # 
+  # TIPS:
+  # - Using USDT?   Recommended 13+ (min trade value: 10)
+  # - Using ETH?    Recommended 0.006+ (Min trade value: 0.005)
+  # - Using BTC?    Recommended 0.000175+ (min trade value: 0.0001)
+  INVESTMENT: 0.00685
+
+  # TRADE_SLOTS = Maximum number of tradable 'slots' at any time.
+  # (your PAIR_WITH balance must be at least TRADE_SLOTS * QUANTITY)
+  TRADE_SLOTS: 30
+
+  # Use more than one TRADE_SLOTS of the same coin? Set to False
+  # allows buying the same coin again if a future buy signal is received
+  UNIQUE_BUYS: False
 
   # List of trading pairs to exclude
   # by default we're excluding the most popular fiat pairs
@@ -40,8 +52,15 @@ trading_options:
     - JPYUSDT
     - USDUSDT
 
-  # Maximum number of trade 'slots' at any time (your USDT balance must be at least TRADE_SLOTS * QUANTITY)
-  TRADE_SLOTS: 3
+  # Specify in minutes the frequency to check for trading signals from TradingView
+  SIGNALS_FREQUENCY: 1
+
+  # TICKERS: Use custom 'tickers.txt' list for filtering pairs?
+  CUSTOM_LIST: True
+  TICKERS_LIST: 'tickers_ETH.txt'
+
+  # Name of list that cointains currencies to be ignored
+  IGNORE_LIST: 'ignorelist.txt'
 
   # the amount of time in MINUTES to calculate the difference from the current price (minimum: 1).
   TIME_DIFFERENCE: 1
@@ -59,15 +78,6 @@ trading_options:
 
   # define in % when to take profit on a profitable coin.
   TAKE_PROFIT: 0.01
-
-  # Use custom tickers.txt list for filtering pairs.
-  CUSTOM_LIST: True
-
-  # Name of custom tickers list
-  TICKERS_LIST: 'tickers_ETH.txt'
-  
-  # Name of list that cointains currencies to be ignored
-  IGNORE_LIST: 'ignorelist.txt'
 
   # whether to use trailing stop loss or not; default is True
   USE_TRAILING_STOP_LOSS: True
