@@ -95,15 +95,15 @@ trading_options:
   STOP_LOSS_ON_PAUSE: False
 
  #mix % and signals for Buying
-  PERCENT_SIGNAL_BUY: False
+  PERCENT_SIGNAL_BUY: True
 
  #MODS SETTINGS_STRING
   PAUSEBOTMOD_THRESHOLD: 14
   SIGNALSAMPLEMOD_THRESHOLD : 17
 
 # multiplier for HOLDING_TIME_LIMIT wich gives acrtual TIME_DIFFERENCE * HOLDING_TIME_LIMIT_MULTIPLIER when to start lowering STOP_LOSS
-# holding take profit is % at wich we sell if holding time limit is passed defualt is 1 and after one timeperiod we will sell on holding take profit 
-  HOLDING_INTERVAL_LIMIT: 1
+# holding take profit is % at wich we sell if holding time limit is passed defualt is 1 and after one timeperiod we will sell on holding take profit
+  HOLDING_INTERVAL_LIMIT: 15
   HOLDING_TAKE_PROFIT: 3
 
  #sort list by volume or price_change

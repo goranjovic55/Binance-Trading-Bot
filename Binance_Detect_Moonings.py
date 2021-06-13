@@ -87,6 +87,7 @@ win_trade_count = 0
 loss_trade_count = 0
 
 global dynamic, sell_all_coins, tickers_list_changed, exchange_symbol, price_list_counter
+global dynamic_holding_take_profit
 price_list_counter = 0
 dynamic = 'none'
 sell_all_coins = False
@@ -279,7 +280,7 @@ def wait_for_price(type):
         else:
             coins_unchanged +=1
 
-    if coins_up != 0: maket_resistance = market_resistance / coins_up
+    if coins_up != 0: market_resistance = market_resistance / coins_up
     if coins_down != 0: market_support = market_support / coins_down
 
     if REPORT_STYLE == 'fancy' and hsp_head == 1:
@@ -465,8 +466,7 @@ def buy():
 def sell_coins():
     '''sell coins that have reached the STOP LOSS or TAKE PROFIT threshold'''
 
-    global hsp_head, session_profit, win_trade_count, loss_trade_count, dynamic, sell_all_coins, market_resistance, market_support
-
+    global hsp_head, session_profit, win_trade_count, loss_trade_count, dynamic, sell_all_coins, market_resistance, market_support, DYNAMIC_HOLDING_TAKE_PROFIT
     last_price = get_price(False) # don't populate rolling window
     #last_price = get_price(add_to_historical=True) # don't populate rolling window
     coins_sold = {}
@@ -476,6 +476,10 @@ def sell_coins():
         TP = float(coins_bought[coin]['bought_at']) + (float(coins_bought[coin]['bought_at']) * coins_bought[coin]['take_profit']) / 100
         SL = float(coins_bought[coin]['bought_at']) + (float(coins_bought[coin]['bought_at']) * coins_bought[coin]['stop_loss']) / 100
         TL = float(coins_bought[coin]['timestamp']) + HOLDING_TIME_LIMIT
+
+        if TL < datetime.now().timestamp():
+           dynamic = 'holding'
+           print(f'HOLDING_TIME_LIMIT is up HOLDING_TAKE_PROFIT:{DYNAMIC_HOLDING_TAKE_PROFIT}')
 
         LastPrice = float(last_price[coin]['price'])
         # sell fee below would ofc only apply if transaction was closed at the current LastPrice
@@ -494,8 +498,9 @@ def sell_coins():
             continue
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
-        if sell_all_coins == True or LastPrice < SL or LastPrice > TP and not USE_TRAILING_STOP_LOSS or (TL < datetime.now().timestamp() and PriceChange -(TRADING_FEE*2) > HOLDING_TAKE_PROFIT):
+        if sell_all_coins == True or LastPrice < SL or LastPrice > TP and not USE_TRAILING_STOP_LOSS or (TL < datetime.now().timestamp() and PriceChange -(TRADING_FEE*2) > DYNAMIC_HOLDING_TAKE_PROFIT):
             print(f"{txcolors.SELL_PROFIT if PriceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} : {PriceChange-(buyFee+sellFee):.2f}% Est: {(QUANTITY*(PriceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
+            DYNAMIC_HOLDING_TAKE_PROFIT = HOLDING_TAKE_PROFIT
             # try to create a real order
             try:
 
@@ -661,7 +666,7 @@ def report(type, reportline):
 #function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
 def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT, HOLDING_TAKE_PROFIT):
 
-    global last_trade_won, last_trade_lost, dynamic
+    global last_trade_won, last_trade_lost, dynamic, DYNAMIC_HOLDING_TAKE_PROFIT
 
     if DYNAMIC_SETTINGS:
 
@@ -697,6 +702,9 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
         HOLDING_TAKE_PROFIT = (parsed_config)['trading_options']['HOLDING_TAKE_PROFIT']
         print(f'{txcolors.NOTICE}>> DYNAMIC SETTINGS RESET - STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}CIP:{CHANGE_IN_PRICE_MIN:.4f}/{CHANGE_IN_PRICE_MAX:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} HTL: {HOLDING_TIME_LIMIT:.2f} HTP: {HOLDING_TAKE_PROFIT}<<{txcolors.DEFAULT}')
         dynamic = 'none'
+
+      if type == 'holding':
+        DYNAMIC_HOLDING_TAKE_PROFIT = DYNAMIC_HOLDING_TAKE_PROFIT - (DYNAMIC_HOLDING_TAKE_PROFIT * DYNAMIC_WIN_LOSS_DOWN) / 100
 
       if CHANGE_IN_PRICE_MIN > 0:
          CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN'] - (CHANGE_IN_PRICE_MIN * market_support)
@@ -923,6 +931,7 @@ if __name__ == '__main__':
     HOLDING_INTERVAL_LIMIT = parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
     HOLDING_TAKE_PROFIT = parsed_config['trading_options']['HOLDING_TAKE_PROFIT']
 
+    DYNAMIC_HOLDING_TAKE_PROFIT = HOLDING_TAKE_PROFIT
     HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60) * HOLDING_INTERVAL_LIMIT
     QUANTITY = INVESTMENT/TRADE_SLOTS
 
