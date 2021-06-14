@@ -479,7 +479,7 @@ def sell_coins():
 
         if TL < datetime.now().timestamp():
            dynamic = 'holding'
-           print(f'HOLDING_TIME_LIMIT is up HOLDING_TAKE_PROFIT:{DYNAMIC_HOLDING_TAKE_PROFIT}')
+           print(f'HOLDING_TIME_LIMIT is up HOLDING_TAKE_PROFIT:{round(DYNAMIC_HOLDING_TAKE_PROFIT,2)}')
 
         LastPrice = float(last_price[coin]['price'])
         # sell fee below would ofc only apply if transaction was closed at the current LastPrice
