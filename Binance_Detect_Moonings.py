@@ -314,7 +314,7 @@ def pause_bot():
     # start counting for how long the bot has been paused
     start_time = time.perf_counter()
 
-    while os.path.isfile("signals/paused.exc"):
+    while os.path.isfile("signals/paused.exc") or market_resistance > 0.3:
 
         if bot_paused == False:
             print(f"{txcolors.WARNING}Buying paused due to negative market conditions, stop loss and take profit will continue to work...{txcolors.DEFAULT}")

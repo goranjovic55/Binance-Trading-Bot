@@ -13,6 +13,8 @@ import os
 import time
 import threading
 
+global market_resistance
+
 INTERVAL = Interval.INTERVAL_1_MINUTE #Timeframe for analysis
 
 EXCHANGE = 'BINANCE'
