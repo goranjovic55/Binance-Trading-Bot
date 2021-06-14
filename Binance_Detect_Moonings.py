@@ -36,6 +36,7 @@ init()
 # needed for the binance API / websockets / Exception handling
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
+from requests.exceptions import ReadTimeout, ConnectionError
 
 # used for dates
 from datetime import date, datetime, timedelta
@@ -54,7 +55,8 @@ from helpers.parameters import (
 
 # Load creds modules
 from helpers.handle_creds import (
-    load_correct_creds, test_api_key
+    load_correct_creds, test_api_key,
+    load_telegram_creds
 )
 
 
@@ -68,24 +70,33 @@ class txcolors:
     DEFAULT = '\033[39m'
     NOTICE = '\033[96m'
 
+# tracks profit/loss each session
+global session_profit, unrealised_percent, market_price, investment_value
+global investment_value_gain
 
-# tracks profit/loss each session.
-global session_profit, unrealised_percent, market_price, investment_value, investment_gain_value
 investment_value = 0
+investment_value_gain = 0
 session_profit = 0
 unrealised_percent = 0
 
 #gogo MOD WIN/LOSS COunter and global dynamic stoploss and takeprofit and trailing takeprofit etc
-global win_trade_count, loss_trade_count
+global win_trade_count, loss_trade_count, market_support, market_resistance
+market_support = 0
+market_resistance = 0
 win_trade_count = 0
 loss_trade_count = 0
 
-global dynamic_performance_type, sell_all_coins
-dynamic_performance_type = 'none'
+global dynamic, sell_all_coins, tickers_list_changed, exchange_symbol, price_list_counter
+global dynamic_holding_take_profit
+price_list_counter = 0
+dynamic = 'none'
 sell_all_coins = False
+tickers_list_changed = False
 
-global INVESTMENT_TOTAL, CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN
+global CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN
 CURRENT_EXPOSURE = 0
+NEW_BALANCE = 0
+
 
 # print with timestamps
 old_out = sys.stdout
@@ -129,7 +140,7 @@ def decimals():
 def get_price(add_to_historical=True):
     '''Return the current price for all coins on binance'''
 
-    global historical_prices, hsp_head, market_price
+    global historical_prices, hsp_head, market_price, exchange_symbol
 
     initial_price = {}
     prices = client.get_all_tickers()
@@ -151,17 +162,28 @@ def get_price(add_to_historical=True):
 
         historical_prices[hsp_head] = initial_price
 
-    market_historic = client.get_historical_trades(symbol='ETHUSDT')
-    market_price = market_historic[0].get('price')
+    if is_fiat():
+
+        market_price = 1
+        exchange_symbol = PAIR_WITH
+
+    else:
+        exchange_symbol = PAIR_WITH + 'USDT'
+        market_historic = client.get_historical_trades(symbol=exchange_symbol)
+        market_price = market_historic[0].get('price')
 
     return initial_price
 
 
-def wait_for_price():
+def wait_for_price(type):
     '''calls the initial price and ensures the correct amount of time has passed
     before reading the current price again'''
 
-    global historical_prices, hsp_head, volatility_cooloff
+    global historical_prices, prehistorical_prices, hsp_head, volatility_cooloff, market_support, market_resistance
+
+    market_resistance = 0
+    market_support = 0
+
     volatile_coins = {}
     externals = {}
 
@@ -177,8 +199,6 @@ def wait_for_price():
 
         time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
 
-    report('console', '.')
-
     # retrieve latest prices
     get_price()
 
@@ -191,42 +211,81 @@ def wait_for_price():
 
         threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (float(max_price[coin]['price']) - float(min_price[coin]['price'])) / float(min_price[coin]['price']) * 100
 
-        # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
-        if threshold_check > CHANGE_IN_PRICE:
-            coins_up +=1
+        if threshold_check > 0:
+            market_resistance = market_resistance + threshold_check
+            coins_up = coins_up +1
+        else:
+            market_support = market_support - threshold_check
+            coins_down = coins_down +1
 
-            if coin not in volatility_cooloff:
-                volatility_cooloff[coin] = datetime.now() - timedelta(minutes=TIME_DIFFERENCE)
+        if type == 'percent_mix_signal':
+
+           # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
+           if threshold_check > CHANGE_IN_PRICE_MIN and threshold_check < CHANGE_IN_PRICE_MAX:
+               coins_up +=1
+
+               if os.path.exists('signals/custsignalmod.exs') or os.path.exists('signals/signalsample.exs'):
+                  externals = external_signals()
+
+                  for excoin in externals:
+
+                      if excoin == coin:
+
+                         if coin not in volatility_cooloff:
+                            volatility_cooloff[coin] = datetime.now() - timedelta(minutes=TIME_DIFFERENCE)
+
+                         # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
+                         if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=TIME_DIFFERENCE):
+                            volatility_cooloff[coin] = datetime.now()
+
+                            if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
+                               volatile_coins[coin] = round(threshold_check, 3)
+                               print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes, and coin {excoin} recived a signal... calculating {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
+
+                            else:
+                               print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes, , and coin {excoin} recived a signal... but you are using all available trade slots!{txcolors.DEFAULT}")
+
+        if type == 'percent_and_signal':
+
+           # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
+           if threshold_check > CHANGE_IN_PRICE_MIN and threshold_check < CHANGE_IN_PRICE_MAX:
+              coins_up +1
+
+              if coin not in volatility_cooloff:
+                 volatility_cooloff[coin] = datetime.now() - timedelta(minutes=TIME_DIFFERENCE)
 
             # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
-            if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=TIME_DIFFERENCE):
-                volatility_cooloff[coin] = datetime.now()
+              if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=TIME_DIFFERENCE):
+                 volatility_cooloff[coin] = datetime.now()
 
-                if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
+                 if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
                     volatile_coins[coin] = round(threshold_check, 3)
-                    print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes, calculating {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
+                    print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
 
-                else:
-                    print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes, but you are using all available trade slots!{txcolors.DEFAULT}")
+                 else:
+                   print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes but you are using all available trade slots!{txcolors.DEFAULT}")
 
-        elif threshold_check < CHANGE_IN_PRICE:
-            coins_down +=1
+           externals = external_signals()
+           exnumber = 0
+
+           for excoin in externals:
+               if excoin not in volatile_coins and excoin not in coins_bought and (len(coins_bought) + exnumber) < TRADE_SLOTS:
+                  volatile_coins[excoin] = 1
+                  exnumber +=1
+                  print(f"External signal received on {excoin}, calculating {QUANTITY} {PAIR_WITH} value of {excoin} for purchase!")
+
+        if threshold_check < CHANGE_IN_PRICE_MIN and threshold_check > CHANGE_IN_PRICE_MAX:
+             coins_down +=1
 
         else:
             coins_unchanged +=1
 
-    # Disabled until fix
-    #print(f'Up: {coins_up} Down: {coins_down} Unchanged: {coins_unchanged}')
+    if coins_up != 0: market_resistance = market_resistance / coins_up
+    if coins_down != 0: market_support = market_support / coins_down
 
-    # Here goes new code for external signalling
-    externals = external_signals()
-    exnumber = 0
-
-    for excoin in externals:
-        if excoin not in volatile_coins and excoin not in coins_bought and (len(coins_bought) + exnumber) < TRADE_SLOTS:
-            volatile_coins[excoin] = 1
-            exnumber +=1
-            print(f"External signal received on {excoin}, calculating {QUANTITY} {PAIR_WITH} value of {excoin} for purchase!")
+    if REPORT_STYLE == 'fancy' and hsp_head == 1:
+      report('fancy',f"Market Resistance:      {txcolors.DEFAULT}{market_resistance:.4f}\n Market Support:         {txcolors.DEFAULT}{market_support:.4f}")
+    else: report('console', f" MR:{market_resistance:.4f}/MS:{market_support:.4f} ")
 
     return volatile_coins, len(volatile_coins), historical_prices[hsp_head]
 
@@ -251,11 +310,11 @@ def external_signals():
 
 def pause_bot():
     '''Pause the script when external indicators detect a bearish trend in the market'''
-    global bot_paused, session_profit, hsp_head,dynamic_performance_type, sell_all_coins
+    global bot_paused, session_profit, hsp_head, dynamic, sell_all_coins
     # start counting for how long the bot has been paused
     start_time = time.perf_counter()
 
-    while os.path.isfile("signals/paused.exc"):
+    while os.path.isfile("signals/paused.exc") or market_resistance > 0.3:
 
         if bot_paused == False:
             print(f"{txcolors.WARNING}Buying paused due to negative market conditions, stop loss and take profit will continue to work...{txcolors.DEFAULT}")
@@ -287,10 +346,13 @@ def pause_bot():
         stop_time = time.perf_counter()
         time_elapsed = timedelta(seconds=int(stop_time-start_time))
 
+
+
         # resume the bot and ser pause_bot to False
         if  bot_paused == True:
             print(f"{txcolors.WARNING}Resuming buying due to positive market conditions, total sleep time: {time_elapsed}{txcolors.DEFAULT}")
-            dynamic_performance_type = 'reset'
+            tickers_list(SORT_LIST_TYPE)
+            dynamic = 'reset'
             sell_all_coins = False
             bot_paused = False
 
@@ -300,7 +362,12 @@ def pause_bot():
 def convert_volume():
     '''Converts the volume given in QUANTITY from USDT to the each coin's volume'''
 
-    volatile_coins, number_of_coins, last_price = wait_for_price()
+    #added feature to buy only if percent and signal triggers uses PERCENT_SIGNAL_BUY true or false from config
+    if PERCENT_SIGNAL_BUY == True:
+       volatile_coins, number_of_coins, last_price = wait_for_price('percent_mix_signal')
+    else:
+       volatile_coins, number_of_coins, last_price = wait_for_price('percent_and_signal')
+
     lot_size = {}
     volume = {}
 
@@ -344,56 +411,62 @@ def buy():
 
     for coin in volume:
 
-        print(f"{txcolors.BUY}Preparing to buy {volume[coin]} {coin}{txcolors.DEFAULT}")
+        # only buy if the there are no active trades on the coin
+        if coin not in coins_bought:
+            print(f"{txcolors.BUY}Preparing to buy {volume[coin]} {coin}{txcolors.DEFAULT}")
 
-        if TEST_MODE:
-            orders[coin] = [{
-                'symbol': coin,
-                'orderId': 0,
-                'time': datetime.now().timestamp()
-            }]
+            if TEST_MODE:
+                orders[coin] = [{
+                    'symbol': coin,
+                    'orderId': 0,
+                    'time': datetime.now().timestamp()
+                }]
 
-            # Log trade
-            write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
-        continue
-
-        # try to create a real order if the test orders did not raise an exception
-        try:
-            buy_limit = client.create_order(
-                symbol = coin,
-                side = 'BUY',
-                type = 'MARKET',
-                quantity = volume[coin]
-            )
-
-        # error handling here in case position cannot be placed
-        except Exception as e:
-            print(e)
-
-        # run the else block if the position has been placed and return order info
-        else:
-            orders[coin] = client.get_all_orders(symbol=coin, limit=1)
-
-            # binance sometimes returns an empty list, the code will wait here until binance returns the order
-            while orders[coin] == []:
-                print('Binance is being slow in returning the order, calling the API again...')
-
-                orders[coin] = client.get_all_orders(symbol=coin, limit=1)
-                time.sleep(1)
-
-            else:
-                print('Order returned, saving order to file')
-
-                # Log trade
+                # Log trades
                 write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
-    return orders, last_price, volume
 
+                continue
+
+            # try to create a real order if the test orders did not raise an exception
+            try:
+                buy_limit = client.create_order(
+                    symbol = coin,
+                    side = 'BUY',
+                    type = 'MARKET',
+                    quantity = volume[coin]
+                )
+
+            # error handling here in case position cannot be placed
+            except Exception as e:
+                print(e)
+
+            # run the else block if the position has been placed and return order info
+            else:
+                orders[coin] = client.get_all_orders(symbol=coin, limit=1)
+
+                # binance sometimes returns an empty list, the code will wait here until binance returns the order
+                while orders[coin] == []:
+                    print('Binance is being slow in returning the order, calling the API again...')
+
+                    orders[coin] = client.get_all_orders(symbol=coin, limit=1)
+                    time.sleep(1)
+
+                else:
+                    print('Order returned, saving order to file')
+
+                    # Log trade
+                    write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
+
+
+        else:
+            print(f'Signal detected, but there is already an active trade on {coin}')
+
+    return orders, last_price, volume
 
 def sell_coins():
     '''sell coins that have reached the STOP LOSS or TAKE PROFIT threshold'''
 
-    global hsp_head, session_profit, win_trade_count, loss_trade_count, dynamic_performance_type, sell_all_coins
-
+    global hsp_head, session_profit, win_trade_count, loss_trade_count, dynamic, sell_all_coins, market_resistance, market_support, DYNAMIC_HOLDING_TAKE_PROFIT
     last_price = get_price(False) # don't populate rolling window
     #last_price = get_price(add_to_historical=True) # don't populate rolling window
     coins_sold = {}
@@ -402,6 +475,11 @@ def sell_coins():
         # define stop loss and take profit
         TP = float(coins_bought[coin]['bought_at']) + (float(coins_bought[coin]['bought_at']) * coins_bought[coin]['take_profit']) / 100
         SL = float(coins_bought[coin]['bought_at']) + (float(coins_bought[coin]['bought_at']) * coins_bought[coin]['stop_loss']) / 100
+        TL = float(coins_bought[coin]['timestamp']) + HOLDING_TIME_LIMIT
+
+        if TL < datetime.now().timestamp():
+           dynamic = 'holding'
+           print(f'HOLDING_TIME_LIMIT is up HOLDING_TAKE_PROFIT:{round(DYNAMIC_HOLDING_TAKE_PROFIT,2)}')
 
         LastPrice = float(last_price[coin]['price'])
         # sell fee below would ofc only apply if transaction was closed at the current LastPrice
@@ -420,8 +498,9 @@ def sell_coins():
             continue
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
-        if sell_all_coins == True or LastPrice < SL or LastPrice > TP and not USE_TRAILING_STOP_LOSS:
+        if sell_all_coins == True or LastPrice < SL or LastPrice > TP and not USE_TRAILING_STOP_LOSS or (TL < datetime.now().timestamp() and PriceChange -(TRADING_FEE*2) > DYNAMIC_HOLDING_TAKE_PROFIT):
             print(f"{txcolors.SELL_PROFIT if PriceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} : {PriceChange-(buyFee+sellFee):.2f}% Est: {(QUANTITY*(PriceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
+            DYNAMIC_HOLDING_TAKE_PROFIT = HOLDING_TAKE_PROFIT
             # try to create a real order
             try:
 
@@ -456,11 +535,11 @@ def sell_coins():
                 #gogo MOD to trigger trade lost or won and to count lost or won trades
                 if profit > 0:
                    win_trade_count = win_trade_count + 1
-                   dynamic_performance_type = 'adjust_up'
+                   dynamic = 'performance_adjust_up'
                    write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
                 else:
                    loss_trade_count = loss_trade_count + 1
-                   dynamic_performance_type = 'adjust_down'
+                   dynamic = 'performance_adjust_down'
                    write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
 
                 # LastPrice (10) - BuyPrice (5) = 5
@@ -472,6 +551,8 @@ def sell_coins():
 
                 #print balance report
                 report('message', f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
+
+                tickers_list(SORT_LIST_TYPE)
 
             continue
 
@@ -507,6 +588,8 @@ def update_portfolio(orders, last_price, volume):
         with open(coins_bought_file_path, 'w') as file:
             json.dump(coins_bought, file, indent=4)
 
+        session('save')
+
         print(f'Order with id {orders[coin][0]["orderId"]} placed and saved to file')
         # print balance report
 #        balance_report(f"report")
@@ -519,9 +602,7 @@ def remove_from_portfolio(coins_sold):
     with open(coins_bought_file_path, 'w') as file:
         json.dump(coins_bought, file, indent=4)
 
-    #save session info for through session portability
-    with open(session_info_file_path, 'w') as file:
-        json.dump(session_profit, file, indent=4)
+    session('save')
 
 def write_log(logline):
     timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
@@ -530,10 +611,11 @@ def write_log(logline):
 
 def report(type, reportline):
 
-    global session_profit, INVESTMENT_TOTAL, CURRENT_EXPOSURE, NEW_BALANCE
-    global INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent, investment_value
+    global session_profit, CURRENT_EXPOSURE, NEW_BALANCE
+    global INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent
+    global investment_value, investment_value_gain, exchange_symbol
 
-    SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'-RI:'+str(round(RECHECK_INTERVAL, 2))+'-CIP:'+str(round(CHANGE_IN_PRICE, 2))+'-SL:'+str(round(STOP_LOSS, 2))+'-TP:'+str(round(TAKE_PROFIT, 2))+'-TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'-TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
+    SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'>RI:'+str(round(RECHECK_INTERVAL, 2))+'>CIP:'+str(round(CHANGE_IN_PRICE_MIN, 2))+'-'+str(round(CHANGE_IN_PRICE_MAX, 2))+'>SL:'+str(round(STOP_LOSS, 2))+'>TP:'+str(round(TAKE_PROFIT, 2))+'>TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'>TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
 
     if len(coins_bought) > 0:
         UNREALISED_PERCENT = unrealised_percent/len(coins_bought)
@@ -542,60 +624,111 @@ def report(type, reportline):
 
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
-       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT_TOTAL:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {EXCHANGE}> IG:{INVESTMENT_GAIN:.2f}%> IGV:{investment_gain_value:.{decimals()}f} {EXCHANGE} <<{txcolors.DEFAULT}")
+       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol}> {reportline} <<{txcolors.DEFAULT}")
+
+    #More fancy/verbose report style
+    if type == 'fancy':
+       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. << \n"
+       ,f"Profit on unsold coins: {txcolors.SELL_PROFIT if UNREALISED_PERCENT >= 0 else txcolors.SELL_LOSS}{UNREALISED_PERCENT:.2f}%\n"
+       ,f"Session Pofit:          {txcolors.SELL_PROFIT if session_profit >= 0 else txcolors.SELL_LOSS}{session_profit:.2f}%\n"
+       ,f"Est. total gains:       {txcolors.SELL_PROFIT if TOTAL_GAINS >= 0 else txcolors.SELL_LOSS}{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}\n"
+       ,f"Trades won:             {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{win_trade_count}\n"
+       ,f"Trades lost:            {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{loss_trade_count}\n"
+       ,f"Investment:             {txcolors.DEFAULT}{INVESTMENT:.{decimals()}f} {PAIR_WITH}\n"
+       ,f"Current Exposure:       {txcolors.DEFAULT}{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}\n"
+       ,f"New Balance:            {txcolors.SELL_PROFIT if NEW_BALANCE >= INVESTMENT else txcolors.SELL_LOSS}{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}\n"
+       ,f"Initial Investment:     {txcolors.SELL_PROFIT if investment_value >= INVESTMENT else txcolors.SELL_LOSS}{investment_value:.2f} USDT\n"
+       ,f"Investment Gain:        {txcolors.SELL_PROFIT if INVESTMENT_GAIN >= 0 else txcolors.SELL_LOSS}{INVESTMENT_GAIN:.2f}%\n"
+       ,f"Investment Value Gain:  {txcolors.SELL_PROFIT if investment_value_gain >= 0 else txcolors.SELL_LOSS}{investment_value_gain:.{decimals()}f} USDT\n"
+       ,f"{reportline} {txcolors.DEFAULT}")
 
     if type == 'message':
-       report_string = 'SP:'+str(round(session_profit, 2))+'-CE:'+str(round(CURRENT_EXPOSURE, 4))+'-W:'+str(win_trade_count)+'-L:'+str(loss_trade_count)+'-IG:'+str(round(INVESTMENT_GAIN, 4))+'%>'+'-IT:'+str(round(INVESTMENT_TOTAL, 4))+'-NB:'+str(round(NEW_BALANCE, 4))+'-IV:'+str(round(investment_value, 4))+str(EXCHANGE)
-       bot_message = SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
-       bot_token = TELEGRAM_BOT_TOKEN
-       bot_chatID = TELEGRAM_BOT_ID
+       TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
+       report_string = 'SP:'+str(round(session_profit, 2))+'>CE:'+str(round(CURRENT_EXPOSURE, 4))+'>W:'+str(win_trade_count)+'>L:'+str(loss_trade_count)+'>IG:'+str(round(INVESTMENT_GAIN, 4))+'%'+'>IT:'+str(round(INVESTMENT, 4))+'>NB:'+str(round(NEW_BALANCE, 4))+'>IV:'+str(round(investment_value, 4))+str(exchange_symbol)+'>IGV:'+str(round(investment_value_gain, 4))+'>IVP:'+str(round(investment_value_gain, 4))
+       bot_message = BOT_ID + SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
+       report_string = 'SP:'+str(round(session_profit, 2))+'>CE:'+str(round(CURRENT_EXPOSURE, 4))+'>W:'+str(win_trade_count)+'>L:'+str(loss_trade_count)+'>IG:'+str(round(INVESTMENT_GAIN, 4))+'%'+'>IT:'+str(round(INVESTMENT, 4))+'>NB:'+str(round(NEW_BALANCE, 4))+'>IV:'+str(round(investment_value, 4))+str(exchange_symbol)+'>IGV:'+str(round(investment_value_gain, 4))+'>IVP:'+str(round(investment_value_gain, 4))
+       bot_message = BOT_ID + SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
-       send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
-       response = requests.get(send_text)
+       if BOT_MESSAGE_REPORTS and TELEGRAM_BOT_TOKEN:
+          bot_token = TELEGRAM_BOT_TOKEN
+          bot_chatID = TELEGRAM_BOT_ID
+          send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
+          response = requests.get(send_text)
+
+       if BOT_MESSAGE_REPORTS and DISCORD_WEBHOOK:
+          #Webhook of my channel. Click on edit channel --> Webhooks --> Creates webhook
+          mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
+          data = {"content": bot_message}
+          response = requests.post(mUrl, json=data)
+          print(response.content)
 
 #function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
-def dynamic_performance_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS):
+def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT, HOLDING_TAKE_PROFIT):
 
-    global last_trade_won, last_trade_lost, dynamic_performance_type
+    global last_trade_won, last_trade_lost, dynamic, DYNAMIC_HOLDING_TAKE_PROFIT
 
-    if type == 'adjust_up':
-      STOP_LOSS = STOP_LOSS + (STOP_LOSS * DYNAMIC_WIN_LOSS_UP) / 100
-      TAKE_PROFIT = TAKE_PROFIT + (TAKE_PROFIT * DYNAMIC_WIN_LOSS_UP) / 100
-      TRAILING_STOP_LOSS = TRAILING_STOP_LOSS + (TRAILING_STOP_LOSS * DYNAMIC_WIN_LOSS_UP) / 100
-      dynamic_performance_type = 'none'
-      print(f'{txcolors.NOTICE}>> Last Trade WON Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f}  - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} <<{txcolors.DEFAULT}')
+    if DYNAMIC_SETTINGS:
 
-    if type == 'adjust_down':
-      STOP_LOSS = STOP_LOSS - (STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
-      TAKE_PROFIT = TAKE_PROFIT - (TAKE_PROFIT * DYNAMIC_WIN_LOSS_DOWN) / 100
-      TRAILING_STOP_LOSS = TRAILING_STOP_LOSS - (TRAILING_STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
-      dynamic_performance_type = 'none'
-      print(f'{txcolors.NOTICE}>> Last Trade LOST Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} <<{txcolors.DEFAULT}')
+      if type == 'performance_adjust_up':
+        STOP_LOSS = STOP_LOSS + (STOP_LOSS * DYNAMIC_WIN_LOSS_UP) / 100
+        TAKE_PROFIT = TAKE_PROFIT + (TAKE_PROFIT * DYNAMIC_WIN_LOSS_UP) / 100
+        TRAILING_STOP_LOSS = TRAILING_STOP_LOSS + (TRAILING_STOP_LOSS * DYNAMIC_WIN_LOSS_UP) / 100
+        CHANGE_IN_PRICE_MAX = CHANGE_IN_PRICE_MAX + (CHANGE_IN_PRICE_MAX * DYNAMIC_WIN_LOSS_DOWN) /100
+        CHANGE_IN_PRICE_MIN = CHANGE_IN_PRICE_MIN - (CHANGE_IN_PRICE_MIN * DYNAMIC_WIN_LOSS_DOWN) /100
+        HOLDING_TIME_LIMIT = HOLDING_TIME_LIMIT + (HOLDING_TIME_LIMIT * DYNAMIC_WIN_LOSS_UP) / 100
+        HOLDING_TAKE_PROFIT = HOLDING_TAKE_PROFIT + (HOLDING_TAKE_PROFIT * DYNAMIC_WIN_LOSS_UP) / 100
+        dynamic = 'none'
+        print(f'{txcolors.NOTICE}>> Last Trade WON Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f}  - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} CIP:{CHANGE_IN_PRICE_MIN:.4f}/{CHANGE_IN_PRICE_MAX:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} HTL: {HOLDING_TIME_LIMIT:.2f} HTP: {HOLDING_TAKE_PROFIT:.2f}<<{txcolors.DEFAULT}')
 
-    if type == 'reset':
-      STOP_LOSS = parsed_config['trading_options']['STOP_LOSS']
-      TAKE_PROFIT = parsed_config['trading_options']['TAKE_PROFIT']
-      TRAILING_STOP_LOSS = parsed_config['trading_options']['TRAILING_STOP_LOSS']
-      dynamic_performance_type = 'none'
-      print(f'{txcolors.NOTICE}>> DYNAMIC SETTINGS RESET - STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} <<{txcolors.DEFAULT}')
+      if type == 'performance_adjust_down':
+        STOP_LOSS = STOP_LOSS - (STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
+        TAKE_PROFIT = TAKE_PROFIT - (TAKE_PROFIT * DYNAMIC_WIN_LOSS_DOWN) / 100
+        TRAILING_STOP_LOSS = TRAILING_STOP_LOSS - (TRAILING_STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
+        CHANGE_IN_PRICE_MAX = CHANGE_IN_PRICE_MAX - (CHANGE_IN_PRICE_MAX * DYNAMIC_WIN_LOSS_DOWN) /100
+        CHANGE_IN_PRICE_MIN = CHANGE_IN_PRICE_MIN + (CHANGE_IN_PRICE_MIN * DYNAMIC_WIN_LOSS_DOWN) /100
+        HOLDING_TIME_LIMIT = HOLDING_TIME_LIMIT - (HOLDING_TIME_LIMIT * DYNAMIC_WIN_LOSS_DOWN) / 100
+        HOLDING_TAKE_PROFIT = HOLDING_TAKE_PROFIT - (HOLDING_TAKE_PROFIT * DYNAMIC_WIN_LOSS_DOWN) / 100
+        dynamic = 'none'
+        print(f'{txcolors.NOTICE}>> Last Trade LOST Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} CIP:{CHANGE_IN_PRICE_MIN:.4f}/{CHANGE_IN_PRICE_MAX:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} HTL:{HOLDING_TIME_LIMIT:.2f} HTP: {HOLDING_TAKE_PROFIT}<<{txcolors.DEFAULT}')
 
+      if type == 'reset':
+        STOP_LOSS = parsed_config['trading_options']['STOP_LOSS']
+        TAKE_PROFIT = parsed_config['trading_options']['TAKE_PROFIT']
+        TRAILING_STOP_LOSS = parsed_config['trading_options']['TRAILING_STOP_LOSS']
+        CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX']
+        CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN']
+        HOLDING_TIME_LIMIT = (parsed_config['trading_options']['TIME_DIFFERENCE'] * 60) * parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
+        HOLDING_TAKE_PROFIT = (parsed_config)['trading_options']['HOLDING_TAKE_PROFIT']
+        print(f'{txcolors.NOTICE}>> DYNAMIC SETTINGS RESET - STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}CIP:{CHANGE_IN_PRICE_MIN:.4f}/{CHANGE_IN_PRICE_MAX:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} HTL: {HOLDING_TIME_LIMIT:.2f} HTP: {HOLDING_TAKE_PROFIT}<<{txcolors.DEFAULT}')
+        dynamic = 'none'
 
-    return STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS;
+      if type == 'holding':
+        DYNAMIC_HOLDING_TAKE_PROFIT = DYNAMIC_HOLDING_TAKE_PROFIT - (DYNAMIC_HOLDING_TAKE_PROFIT * DYNAMIC_WIN_LOSS_DOWN) / 100
+
+      if CHANGE_IN_PRICE_MIN > 0:
+         CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN'] - (CHANGE_IN_PRICE_MIN * market_support)
+         CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX'] - (CHANGE_IN_PRICE_MAX * market_support)
+
+      if CHANGE_IN_PRICE_MAX < 0:
+        CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN'] + (CHANGE_IN_PRICE_MIN * market_support)
+        CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX'] + (CHANGE_IN_PRICE_MAX * market_support)
+
+    return STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT, HOLDING_TAKE_PROFIT
 
 #various session calculations like uptime 24H gain profit risk to reward ratio unrealised profit etc
 def session(type):
 
-    global unrealised_percent, investment_value, investment_gain_value
-    global NEW_BALANCE, INVESTMENT_TOTAL, TOTAL_GAINS, INVESTMENT_GAIN
+    global unrealised_percent, investment_value, investment_value_gain
 
-    if type == 'session':
-       INVESTMENT_TOTAL = (QUANTITY * TRADE_SLOTS)
-       TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
-       NEW_BALANCE = (INVESTMENT_TOTAL + TOTAL_GAINS)
-       INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT_TOTAL) * 100
+    global NEW_BALANCE, INVESTMENT_TOTAL, TOTAL_GAINS, INVESTMENT_GAIN
+    global market_price, session_profit, win_trade_count, loss_trade_count
 
     if type == 'calc':
+
+       TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
+       NEW_BALANCE = (INVESTMENT + TOTAL_GAINS)
+       INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT) * 100
        CURRENT_EXPOSURE = (QUANTITY * len(coins_bought))
        unrealised_percent = 0
 
@@ -610,25 +743,133 @@ def session(type):
            if len(coins_bought) > 0:
               unrealised_percent = unrealised_percent + (PriceChange-(buyFee+sellFee))
 
-    #this number is your actual ETH or other coin value in correspondence to USDT aka your market investment_value
-    #it is important cuz your exchange aha ETH or BTC can vary and if you pause bot during that time you gain profit
-    investment_value = float(market_price) * NEW_BALANCE
-    investment_gain_value = float(market_price) * (NEW_BALANCE - INVESTMENT_TOTAL)
+       #this number is your actual ETH or other coin value in correspondence to USDT aka your market investment_value
+       #it is important cuz your exchange aha ETH or BTC can vary and if you pause bot during that time you gain profit
+       investment_value = float(market_price) * NEW_BALANCE
+       investment_value_gain = float(market_price) * (NEW_BALANCE - INVESTMENT)
 
-    if type == 'data':
+    if type == 'save':
 
+       session_info = {}
+       session_info_file_path = 'session_info.json'
        session_info = {
            'session_profit': session_profit,
-           'stop_loss': -STOP_LOSS,
-           'take_profit': TAKE_PROFIT,
-           'trailing_take_profit': TRAILING_TAKE_PROFIT,
+           'win_trade_count': win_trade_count,
+           'loss_trade_count': loss_trade_count,
+#           'investment_value': investment_value,
+           'new_balance': NEW_BALANCE,
             }
 
        # save the coins in a json file in the same directory
-       with open(session_dump_file_path, 'w') as file:
+       with open(session_info_file_path, 'w') as file:
            json.dump(session_info, file, indent=4)
 
-       print(f'wrote session data to file!!!')
+    if type == 'load':
+
+       session_info = {}
+       #gogo MOD path to session info file and loading variables from previous sessions
+       #sofar only used for session profit TODO implement to use other things too
+       #session_profit is calculated in % wich is innacurate if QUANTITY is not the same!!!!!
+       session_info_file_path = 'session_info.json'
+
+       if os.path.isfile(session_info_file_path) and os.stat(session_info_file_path).st_size!= 0:
+          json_file=open(session_info_file_path)
+          session_info=json.load(json_file)
+          json_file.close()
+
+          session_profit = session_info['session_profit']
+          win_trade_count = session_info['win_trade_count']
+          loss_trade_count = session_info['loss_trade_count']
+          #investment_value = session['investment_value']
+          NEW_BALANCE = session_info['new_balance']
+
+       TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
+       NEW_BALANCE = (INVESTMENT + TOTAL_GAINS)
+       INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT) * 100
+
+def tickers_list(type):
+
+    global historical_prices, hsp_head, tickers_list_changed
+
+    tickers_list_volume = {}
+    tickers_list_price_change = {}
+
+# get all info on tickers from binance
+    tickers_binance = client.get_ticker()
+    tickers_pairwith = {}
+    tickers_new = {}
+
+#pull coins from trading view and create a list
+    if type == 'create_ta':
+
+       response = requests.get('https://scanner.tradingview.com/crypto/scan')
+       ta_data = response.json()
+       signals_file = open(TICKERS_LIST,'w')
+
+       with open (TICKERS_LIST, 'w') as f:
+           for i in ta_data['data']:
+              if i['s'][:7]=='BINANCE' and i['s'][-len(PAIR_WITH):] == PAIR_WITH and (i['s'][-len(PAIR_WITH)-2:-len(PAIR_WITH)]) != 'UP' and (i['s'][-len(PAIR_WITH)-4:-len(PAIR_WITH)]) != 'DOWN' and i['s'][8:-len(PAIR_WITH)] not in ignorelist:
+                 f.writelines(str(i['s'][8:].replace(PAIR_WITH,''))+'\n')
+       tickers_list_changed = True
+       print(f'>> Tickers CREATED from TradingView tickers!!!{TICKERS_LIST} <<')
+
+    if type == 'volume' or type == 'price_change':
+#       create list with voleume and change in price on our pairs
+           for coin in tickers_binance:
+
+               if CUSTOM_LIST:
+                  if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in FIATS):
+                     tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
+                     tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
+
+               else:
+                  if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in FIATS):
+                     tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
+                     tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
+
+       #sort tickers by descending order volume and price
+           list_tickers_volume = list(sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True))
+           list_tickers_price_change = list(sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True))
+
+#pull coins from binance and create list
+    if type == 'create_b':
+
+       for coin in tickers_binance:
+
+           if PAIR_WITH in coin['symbol']:
+              tickers_pairwith[coin['symbol']] = coin['symbol']
+              if tickers_pairwith[coin['symbol']].endswith(PAIR_WITH):
+                 tickers_new[coin['symbol']] = tickers_pairwith[coin['symbol']]
+
+       list_tickers_new = list(tickers_new)
+
+
+       with open (TICKERS_LIST, 'w') as f:
+            for ele in list_tickers_new:
+               f.writelines(str(ele.replace(PAIR_WITH,''))+'\n')
+       tickers_list_changed = True
+       print(f'>> Tickers CREATED from binance tickers!!!{TICKERS_LIST} <<')
+
+       tickers_list_changed = True
+       print(f'>> Tickers CREATED from Binance tickers!!!{TICKERS_LIST} <<')
+
+    if type == 'volume' and CUSTOM_LIST:
+    #write sorted lists to files
+
+       with open (TICKERS_LIST, 'w') as f:
+            for sublist in list_tickers_volume:
+               f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
+       tickers_list_changed = True
+       print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
+
+    if type == 'price_change':
+    #write sorted list to files
+
+       with open (TICKERS_LIST, 'w') as f:
+            for sublist in list_tickers_price_change:
+               f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
+       tickers_list_changed = True
+       print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
 if __name__ == '__main__':
 
@@ -657,17 +898,18 @@ if __name__ == '__main__':
     LOG_FILE = parsed_config['script_options'].get('LOG_FILE')
     DEBUG_SETTING = parsed_config['script_options'].get('DEBUG')
     AMERICAN_USER = parsed_config['script_options'].get('AMERICAN_USER')
-    TELEGRAM_BOT_TOKEN = parsed_config['script_options']['TELEGRAM_BOT_TOKEN']
-    TELEGRAM_BOT_ID = parsed_config['script_options']['TELEGRAM_BOT_ID']
+    BOT_MESSAGE_REPORTS =  parsed_config['script_options'].get('BOT_MESSAGE_REPORTS')
+    BOT_ID = parsed_config['script_options'].get('BOT_ID')
 
     # Load trading vars
     PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
-    QUANTITY = parsed_config['trading_options']['QUANTITY']
+    INVESTMENT = parsed_config['trading_options']['INVESTMENT']
     TRADE_SLOTS = parsed_config['trading_options']['TRADE_SLOTS']
     FIATS = parsed_config['trading_options']['FIATS']
     TIME_DIFFERENCE = parsed_config['trading_options']['TIME_DIFFERENCE']
     RECHECK_INTERVAL = parsed_config['trading_options']['RECHECK_INTERVAL']
-    CHANGE_IN_PRICE = parsed_config['trading_options']['CHANGE_IN_PRICE']
+    CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN']
+    CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX']
     STOP_LOSS = parsed_config['trading_options']['STOP_LOSS']
     TAKE_PROFIT = parsed_config['trading_options']['TAKE_PROFIT']
     CUSTOM_LIST = parsed_config['trading_options']['CUSTOM_LIST']
@@ -679,18 +921,30 @@ if __name__ == '__main__':
     SIGNALLING_MODULES = parsed_config['trading_options']['SIGNALLING_MODULES']
     DYNAMIC_WIN_LOSS_UP = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_UP']
     DYNAMIC_WIN_LOSS_DOWN = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_DOWN']
+    DYNAMIC_SETTINGS = parsed_config['trading_options']['DYNAMIC_SETTINGS']
     STOP_LOSS_ON_PAUSE = parsed_config['trading_options']['STOP_LOSS_ON_PAUSE']
-    EXCHANGE = parsed_config['trading_options']['EXCHANGE']
+    PERCENT_SIGNAL_BUY = parsed_config['trading_options']['PERCENT_SIGNAL_BUY']
+    SORT_LIST_TYPE = parsed_config['trading_options']['SORT_LIST_TYPE']
+    LIST_AUTOCREATE = parsed_config['trading_options']['LIST_AUTOCREATE']
+    LIST_CREATE_TYPE = parsed_config['trading_options']['LIST_CREATE_TYPE']
+    IGNORE_LIST = parsed_config['trading_options']['IGNORE_LIST']
+    REPORT_STYLE = parsed_config['script_options']['REPORT_STYLE']
+    HOLDING_INTERVAL_LIMIT = parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
+    HOLDING_TAKE_PROFIT = parsed_config['trading_options']['HOLDING_TAKE_PROFIT']
+
+    DYNAMIC_HOLDING_TAKE_PROFIT = HOLDING_TAKE_PROFIT
+    HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60) * HOLDING_INTERVAL_LIMIT
+    QUANTITY = INVESTMENT/TRADE_SLOTS
 
     if DEBUG_SETTING or args.debug:
         DEBUG = True
     # Load creds for correct environment
     access_key, secret_key = load_correct_creds(parsed_creds)
 
+    # Telegram_Bot enabled? # **added by*Coding60plus
     if DEBUG:
         print(f'Loaded config below\n{json.dumps(parsed_config, indent=4)}')
         print(f'Your credentials have been loaded from {creds_file}')
-
 
     # Authenticate with the client, Ensure API key is good before continuing
     if AMERICAN_USER:
@@ -704,6 +958,19 @@ if __name__ == '__main__':
     if api_ready is not True:
        exit(f'{txcolors.SELL_LOSS}{msg}{txcolors.DEFAULT}')
 
+    # Load coins to be ignored from file
+    ignorelist=[line.strip() for line in open(IGNORE_LIST)]
+
+    #sort tickers list by volume
+    if LIST_AUTOCREATE:
+       if LIST_CREATE_TYPE == 'binance':
+          tickers_list('create_b')
+          tickers=[line.strip() for line in open(TICKERS_LIST)]
+
+       if LIST_CREATE_TYPE == 'tradingview':
+          tickers_list('create_ta')
+          tickers=[line.strip() for line in open(TICKERS_LIST)]
+
     # Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
     if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]
 
@@ -712,17 +979,6 @@ if __name__ == '__main__':
 
     # path to the saved coins_bought file
     coins_bought_file_path = 'coins_bought.json'
-
-    #gogo MOD path to session info file and loading variables from previous sessions
-    #sofar only used for session profit TODO implement to use other things too
-    #session_profit is calculated in % wich is innacurate if QUANTITY is not the same!!!!!
-    session_dump_file_path = 'session_dump.json'
-    session_info_file_path = 'session_info.json'
-
-    if os.path.isfile(session_info_file_path) and os.stat(session_info_file_path).st_size!= 0:
-       json_file=open(session_info_file_path)
-       session_profit=json.load(json_file)
-       json_file.close()
 
     # rolling window of prices; cyclical queue
     historical_prices = [None] * (TIME_DIFFERENCE * RECHECK_INTERVAL)
@@ -779,18 +1035,31 @@ if __name__ == '__main__':
 
     # seed initial prices
     get_price()
+
+    READ_TIMEOUT_COUNT=0
+    CONNECTION_ERROR_COUNT = 0
+    #load previous session stuff
+    session('load')
+
     while True:
 
-        session('session')
-        orders, last_price, volume = buy()
-        update_portfolio(orders, last_price, volume)
-        coins_sold = sell_coins()
-        remove_from_portfolio(coins_sold)
-
+        #reload tickers list by volume if triggered recreation
+        if tickers_list_changed == True :
+           tickers=[line.strip() for line in open(TICKERS_LIST)]
+           tickers_list_changed = False
+#           print(f'Tickers list changed and loaded: {tickers}')
+        try:
+          orders, last_price, volume = buy()
+          update_portfolio(orders, last_price, volume)
+          coins_sold = sell_coins()
+          remove_from_portfolio(coins_sold)
+        except ReadTimeout as rt:
+            READ_TIMEOUT_COUNT += 1
+            print(f'We got a timeout error from from binance. Going to re-loop. Current Count: {READ_TIMEOUT_COUNT}')
+        except ConnectionError as ce:
+            CONNECTION_ERROR_COUNT +=1
+            print(f'{txcolors.WARNING}We got a timeout error from from binance. Going to re-loop. Current Count: {CONNECTION_ERROR_COUNT}\n{ce}{txcolors.DEFAULT}')
         #gogos MOD to adjust dynamically stoploss trailingstop loss and take profit based on wins
-        STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS = dynamic_performance_settings(dynamic_performance_type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS)
-
+        STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT, HOLDING_TAKE_PROFIT = dynamic_settings(dynamic, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT, HOLDING_TAKE_PROFIT)
         #session calculations like unrealised potential etc
         session('calc')
-
-#        session('data')
