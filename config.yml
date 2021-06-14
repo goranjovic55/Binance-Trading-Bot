@@ -15,7 +15,7 @@ script_options:
   BOT_MESSAGE_REPORTS: True # **added/changed by Coding60plus
 
 #Bot id for BOT_MESSAGE_REPORTS
-  BOT_ID: '#gogo_ETH_CSG_HLD>>'
+  BOT_ID: '@gogo>>'
 
   REPORT_STYLE: fancy
 
