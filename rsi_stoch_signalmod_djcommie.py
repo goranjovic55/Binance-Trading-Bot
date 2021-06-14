@@ -26,13 +26,13 @@ OSC_THRESHOLD = 2 # Must be less or equal to number of items in OSC_INDICATORS
 MA_INDICATORS = ['EMA10', 'EMA20'] # Indicators to use in Moving averages analysis
 MA_THRESHOLD = 2 # Must be less or equal to number of items in MA_INDICATORS
 INTERVAL = Interval.INTERVAL_5_MINUTES #Timeframe for analysis
-
 EXCHANGE = 'BINANCE'
 SCREENER = 'CRYPTO'
 PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
 TICKERS = parsed_config['trading_options']['TICKERS_LIST']
-TIME_TO_WAIT = 5 # Minutes to wait between analysis
-FULL_LOG = False # List analysis result to console
+SIGNAL_OUTPUT_PATH = 'signals'
+TIME_TO_WAIT = parsed_config['trading_options']['SIGNALS_FREQUENCY'] # Minutes to wait between analysis
+FULL_LOG = parsed_config['script_options']['VERBOSE_MODE'] # List analysis result to console
 
 # TODO: check every 1 minute on 5 minute timeframes by keeping a circular buffer array
 global last_RSI
@@ -45,8 +45,8 @@ def analyze(pairs):
     analysis = {}
     handler = {}
 
-    if os.path.exists('signals/custsignalmod.exs'):
-        os.remove('signals/custsignalmod.exs')
+    if os.path.exists(f'{SIGNAL_OUTPUT_PATH}/custsignalmod.exs'):
+        os.remove(f'{SIGNAL_OUTPUT_PATH}/custsignalmod.exs')
 
     for pair in pairs:
         handler[pair] = TA_Handler(
@@ -76,12 +76,12 @@ def analyze(pairs):
         for indicator in MA_INDICATORS:
             if analysis.moving_averages ['COMPUTE'][indicator] == 'BUY': maCheck +=1
 
-        #TODO: Use same type of analysis for sell indicators
+        # TODO: Use same type of analysis for sell indicators
 
         # Stoch.RSI (25 - 52) & Stoch.RSI.K > Stoch.RSI.D, RSI (49-67), EMA10 > EMA20 > EMA100, Stoch.RSI = BUY, RSI = BUY, EMA10 = EMA20 = BUY
         RSI = float(analysis.indicators['RSI'])
         STOCH_RSI_K = float(analysis.indicators['Stoch.RSI.K'])
-        #STOCH_RSI_D = float(analysis.indicators['Stoch.D'])
+        # STOCH_RSI_D = float(analysis.indicators['Stoch.D'])
         EMA10 = float(analysis.indicators['EMA10'])
         EMA20 = float(analysis.indicators['EMA20'])
         EMA100 = float(analysis.indicators['EMA100'])
@@ -94,13 +94,14 @@ def analyze(pairs):
 
             if oscCheck >= OSC_THRESHOLD and maCheck >= MA_THRESHOLD:
                 signal_coins[pair] = pair
-#                print(f'\033[92mCustsignalmod: Signal detected on {pair} at {oscCheck}/{len(OSC_INDICATORS)} oscillators and {maCheck}/{len(MA_INDICATORS)} moving averages.')
+
+                if FULL_LOG:
+                    print(f'\033[92mCustsignalmod: Signal detected on {pair} at {oscCheck}/{len(OSC_INDICATORS)} oscillators and {maCheck}/{len(MA_INDICATORS)} moving averages.')
                 with open('signals/custsignalmod.exs','a+') as f:
                     f.write(pair + '\n')
 
         last_RSI[pair] = RSI
-        #if FULL_LOG:
-#        print(f'Custsignalmod:{pair} Oscillators:{oscCheck}/{len(OSC_INDICATORS)} Moving averages:{maCheck}/{len(MA_INDICATORS)}')
+            print(f'Custsignalmod:{pair} Oscillators:{oscCheck}/{len(OSC_INDICATORS)} Moving averages:{maCheck}/{len(MA_INDICATORS)}')
 
     return signal_coins
 
@@ -114,7 +115,8 @@ def do_work():
 
     while True:
         if not threading.main_thread().is_alive(): exit()
-#        print(f'Custsignalmod: Analyzing {len(pairs)} coins')
         signal_coins = analyze(pairs)
-#        print(f'Custsignalmod: {len(signal_coins)} coins above {OSC_THRESHOLD}/{len(OSC_INDICATORS)} oscillators and {MA_THRESHOLD}/{len(MA_INDICATORS)} moving averages Waiting {TIME_TO_WAIT} minutes for next analysis.')
+        if FULL_LOG:
+            print(f'Custsignalmod: Analyzing {len(pairs)} coins')
+            print(f'Custsignalmod: {len(signal_coins)} coins above {OSC_THRESHOLD}/{len(OSC_INDICATORS)} oscillators and {MA_THRESHOLD}/{len(MA_INDICATORS)} moving averages Waiting {TIME_TO_WAIT} minutes for next analysis.')
         time.sleep((TIME_TO_WAIT*60))

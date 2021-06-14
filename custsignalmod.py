@@ -31,7 +31,7 @@ SCREENER = 'CRYPTO'
 PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
 TICKERS = parsed_config['trading_options']['TICKERS_LIST']
 TIME_TO_WAIT = parsed_config['trading_options']['TIME_DIFFERENCE'] # Minutes to wait between analysis
-FULL_LOG = parsed_config['trading_options']['VERBOSE_MODE'] # List analysis result to console
+FULL_LOG = parsed_config['script_options']['VERBOSE_MODE'] # List analysis result to console
 
 def analyze(pairs):
     signal_coins = {}
@@ -53,13 +53,13 @@ def analyze(pairs):
         try:
             analysis = handler[pair].get_analysis()
         except Exception as e:
-#            print("Signalsample:")
-#            print("Exception:")
-#            print(e)
-#            print (f'Coin: {pair}')
-#            print (f'handler: {handler[pair]}')
-#             print('')
-             dont_print_on_exception = True
+            # print("Signalsample:")
+            # print("Exception:")
+            # print(e)
+            # print (f'Coin: {pair}')
+            # print (f'handler: {handler[pair]}')
+            # print('')
+            dont_print_on_exception = True
 
         oscCheck=0
         maCheck=0
@@ -74,7 +74,8 @@ def analyze(pairs):
 
         if oscCheck >= OSC_THRESHOLD and maCheck >= MA_THRESHOLD:
                 signal_coins[pair] = pair
-                print(f'Custsignalmod: Signal detected on {pair} at {oscCheck}/{len(OSC_INDICATORS)} oscillators and {maCheck}/{len(MA_INDICATORS)} moving averages.')
+                if FULL_LOG:
+                    print(f'Custsignalmod: Signal detected on {pair} at {oscCheck}/{len(OSC_INDICATORS)} oscillators and {maCheck}/{len(MA_INDICATORS)} moving averages.')
                 with open('signals/custsignalmod.exs','a+') as f:
                     f.write(pair + '\n')
 
@@ -90,7 +91,8 @@ def do_work():
 
     while True:
         if not threading.main_thread().is_alive(): exit()
-        print(f'Custsignalmod: Analyzing {len(pairs)} coins')
         signal_coins = analyze(pairs)
-        print(f'Custsignalmod: {len(signal_coins)} coins above {OSC_THRESHOLD}/{len(OSC_INDICATORS)} oscillators and {MA_THRESHOLD}/{len(MA_INDICATORS)} moving averages Waiting {TIME_TO_WAIT} minutes for next analysis.')
+        if FULL_LOG:
+            print(f'Custsignalmod: Analyzing {len(pairs)} coins')
+            print(f'Custsignalmod: {len(signal_coins)} coins above {OSC_THRESHOLD}/{len(OSC_INDICATORS)} oscillators and {MA_THRESHOLD}/{len(MA_INDICATORS)} moving averages Waiting {TIME_TO_WAIT} minutes for next analysis.')
         time.sleep((TIME_TO_WAIT*60))

@@ -23,18 +23,19 @@ SYMBOL = parsed_config['trading_options']['PAIR_WITH'] + 'USDT'
 TYPE = 'SELL'
 THRESHOLD = parsed_config['trading_options']['PAUSEBOTMOD_THRESHOLD'] # 7 of 15 MA's indicating sell
 TIME_TO_WAIT = parsed_config['trading_options']['TIME_DIFFERENCE'] # Minutes to wait between analysis
-FULL_LOG = parsed_config['trading_options']['VERBOSE_MODE'] # List analysis result to console
+FULL_LOG = parsed_config['script_options']['VERBOSE_MODE'] # List analysis result to console
 
 def analyze():
     analysis = {}
     handler = {}
 
     handler = TA_Handler(
-            symbol=SYMBOL,
-            exchange=EXCHANGE,
-            screener=SCREENER,
-            interval=INTERVAL,
-            timeout= 10)
+        symbol = SYMBOL,
+        exchange = EXCHANGE,
+        screener = SCREENER,
+        interval = INTERVAL,
+        timeout =  10
+        )
 
     try:
         analysis = handler.get_analysis()
@@ -52,6 +53,7 @@ def analyze():
         paused = False
 
     return paused
+
 #if __name__ == '__main__':
 def do_work():
 
