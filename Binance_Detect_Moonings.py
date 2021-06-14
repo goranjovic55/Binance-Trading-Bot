@@ -279,7 +279,7 @@ def wait_for_price(type):
         else:
             coins_unchanged +=1
 
-    if coins_up != 0: maket_resistance = market_resistance / coins_up
+    if coins_up != 0: market_resistance = market_resistance / coins_up
     if coins_down != 0: market_support = market_support / coins_down
 
     if REPORT_STYLE == 'fancy' and hsp_head == 1:
