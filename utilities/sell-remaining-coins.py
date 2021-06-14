@@ -50,13 +50,13 @@ with open('../coins_bought.json', 'r') as f:
             quantity = coins[coin]['volume']
         )
 
-        BuyPrice = float(coins[coin]['bought_at'])
-        LastPrice = float(sell_coin['fills'][0]['price'])
-        profit = (LastPrice - BuyPrice) * coins[coin]['volume']
-        PriceChange = float((LastPrice - BuyPrice) / BuyPrice * 100)
+        buyPrice = float(coins[coin]['bought_at'])
+        lastPrice = float(sell_coin['fills'][0]['price'])
+        profit = (lastPrice - buyPrice) * coins[coin]['volume']
+        priceChange = float((lastPrice - buyPrice) / buyPrice * 100)
 
         if LOG_TRADES:
             timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
-            write_log(f"Sell: {coins[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.2f} {PriceChange:.2f}%")
+            write_log(f"Sell: {coins[coin]['volume']} {coin} - {buyPrice} - {lastPrice} Profit: {profit:.2f} {priceChange:.2f}%")
 
 os.remove('../coins_bought.json')

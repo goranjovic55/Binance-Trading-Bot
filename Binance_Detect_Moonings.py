@@ -249,32 +249,32 @@ def wait_for_price(type):
 
         if type == 'percent_and_signal':
 
-           # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
-           if threshold_check > CHANGE_IN_PRICE_MIN and threshold_check < CHANGE_IN_PRICE_MAX:
-              coins_up +1
+            # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
+            if threshold_check > CHANGE_IN_PRICE_MIN and threshold_check < CHANGE_IN_PRICE_MAX:
+                coins_up +1
 
-              if coin not in volatility_cooloff:
-                 volatility_cooloff[coin] = datetime.now() - timedelta(minutes=TIME_DIFFERENCE)
+                if coin not in volatility_cooloff:
+                    volatility_cooloff[coin] = datetime.now() - timedelta(minutes=TIME_DIFFERENCE)
 
-            # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
-              if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=TIME_DIFFERENCE):
-                 volatility_cooloff[coin] = datetime.now()
+                # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
+                if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=TIME_DIFFERENCE):
+                    volatility_cooloff[coin] = datetime.now()
 
-                 if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
+                if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
                     volatile_coins[coin] = round(threshold_check, 3)
                     print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
 
-                 else:
+                else:
                    print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes but you are using all available trade slots!{txcolors.DEFAULT}")
 
-           externals = external_signals()
-           exnumber = 0
+            externals = external_signals()
+            exnumber = 0
 
-           for excoin in externals:
-               if excoin not in volatile_coins and excoin not in coins_bought and (len(coins_bought) + exnumber) < TRADE_SLOTS:
-                  volatile_coins[excoin] = 1
-                  exnumber +=1
-                  print(f"External signal received on {excoin}, calculating {QUANTITY} {PAIR_WITH} value of {excoin} for purchase!")
+            for excoin in externals:
+                if excoin not in volatile_coins and excoin not in coins_bought and (len(coins_bought) + exnumber) < TRADE_SLOTS:
+                    volatile_coins[excoin] = 1
+                    exnumber +=1
+                    print(f"External signal received on {excoin}, calculating {QUANTITY} {PAIR_WITH} value of {excoin} for purchase!")
 
         if threshold_check < CHANGE_IN_PRICE_MIN and threshold_check > CHANGE_IN_PRICE_MAX:
              coins_down +=1
@@ -286,7 +286,7 @@ def wait_for_price(type):
     if coins_down != 0: market_support = market_support / coins_down
 
     if DETAILED_REPORTS == True and hsp_head == 1:
-      report('detailed',f"Market Resistance:      {txcolors.DEFAULT}{market_resistance:.4f}\n Market Support:         {txcolors.DEFAULT}{market_support:.4f}")
+        report('detailed',f"Market Resistance:      {txcolors.DEFAULT}{market_resistance:.4f}\n Market Support:         {txcolors.DEFAULT}{market_support:.4f}")
     else: report('console', f" MR:{market_resistance:.4f}/MS:{market_support:.4f} ")
 
     return volatile_coins, len(volatile_coins), historical_prices[hsp_head]
@@ -491,12 +491,12 @@ def sell_coins():
         TP = float(coins_bought[coin]['bought_at']) + (float(coins_bought[coin]['bought_at']) * coins_bought[coin]['take_profit']) / 100
         SL = float(coins_bought[coin]['bought_at']) + (float(coins_bought[coin]['bought_at']) * coins_bought[coin]['stop_loss']) / 100
         #
-        LastPrice = float(last_price[coin]['price'])
-        sellFee = (coins_bought[coin]['volume'] * LastPrice) * (TRADING_FEE/100)
-        BuyPrice = float(coins_bought[coin]['bought_at'])
-        buyFee = (coins_bought[coin]['volume'] * BuyPrice) * (TRADING_FEE/100)
-        PriceChange = float((LastPrice - BuyPrice) / BuyPrice * 100)
-        PriceChangeWithFee = float(((LastPrice - BuyPrice) - (sellFee + buyFee) ) / BuyPrice * 100)
+        lastPrice = float(last_price[coin]['price'])
+        sellFee = (coins_bought[coin]['volume'] * lastPrice) * (TRADING_FEE/100)
+        buyPrice = float(coins_bought[coin]['bought_at'])
+        buyFee = (coins_bought[coin]['volume'] * buyPrice) * (TRADING_FEE/100)
+        priceChange = float((lastPrice - buyPrice) / buyPrice * 100)
+        priceChangeWithFee = float(((lastPrice - buyPrice) - (sellFee + buyFee) ) / buyPrice * 100)
         #
         # maths here for anyone to double check.
         # assuming BNB used so TRADING_FEE = 0.075:
@@ -507,25 +507,25 @@ def sell_coins():
         # sold: 10 coin  @ 40 each = 400
         # sellFee = (10 * 40) * (0.075/100) = 0.3
         #
-        # PriceChange = ((40 - 20) / 20) * 100
+        # priceChange = ((40 - 20) / 20) * 100
         # = 100 (%)
         #
         # or, with fee:
-        # PriceChangeWithFee = (((40 - 20) - (0.3 + 0.15) ) / 20) * 100
+        # priceChangeWithFee = (((40 - 20) - (0.3 + 0.15) ) / 20) * 100
         # 97.75 (%)
 
         # check that the price is above the take profit and readjust SL and TP accordingly if trialing stop loss used
-        if LastPrice > TP and USE_TRAILING_STOP_LOSS:
+        if lastPrice > TP and USE_TRAILING_STOP_LOSS:
 
             # increasing TP by TRAILING_TAKE_PROFIT (essentially next time to readjust SL)
-            coins_bought[coin]['take_profit'] = PriceChange + TRAILING_TAKE_PROFIT
+            coins_bought[coin]['take_profit'] = priceChange + TRAILING_TAKE_PROFIT
             coins_bought[coin]['stop_loss'] = coins_bought[coin]['take_profit'] - TRAILING_STOP_LOSS
             if DEBUG: print(f"{coin} TP reached, adjusting TP {coins_bought[coin]['take_profit']:.{decimals()}f}  and SL {coins_bought[coin]['stop_loss']:.{decimals()}f} accordingly to lock-in profit")
             continue
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
-        if sell_all_coins == True or LastPrice < SL or LastPrice > TP and not USE_TRAILING_STOP_LOSS:
-            print(f"{txcolors.SELL_PROFIT if PriceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} : {PriceChangeWithFee:.2f}% Est: {(QUANTITY * PriceChangeWithFee) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
+        if sell_all_coins == True or lastPrice < SL or lastPrice > TP and not USE_TRAILING_STOP_LOSS:
+            print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin} - {buyPrice} - {lastPrice} : {priceChangeWithFee:.2f}% Est: {(QUANTITY * priceChangeWithFee) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
             # try to create a real order
             try:
 
@@ -550,7 +550,7 @@ def sell_coins():
                 volatility_cooloff[coin] = datetime.now()
 
                 # Log trade
-                profit = ((LastPrice - BuyPrice) * coins_sold[coin]['volume']) - (buyFee + sellFee)
+                profit = ((lastPrice - buyPrice) * coins_sold[coin]['volume']) - (buyFee + sellFee)
 
                 #gogo MOD to trigger trade lost or won and to count lost or won trades
                 if profit > 0:
@@ -560,7 +560,7 @@ def sell_coins():
                    loss_trade_count = loss_trade_count + 1
                    dynamic = 'performance_adjust_down'
 
-                REPORT = "SELL: {coins_sold[coin]['volume']} {coin} - Bought at {BuyPrice:.{decimals()}f}, sold at {LastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({PriceChangeWithFee:.2f}%)"
+                REPORT = "SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChangeWithFee:.2f}%)"
                 
                 write_log(REPORT)
                 session_profit = session_profit + profit
@@ -573,7 +573,7 @@ def sell_coins():
         # no action; print once every TIME_DIFFERENCE
         if hsp_head == 1:
             if len(coins_bought) > 0:
-                print(f"TP:{TP:.{decimals()}f}:{coins_bought[coin]['take_profit']:.2f} or SL:{SL:.{decimals()}f}:{coins_bought[coin]['stop_loss']:.2f} not yet reached, not selling {coin} for now {BuyPrice} - {LastPrice} : {txcolors.SELL_PROFIT if PriceChange >= 0. else txcolors.SELL_LOSS}{PriceChange-(buyFee+sellFee):.2f}% Est: {(QUANTITY*(PriceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
+                print(f"TP:{TP:.{decimals()}f}:{coins_bought[coin]['take_profit']:.2f} or SL:{SL:.{decimals()}f}:{coins_bought[coin]['stop_loss']:.2f} not yet reached, not selling {coin} for now {buyPrice} - {lastPrice} : {txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}{priceChange-(buyFee+sellFee):.2f}% Est: {(QUANTITY*(priceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
 
     if hsp_head == 1 and len(coins_bought) == 0: print(f"No trade slots are currently in use")
 
@@ -749,28 +749,25 @@ def session(type):
     global market_price, session_profit, win_trade_count, loss_trade_count
 
     if type == 'calc':
+        TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
+        NEW_BALANCE = (INVESTMENT + TOTAL_GAINS)
+        INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT) * 100
+        CURRENT_EXPOSURE = (QUANTITY * len(coins_bought))
+        unrealised_percent = 0
 
-       TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
-       NEW_BALANCE = (INVESTMENT + TOTAL_GAINS)
-       INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT) * 100
-       CURRENT_EXPOSURE = (QUANTITY * len(coins_bought))
-       unrealised_percent = 0
+        for coin in list(coins_bought):
+            lastPrice = float(last_price[coin]['price'])
+            sellFee = (coins_bought[coin]['volume'] * lastPrice) * (TRADING_FEE/100)
+            buyPrice = float(coins_bought[coin]['bought_at'])
+            buyFee = (coins_bought[coin]['volume'] * buyPrice) * (TRADING_FEE/100)
+            priceChange = float((lastPrice - buyPrice) / buyPrice * 100)
+            if len(coins_bought) > 0:
+                unrealised_percent = unrealised_percent + (priceChange-(buyFee+sellFee))
 
-       for coin in list(coins_bought):
-           LastPrice = float(last_price[coin]['price'])
-
-           # sell fee below would ofc only apply if transaction was closed at the current LastPrice
-           sellFee = (LastPrice * (TRADING_FEE/100))
-           BuyPrice = float(coins_bought[coin]['bought_at'])
-           buyFee = (BuyPrice * (TRADING_FEE/100))
-           PriceChange = float((LastPrice - BuyPrice) / BuyPrice * 100)
-           if len(coins_bought) > 0:
-              unrealised_percent = unrealised_percent + (PriceChange-(buyFee+sellFee))
-
-       #this number is your actual ETH or other coin value in correspondence to USDT aka your market investment_value
-       #it is important cuz your exchange aha ETH or BTC can vary and if you pause bot during that time you gain profit
-       investment_value = float(market_price) * NEW_BALANCE
-       investment_value_gain = float(market_price) * (NEW_BALANCE - INVESTMENT)
+        # this number is your actual ETH or other coin value in correspondence to USDT aka your market investment_value
+        # it is important cuz your exchange aha ETH or BTC can vary and if you pause bot during that time you gain profit
+        investment_value = float(market_price) * NEW_BALANCE
+        investment_value_gain = float(market_price) * (NEW_BALANCE - INVESTMENT)
 
     if type == 'save':
 
@@ -790,26 +787,26 @@ def session(type):
 
     if type == 'load':
 
-       session_info = {}
-       #gogo MOD path to session info file and loading variables from previous sessions
-       #sofar only used for session profit TODO implement to use other things too
-       #session_profit is calculated in % wich is innacurate if QUANTITY is not the same!!!!!
-       session_info_file_path = 'session_info.json'
+        session_info = {}
+        #gogo MOD path to session info file and loading variables from previous sessions
+        #sofar only used for session profit TODO implement to use other things too
+        #session_profit is calculated in % wich is innacurate if QUANTITY is not the same!!!!!
+        session_info_file_path = 'session_info.json'
 
-       if os.path.isfile(session_info_file_path) and os.stat(session_info_file_path).st_size!= 0:
-          json_file=open(session_info_file_path)
-          session_info=json.load(json_file)
-          json_file.close()
+        if os.path.isfile(session_info_file_path) and os.stat(session_info_file_path).st_size!= 0:
+            json_file=open(session_info_file_path)
+            session_info=json.load(json_file)
+            json_file.close()
 
-          session_profit = session_info['session_profit']
-          win_trade_count = session_info['win_trade_count']
-          loss_trade_count = session_info['loss_trade_count']
-          #investment_value = session['investment_value']
-          NEW_BALANCE = session_info['new_balance']
+            session_profit = session_info['session_profit']
+            win_trade_count = session_info['win_trade_count']
+            loss_trade_count = session_info['loss_trade_count']
+            # investment_value = session['investment_value']
+            NEW_BALANCE = session_info['new_balance']
 
-       TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
-       NEW_BALANCE = (INVESTMENT + TOTAL_GAINS)
-       INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT) * 100
+        TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
+        NEW_BALANCE = (INVESTMENT + TOTAL_GAINS)
+        INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT) * 100
 
 def tickers_list(type):
 
@@ -826,63 +823,63 @@ def tickers_list(type):
     # pull coins from trading view and create a list
     if type == 'create_ta':
 
-       response = requests.get('https://scanner.tradingview.com/crypto/scan')
-       ta_data = response.json()
-       signals_file = open(TICKERS_LIST,'w')
+        response = requests.get('https://scanner.tradingview.com/crypto/scan')
+        ta_data = response.json()
+        signals_file = open(TICKERS_LIST,'w')
 
-       with open (TICKERS_LIST, 'w') as f:
-           for i in ta_data['data']:
-              if i['s'][:7]=='BINANCE' and i['s'][-len(PAIR_WITH):] == PAIR_WITH and (i['s'][-len(PAIR_WITH)-2:-len(PAIR_WITH)]) != 'UP' and (i['s'][-len(PAIR_WITH)-4:-len(PAIR_WITH)]) != 'DOWN' and i['s'][8:-len(PAIR_WITH)] not in ignorelist:
-                 f.writelines(str(i['s'][8:].replace(PAIR_WITH,''))+'\n')
-       tickers_list_changed = True
-       print(f'>> Tickers CREATED from TradingView tickers!!!{TICKERS_LIST} <<')
+        with open (TICKERS_LIST, 'w') as f:
+            for i in ta_data['data']:
+                if i['s'][:7]=='BINANCE' and i['s'][-len(PAIR_WITH):] == PAIR_WITH and (i['s'][-len(PAIR_WITH)-2:-len(PAIR_WITH)]) != 'UP' and (i['s'][-len(PAIR_WITH)-4:-len(PAIR_WITH)]) != 'DOWN' and i['s'][8:-len(PAIR_WITH)] not in ignorelist:
+                    f.writelines(str(i['s'][8:].replace(PAIR_WITH,''))+'\n')
+        tickers_list_changed = True
+        print(f'>> Tickers CREATED from TradingView tickers!!!{TICKERS_LIST} <<')
 
     if type == 'volume' or type == 'price_change':
     #  create list with volume and change in price on our pairs
-           for coin in tickers_binance:
+            for coin in tickers_binance:
 
-               if CUSTOM_LIST:
-                  if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in FIATS):
-                     tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
-                     tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
+                if CUSTOM_LIST:
+                    if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in FIATS):
+                        tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
+                        tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
 
-               else:
-                  if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in FIATS):
-                     tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
-                     tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
+                else:
+                    if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in FIATS):
+                        tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
+                        tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
 
-       # sort tickers by descending order volume and price
-           list_tickers_volume = list(sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True))
-           list_tickers_price_change = list(sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True))
+            # sort tickers by descending order volume and price
+            list_tickers_volume = list(sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True))
+            list_tickers_price_change = list(sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True))
 
     # pull coins from binance and create list
     if type == 'create_b':
 
-       for coin in tickers_binance:
+        for coin in tickers_binance:
 
-           if PAIR_WITH in coin['symbol']:
-              tickers_pairwith[coin['symbol']] = coin['symbol']
-              if tickers_pairwith[coin['symbol']].endswith(PAIR_WITH):
-                 tickers_new[coin['symbol']] = tickers_pairwith[coin['symbol']]
+            if PAIR_WITH in coin['symbol']:
+                tickers_pairwith[coin['symbol']] = coin['symbol']
+                if tickers_pairwith[coin['symbol']].endswith(PAIR_WITH):
+                    tickers_new[coin['symbol']] = tickers_pairwith[coin['symbol']]
 
-       list_tickers_new = list(tickers_new)
+        list_tickers_new = list(tickers_new)
 
 
-       with open (TICKERS_LIST, 'w') as f:
+        with open (TICKERS_LIST, 'w') as f:
             for ele in list_tickers_new:
-               f.writelines(str(ele.replace(PAIR_WITH,''))+'\n')
-       tickers_list_changed = True
-       print(f'>> Tickers CREATED from binance tickers!!!{TICKERS_LIST} <<')
+                f.writelines(str(ele.replace(PAIR_WITH,''))+'\n')
+        tickers_list_changed = True
+        print(f'>> Tickers CREATED from binance tickers!!!{TICKERS_LIST} <<')
 
-       tickers_list_changed = True
-       print(f'>> Tickers CREATED from Binance tickers!!!{TICKERS_LIST} <<')
+        tickers_list_changed = True
+        print(f'>> Tickers CREATED from Binance tickers!!!{TICKERS_LIST} <<')
 
     if type == 'volume' and CUSTOM_LIST:
     # write sorted lists to files
 
        with open (TICKERS_LIST, 'w') as f:
             for sublist in list_tickers_volume:
-               f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
+                f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
        tickers_list_changed = True
        print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
@@ -891,7 +888,7 @@ def tickers_list(type):
 
        with open (TICKERS_LIST, 'w') as f:
             for sublist in list_tickers_price_change:
-               f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
+                f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
        tickers_list_changed = True
        print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
@@ -965,7 +962,7 @@ if __name__ == '__main__':
     # Telegram_Bot enabled? # **added by*Coding60plus
 
     if BOT_MESSAGE_REPORTS:
-       TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
+        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
 
     # Telegram_Bot enabled? # **added by*Coding60plus
     if DEBUG:
@@ -982,20 +979,20 @@ if __name__ == '__main__':
     # this will stop the script from starting, and display a helpful error.
     api_ready, msg = test_api_key(client, BinanceAPIException)
     if api_ready is not True:
-       exit(f'{txcolors.SELL_LOSS}{msg}{txcolors.DEFAULT}')
+        exit(f'{txcolors.SELL_LOSS}{msg}{txcolors.DEFAULT}')
     
     # Load coins to be ignored from file
     ignorelist=[line.strip() for line in open(IGNORE_LIST)]
     
     #sort tickers list by volume
     if LIST_AUTOCREATE:
-       if LIST_CREATE_TYPE == 'binance':
-          tickers_list('create_b')
-          tickers=[line.strip() for line in open(TICKERS_LIST)]
+        if LIST_CREATE_TYPE == 'binance':
+            tickers_list('create_b')
+            tickers=[line.strip() for line in open(TICKERS_LIST)]
 
-       if LIST_CREATE_TYPE == 'tradingview':
-          tickers_list('create_ta')
-          tickers=[line.strip() for line in open(TICKERS_LIST)]
+        if LIST_CREATE_TYPE == 'tradingview':
+            tickers_list('create_ta')
+            tickers=[line.strip() for line in open(TICKERS_LIST)]
 
     # Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
     if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]
@@ -1071,14 +1068,14 @@ if __name__ == '__main__':
 
         #reload tickers list by volume if triggered recreation
         if tickers_list_changed == True :
-           tickers=[line.strip() for line in open(TICKERS_LIST)]
-           tickers_list_changed = False
+            tickers=[line.strip() for line in open(TICKERS_LIST)]
+            tickers_list_changed = False
         # print(f'Tickers list changed and loaded: {tickers}')
         try:
-          orders, last_price, volume = buy()
-          update_portfolio(orders, last_price, volume)
-          coins_sold = sell_coins()
-          remove_from_portfolio(coins_sold)
+            orders, last_price, volume = buy()
+            update_portfolio(orders, last_price, volume)
+            coins_sold = sell_coins()
+            remove_from_portfolio(coins_sold)
         except ReadTimeout as rt:
             READ_TIMEOUT_COUNT += 1
             print(f'We got a timeout error from from binance. Going to re-loop. Current Count: {READ_TIMEOUT_COUNT}')
