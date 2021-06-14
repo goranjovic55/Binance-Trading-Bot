@@ -896,7 +896,7 @@ def bot_launch():
     # Bot relays session start to Discord channel
     global DISCORD_WEBHOOK, BOT_MESSAGE_REPORTS
     TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
-    bot_message = BOT_ID + " is online and ready to trade"
+    bot_message = BOT_ID + " is online"
 
     if BOT_MESSAGE_REPORTS and DISCORD_WEBHOOK:
         #Webhook of my channel. Click on edit channel --> Webhooks --> Creates webhook
