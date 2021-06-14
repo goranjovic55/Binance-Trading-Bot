@@ -316,7 +316,7 @@ def pause_bot():
 
     while os.path.isfile("signals/paused.exc"):
 
-        if bot_paused == False or market_resistance < 0.3:
+        if bot_paused == False:
             print(f"{txcolors.WARNING}Buying paused due to negative market conditions, stop loss and take profit will continue to work...{txcolors.DEFAULT}")
             # sell all bought coins if bot is bot_paused
             if STOP_LOSS_ON_PAUSE == True:
@@ -349,7 +349,7 @@ def pause_bot():
 
 
         # resume the bot and ser pause_bot to False
-        if  bot_paused == True and market_resistance > 0.3:
+        if  bot_paused == True:
             print(f"{txcolors.WARNING}Resuming buying due to positive market conditions, total sleep time: {time_elapsed}{txcolors.DEFAULT}")
             tickers_list(SORT_LIST_TYPE)
             dynamic = 'reset'
