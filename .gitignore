@@ -9,3 +9,4 @@ __pycache__
 config.yml
 dockerfile
 docker-compose.yml
+*.swp
