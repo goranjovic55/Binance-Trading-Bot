@@ -310,7 +310,7 @@ def external_signals():
 
 def pause_bot():
     '''Pause the script when external indicators detect a bearish trend in the market'''
-    global bot_paused, session_profit, hsp_head, dynamic, sell_all_coins, market_support, market_resistance
+    global bot_paused, session_profit, hsp_head, dynamic, sell_all_coins
     # start counting for how long the bot has been paused
     start_time = time.perf_counter()
 
