@@ -15,7 +15,7 @@ script_options:
   BOT_MESSAGE_REPORTS: True # **added/changed by Coding60plus
 
 #Bot id for BOT_MESSAGE_REPORTS
-  BOT_ID: '#gogo_ETH_CSG_HLD>>'
+  BOT_ID: '@>>'
 
   REPORT_STYLE: fancy
 
@@ -99,11 +99,11 @@ trading_options:
 
  #MODS SETTINGS_STRING
   PAUSEBOTMOD_THRESHOLD: 14
-  SIGNALSAMPLEMOD_THRESHOLD : 17
+  SIGNALSAMPLEMOD_THRESHOLD : 18
 
 # multiplier for HOLDING_TIME_LIMIT wich gives acrtual TIME_DIFFERENCE * HOLDING_TIME_LIMIT_MULTIPLIER when to start lowering STOP_LOSS
 # holding take profit is % at wich we sell if holding time limit is passed defualt is 1 and after one timeperiod we will sell on holding take profit
-  HOLDING_INTERVAL_LIMIT: 15
+  HOLDING_INTERVAL_LIMIT: 5
   HOLDING_TAKE_PROFIT: 3
 
  #sort list by volume or price_change
