@@ -2,43 +2,42 @@
 script_options:
   # Setting TEST_MODE to False will use REAL funds, use at your own risk!
   TEST_MODE: True
+  # Set this to true if you are accessing binance from within the United States of America.
+  AMERICAN_USER: False
   # Save trades to a log file.
   LOG_TRADES: True
   # Specify the location of log file (default: trades.txt).
   LOG_FILE: 'trades.txt'
 
-  # Set this to true if you are accessing binance from within the United States of America.
-  # Need to change TLD
-  AMERICAN_USER: False
-
-# gogos MOD Telegram bot integration
+  # gogos MOD Telegram bot integration
   BOT_MESSAGE_REPORTS: True # **added/changed by Coding60plus
-# Reporting style, use 'fancy' for more verbose reporting of results
-  REPORT_STYLE: fancy
-#Bot id for BOT_MESSAGE_REPORTS
+  #Bot id for BOT_MESSAGE_REPORTS
   BOT_ID: '>>'
+
+  # Bot update tickers on CLI. False = minimal, True = multi-line analysis. 
+  DETAILED_REPORTS: False
+  # show/hide additional data on bot screen. False = silent, True = spam (debug mode).
+  VERBOSE_MODE: False
+
 
 # These options apply to the trading methods the script executes
 trading_options:
 
   # select your base currency to use for trading pairs (for example USDT, ETH, BTC)
-  PAIR_WITH: ETH
-
-  # INVESTMENT = total amount for each trade
-  # (how much of your PAIR_WITH should be used for each of TRADE SLOTS)
-  # Note: your base currency balance must be at least TRADE_SLOTS * INVESTMENT).
+  PAIR_WITH: BTC
+  # INVESTMENT = total amount you're trading across all TRADE_SLOTS
   # Binance uses specifies a min value per trade, add a bit extra above their 'min trade value'
   # ..to enable selling if the price drops.
   # 
-  # TIPS:
-  # - Using USDT?   Recommended 13+ (min trade value: 10)
-  # - Using ETH?    Recommended 0.006+ (Min trade value: 0.005)
-  # - Using BTC?    Recommended 0.000175+ (min trade value: 0.0001)
+  # TIPS (per TRADE_SLOT)
+  # - Using USDT?   Recommended 13+ per TRADE_SLOT (min trade value: 10)
+  # - Using ETH?    Recommended 0.0065+ per TRADE_SLOT (Min trade value: 0.005)
+  # - Using BTC?    Recommended 0.000175+ per TRADE_SLOT (min trade value: 0.0001)
   INVESTMENT: 0.00685
 
   # TRADE_SLOTS = Maximum number of tradable 'slots' at any time.
   # (your PAIR_WITH balance must be at least TRADE_SLOTS * QUANTITY)
-  TRADE_SLOTS: 30
+  TRADE_SLOTS: 3
 
   # Use more than one TRADE_SLOTS of the same coin? Set to False
   # allows buying the same coin again if a future buy signal is received
@@ -57,7 +56,7 @@ trading_options:
 
   # TICKERS: Use custom 'tickers.txt' list for filtering pairs?
   CUSTOM_LIST: True
-  TICKERS_LIST: 'tickers_ETH.txt'
+  TICKERS_LIST: 'tickers_BTC.txt'
 
   # Name of list that cointains currencies to be ignored
   IGNORE_LIST: 'ignorelist.txt'
@@ -92,34 +91,31 @@ trading_options:
   # If using BNB for fees, it MUST be enabled in your Binance 'Dashboard' page (checkbox).
   TRADING_FEE: .075
 
-  # show/hide additional data on bot screen. False = silent, True = spam (debug mode).
-  VERBOSE_MODE: False
-
- #gogo MOD Dynamic perecent applied to SL and TP upon WIN or LOSS trade
+  # gogo MOD Dynamic perecent applied to SL and TP upon WIN or LOSS trade
   DYNAMIC_SETTINGS: True
   DYNAMIC_WIN_LOSS_UP: 10
   DYNAMIC_WIN_LOSS_DOWN : 10
 
- #activate all stop losses on pausebot mod trigger
+  # activate all stop losses on pausebot mod trigger
   STOP_LOSS_ON_PAUSE: False
 
- #mix % and signals for Buying
+  # mix % and signals for Buying
   PERCENT_SIGNAL_BUY: True
 
- #MODS SETTINGS_STRING
+  # MODS SETTINGS_STRING
   PAUSEBOTMOD_THRESHOLD: 14
   SIGNALSAMPLEMOD_THRESHOLD : 18
 
- #sort list by volume or price_change
+  # sort list by volume or price_change
   LIST_AUTOCREATE: True
   LIST_CREATE_TYPE: Binance
   SORT_LIST_TYPE: volume
 
   SIGNALLING_MODULES:
-
     - pausebotmod
-    - custsignalmod
-    - signalsamplemod
+    # - custsignalmod
+    - custsignalmod_speed
+    # - signalsamplemod
     - rsi_signalmod_nigec
     - rsi_stoch_signalmod_djcommie
     - ta_indicator_signalmod_firewatch

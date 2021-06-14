@@ -26,7 +26,7 @@ TA_BUY_THRESHOLD = parsed_config['trading_options']['SIGNALSAMPLEMOD_THRESHOLD']
 PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
 TICKERS = parsed_config['trading_options']['TICKERS_LIST']
 TIME_TO_WAIT = parsed_config['trading_options']['TIME_DIFFERENCE'] # Minutes to wait between analysis
-FULL_LOG = parsed_config['trading_options']['VERBOSE_MODE'] # List anylysis result to console
+FULL_LOG = parsed_config['script_options']['VERBOSE_MODE'] # List anylysis result to console
 
 def analyze(pairs):
     taMax = 0

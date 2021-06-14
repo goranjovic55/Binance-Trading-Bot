@@ -26,8 +26,9 @@ MY_THIRD_INTERVAL = Interval.INTERVAL_15_MINUTES
 TA_BUY_THRESHOLD = 13 # How many of the 26 indicators to indicate a buy
 PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
 TICKERS = parsed_config['trading_options']['TICKERS_LIST']
-TIME_TO_WAIT = 1 # Minutes to wait between analysis
-FULL_LOG = False # List anylysis result to console
+SIGNAL_OUTPUT_PATH = 'signals'
+TIME_TO_WAIT = parsed_config['trading_options']['SIGNALS_FREQUENCY'] # Minutes to wait between analysis
+FULL_LOG = parsed_config['script_options']['VERBOSE_MODE'] # List analysis result to console
 
 def analyze(pairs):
     taMax = 0
@@ -40,11 +41,11 @@ def analyze(pairs):
     second_handler = {}
     third_handler = {}
 
-    if os.path.exists('signals/signalsample.exs'):
-        os.remove('signals/signalsample.exs')
+    if os.path.exists(f'{SIGNAL_OUTPUT_PATH}/signalsample.exs'):
+        os.remove(f'{SIGNAL_OUTPUT_PATH}/signalsample.exs')
 
-    if os.path.exists('signals/signalsample.sell'):
-        os.remove('signals/signalsample.sell')
+    if os.path.exists(f'{SIGNAL_OUTPUT_PATH}/signalsample.sell'):
+        os.remove(f'{SIGNAL_OUTPUT_PATH}/signalsample.sell')
 
     for pair in pairs:
         first_handler[pair] = TA_Handler(
@@ -111,14 +112,16 @@ def analyze(pairs):
             (third_recommendation == "BUY" or third_recommendation == "STRONG_BUY"):
                 if first_RSI <= 67 and second_RSI <= 67 and third_RSI <= 67:
                     signal_coins[pair] = pair
-                    print(f'buysellcustsignal: Buy Signal detected on {pair}')
+                    if FULL_LOG:
+                        print(f'buysellcustsignal: Buy Signal detected on {pair}')
                     with open('signals/signalsample.exs','a+') as f:
                         f.write(pair + '\n')
 
         if (first_recommendation == "SELL" or first_recommendation == "STRONG_SELL") and (second_recommendation == "SELL" or second_recommendation == "STRONG_SELL") and \
             (third_recommendation == "SELL" or third_recommendation == "STRONG_SELL"):
                 #signal_coins[pair] = pair
-                print(f'buysellcustsignal: Sell Signal detected on {pair}')
+                if FULL_LOG:
+                    print(f'buysellcustsignal: Sell Signal detected on {pair}')
                 with open('signals/signalsample.sell','a+') as f:
                     f.write(pair + '\n')
 
@@ -136,11 +139,12 @@ def do_work():
         pairs=[line.strip() + PAIR_WITH for line in open(TICKERS)]
 
     while True:
-        print(f'buysellcustsignal: Analyzing {len(pairs)} coins')
-        signal_coins = analyze(pairs)
-        if len(signal_coins) == 0:
-            print(f'buysellcustsignal: No coins above {TA_BUY_THRESHOLD} threshold on three timeframes. Waiting {TIME_TO_WAIT} minutes for next analysis')
-        else:
-            print(f'buysellcustsignal: {len(signal_coins)} coins above {TA_BUY_THRESHOLD} treshold on three timeframes. Waiting {TIME_TO_WAIT} minutes for next analysis')
+        if FULL_LOG:
+            print(f'buysellcustsignal: Analyzing {len(pairs)} coins')
+            signal_coins = analyze(pairs)
+            if len(signal_coins) == 0:
+                print(f'buysellcustsignal: No coins above {TA_BUY_THRESHOLD} threshold on three timeframes. Waiting {TIME_TO_WAIT} minutes for next analysis')
+            else:
+                print(f'buysellcustsignal: {len(signal_coins)} coins above {TA_BUY_THRESHOLD} treshold on three timeframes. Waiting {TIME_TO_WAIT} minutes for next analysis')
 
         time.sleep((TIME_TO_WAIT*60))

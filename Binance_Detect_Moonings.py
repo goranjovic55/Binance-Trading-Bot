@@ -123,8 +123,10 @@ def is_fiat():
     # check if we are using a fiat as a base currency
     global hsp_head
     PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
-    #list below is in the order that Binance displays them, apologies for not using ASC order
-    if (PAIR_WITH == ( 'USDT' or 'BUSD' or 'AUD' or 'BRL' or 'EUR' or 'GBP' or 'RUB' or 'TRY' or 'TUSD' or 'USDC' or 'PAX' or 'BIDR' or 'DAI' or 'IDRT' or 'UAH' or 'NGN' or 'VAI' or 'BVND')):
+    #list below is in the order that Binance displays them, apologies for not using ASC order but this is easier to update later
+    fiats = ['USDT', 'BUSD', 'AUD', 'BRL', 'EUR', 'GBP', 'RUB', 'TRY', 'TUSD', 'USDC', 'PAX', 'BIDR', 'DAI', 'IDRT', 'UAH', 'NGN', 'VAI', 'BVND']
+
+    if PAIR_WITH in fiats:
         return True
     else:
         return False
@@ -280,11 +282,11 @@ def wait_for_price(type):
         else:
             coins_unchanged +=1
 
-    if coins_up != 0: maket_resistance = market_resistance / coins_up
+    if coins_up != 0: market_resistance = market_resistance / coins_up
     if coins_down != 0: market_support = market_support / coins_down
 
-    if REPORT_STYLE == 'fancy' and hsp_head == 1:
-      report('fancy',f"Market Resistance:      {txcolors.DEFAULT}{market_resistance:.4f}\n Market Support:         {txcolors.DEFAULT}{market_support:.4f}")
+    if DETAILED_REPORTS == True and hsp_head == 1:
+      report('detailed',f"Market Resistance:      {txcolors.DEFAULT}{market_resistance:.4f}\n Market Support:         {txcolors.DEFAULT}{market_support:.4f}")
     else: report('console', f" MR:{market_resistance:.4f}/MS:{market_support:.4f} ")
 
     return volatile_coins, len(volatile_coins), historical_prices[hsp_head]
@@ -558,7 +560,7 @@ def sell_coins():
                    loss_trade_count = loss_trade_count + 1
                    dynamic = 'performance_adjust_down'
 
-                REPORT = f"SELL: {coins_sold[coin]['volume']} {coin} - Bought at {BuyPrice:.{decimals()}f}, sold at {LastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({PriceChangeWithFee:.2f}%)"
+                REPORT = "SELL: {coins_sold[coin]['volume']} {coin} - Bought at {BuyPrice:.{decimals()}f}, sold at {LastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({PriceChangeWithFee:.2f}%)"
                 
                 write_log(REPORT)
                 session_profit = session_profit + profit
@@ -638,8 +640,10 @@ def report(type, reportline):
     LOST = loss_trade_count
     DECIMALS = int(decimals())
     INVESTMENT_TOTAL = round((QUANTITY * TRADE_SLOTS), DECIMALS)
+    CURRENT_EXPOSURE = round(CURRENT_EXPOSURE, DECIMALS)
     TOTAL_GAINS = round(TOTAL_GAINS, DECIMALS)
-    INVESTMENT_VALUE_GAIN = round(investment_value_gain, DECIMALS)
+    INVESTMENT_VALUE_GAIN = round(investment_value_gain, 2)
+    NEW_BALANCE = round(NEW_BALANCE, DECIMALS)
 
     SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'>RI:'+str(round(RECHECK_INTERVAL, 2))+'>CIP:'+str(round(CHANGE_IN_PRICE_MIN, 2))+'-'+str(round(CHANGE_IN_PRICE_MAX, 2))+'>SL:'+str(round(STOP_LOSS, 2))+'>TP:'+str(round(TAKE_PROFIT, 2))+'>TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'>TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
 
@@ -655,22 +659,22 @@ def report(type, reportline):
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
         # print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol}> {reportline} <<{txcolors.DEFAULT}")
-        print(f"{txcolors.NOTICE}>> Tade slots: {len(coins_bought)}/{TRADE_SLOTS} ({CURRENT_EXPOSURE:g}/{INVESTMENT_TOTAL:g} {PAIR_WITH}) - Open: {UNREALISED_PERCENT:.2f}% - Closed: {session_profit:.2f}% - Est: {TOTAL_GAINS:g} {PAIR_WITH} - W/L: {WON}/{LOST} - Value: {investment_value:.2f} {exchange_symbol} - Gain: {INVESTMENT_GAIN:.2f}% ( {str(INVESTMENT_VALUE_GAIN)} {exchange_symbol}){txcolors.DEFAULT}")
+        print(f"{txcolors.NOTICE}>> Tade slots: {len(coins_bought)}/{TRADE_SLOTS} ({CURRENT_EXPOSURE:g}/{INVESTMENT_TOTAL:g} {PAIR_WITH}) - Open: {UNREALISED_PERCENT:.2f}% - Closed: {session_profit:.2f}% - Est: {TOTAL_GAINS:g} {PAIR_WITH} - W/L: {WON}/{LOST} - Value: {investment_value:.2f} {exchange_symbol} - Gain: {INVESTMENT_GAIN:.2f}% ({str(INVESTMENT_VALUE_GAIN)} USD vs HODL){txcolors.DEFAULT}")
 
-    #More fancy/verbose report style
-    if type == 'fancy':
+    #More detailed/verbose report style
+    if type == 'detailed':
        print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. << \n"
        ,f"Profit on unsold coins: {txcolors.SELL_PROFIT if UNREALISED_PERCENT >= 0 else txcolors.SELL_LOSS}{UNREALISED_PERCENT:.2f}%\n"
        ,f"Session Pofit:          {txcolors.SELL_PROFIT if session_profit >= 0 else txcolors.SELL_LOSS}{session_profit:.2f}%\n"
-       ,f"Est. total gains:       {txcolors.SELL_PROFIT if TOTAL_GAINS >= 0 else txcolors.SELL_LOSS}{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}\n"
+       ,f"Est. total gains:       {txcolors.SELL_PROFIT if TOTAL_GAINS >= 0 else txcolors.SELL_LOSS}{TOTAL_GAINS:g} {PAIR_WITH}\n"
        ,f"Trades won:             {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{win_trade_count}\n"
        ,f"Trades lost:            {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{loss_trade_count}\n"
-       ,f"Investment:             {txcolors.DEFAULT}{INVESTMENT:.{decimals()}f} {PAIR_WITH}\n"
-       ,f"Current Exposure:       {txcolors.DEFAULT}{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}\n"
-       ,f"New Balance:            {txcolors.SELL_PROFIT if NEW_BALANCE >= INVESTMENT else txcolors.SELL_LOSS}{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}\n"
-       ,f"Initial Investment:     {txcolors.SELL_PROFIT if investment_value >= INVESTMENT else txcolors.SELL_LOSS}{investment_value:.2f} USDT\n"
+       ,f"Investment:             {txcolors.DEFAULT}{INVESTMENT_TOTAL:g} {PAIR_WITH}\n"
+       ,f"Current Exposure:       {txcolors.DEFAULT}{CURRENT_EXPOSURE:g} {PAIR_WITH}\n"
+       ,f"New Balance:            {txcolors.SELL_PROFIT if NEW_BALANCE >= INVESTMENT_TOTAL else txcolors.SELL_LOSS}{NEW_BALANCE:g} {PAIR_WITH}\n"
+       ,f"Initial Investment:     {txcolors.SELL_PROFIT if investment_value >= INVESTMENT else txcolors.SELL_LOSS}{investment_value:.2f} USD\n"
        ,f"Investment Gain:        {txcolors.SELL_PROFIT if INVESTMENT_GAIN >= 0 else txcolors.SELL_LOSS}{INVESTMENT_GAIN:.2f}%\n"
-       ,f"Investment Value Gain:  {txcolors.SELL_PROFIT if investment_value_gain >= 0 else txcolors.SELL_LOSS}{investment_value_gain:.{decimals()}f} USDT\n"
+       ,f"Investment Value Gain:  {txcolors.SELL_PROFIT if investment_value_gain >= 0 else txcolors.SELL_LOSS}{str(INVESTMENT_VALUE_GAIN)} USD\n"
        ,f"{reportline} {txcolors.DEFAULT}")
     
     if type == 'message':
@@ -693,9 +697,9 @@ def report(type, reportline):
              response = requests.post(mUrl, json=data)
              print(response.content)
 
-#function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
-def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN):
 
+def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN):
+    #function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
     global last_trade_won, last_trade_lost, dynamic
 
     if DYNAMIC_SETTINGS:
@@ -737,11 +741,11 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
 
     return STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN
 
-#various session calculations like uptime 24H gain profit risk to reward ratio unrealised profit etc
 def session(type):
+    #various session calculations like uptime 24H gain profit risk to reward ratio unrealised profit etc
 
     global unrealised_percent, investment_value, investment_value_gain
-    global NEW_BALANCE, INVESTMENT_TOTAL, TOTAL_GAINS, INVESTMENT_GAIN
+    global NEW_BALANCE, INVESTMENT_TOTAL, TOTAL_GAINS, INVESTMENT_GAIN, CURRENT_EXPOSURE
     global market_price, session_profit, win_trade_count, loss_trade_count
 
     if type == 'calc':
@@ -814,12 +818,12 @@ def tickers_list(type):
     tickers_list_volume = {}
     tickers_list_price_change = {}
 
-# get all info on tickers from binance
+    # get all info on tickers from binance
     tickers_binance = client.get_ticker()
     tickers_pairwith = {}
     tickers_new = {}
 
-#pull coins from trading view and create a list
+    # pull coins from trading view and create a list
     if type == 'create_ta':
 
        response = requests.get('https://scanner.tradingview.com/crypto/scan')
@@ -834,7 +838,7 @@ def tickers_list(type):
        print(f'>> Tickers CREATED from TradingView tickers!!!{TICKERS_LIST} <<')
 
     if type == 'volume' or type == 'price_change':
-#       create list with voleume and change in price on our pairs
+    #  create list with volume and change in price on our pairs
            for coin in tickers_binance:
 
                if CUSTOM_LIST:
@@ -847,11 +851,11 @@ def tickers_list(type):
                      tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
                      tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
 
-       #sort tickers by descending order volume and price
+       # sort tickers by descending order volume and price
            list_tickers_volume = list(sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True))
            list_tickers_price_change = list(sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True))
 
-#pull coins from binance and create list
+    # pull coins from binance and create list
     if type == 'create_b':
 
        for coin in tickers_binance:
@@ -874,7 +878,7 @@ def tickers_list(type):
        print(f'>> Tickers CREATED from Binance tickers!!!{TICKERS_LIST} <<')
 
     if type == 'volume' and CUSTOM_LIST:
-    #write sorted lists to files
+    # write sorted lists to files
 
        with open (TICKERS_LIST, 'w') as f:
             for sublist in list_tickers_volume:
@@ -883,7 +887,7 @@ def tickers_list(type):
        print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
     if type == 'price_change':
-    #write sorted list to files
+    # write sorted list to files
 
        with open (TICKERS_LIST, 'w') as f:
             for sublist in list_tickers_price_change:
@@ -914,9 +918,10 @@ if __name__ == '__main__':
 
     # Load system vars
     TEST_MODE = parsed_config['script_options']['TEST_MODE']
-#     LOG_TRADES = parsed_config['script_options'].get('LOG_TRADES')
+    # LOG_TRADES = parsed_config['script_options'].get('LOG_TRADES')
     LOG_FILE = parsed_config['script_options'].get('LOG_FILE')
-    DEBUG_SETTING = parsed_config['script_options'].get('DEBUG')
+    DETAILED_REPORTS = parsed_config['script_options']['DETAILED_REPORTS']
+    DEBUG_SETTING = parsed_config['script_options'].get('VERBOSE_MODE')
     AMERICAN_USER = parsed_config['script_options'].get('AMERICAN_USER')
     BOT_MESSAGE_REPORTS =  parsed_config['script_options'].get('BOT_MESSAGE_REPORTS')
     BOT_ID = parsed_config['script_options'].get('BOT_ID')
@@ -949,7 +954,6 @@ if __name__ == '__main__':
     LIST_AUTOCREATE = parsed_config['trading_options']['LIST_AUTOCREATE']
     LIST_CREATE_TYPE = parsed_config['trading_options']['LIST_CREATE_TYPE']
     IGNORE_LIST = parsed_config['trading_options']['IGNORE_LIST']
-    REPORT_STYLE = parsed_config['script_options']['REPORT_STYLE']
     
     QUANTITY = INVESTMENT/TRADE_SLOTS
 
@@ -1069,7 +1073,7 @@ if __name__ == '__main__':
         if tickers_list_changed == True :
            tickers=[line.strip() for line in open(TICKERS_LIST)]
            tickers_list_changed = False
-#           print(f'Tickers list changed and loaded: {tickers}')
+        # print(f'Tickers list changed and loaded: {tickers}')
         try:
           orders, last_price, volume = buy()
           update_portfolio(orders, last_price, volume)
