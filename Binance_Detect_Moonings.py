@@ -403,7 +403,6 @@ def convert_volume():
 
     return volume, last_price
 
-
 def buy():
     '''Place Buy market orders for each volatile coin found'''
     volume, last_price = convert_volume()
@@ -423,7 +422,7 @@ def buy():
                 }]
 
                 # Log trades
-                write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
+                report('log',f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
 
                 continue
 
@@ -455,7 +454,7 @@ def buy():
                     print('Order returned, saving order to file')
 
                     # Log trade
-                    write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
+                    report('log',f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
 
 
         else:
@@ -476,8 +475,9 @@ def sell_coins():
         TP = float(coins_bought[coin]['bought_at']) + (float(coins_bought[coin]['bought_at']) * coins_bought[coin]['take_profit']) / 100
         SL = float(coins_bought[coin]['bought_at']) + (float(coins_bought[coin]['bought_at']) * coins_bought[coin]['stop_loss']) / 100
         TL = float(coins_bought[coin]['timestamp']) + HOLDING_TIME_LIMIT
+#        print(f'TL:{TL}, time: {round(time.time() * 1000)} HOLDING_TIME_LIMIT: {HOLDING_TIME_LIMIT}')
 
-        if TL < datetime.now().timestamp():
+        if TL < round(time.time() * 1000):
            dynamic = 'holding'
            print(f'HOLDING_TIME_LIMIT is up HOLDING_TAKE_PROFIT:{round(DYNAMIC_HOLDING_TAKE_PROFIT,2)}')
 
@@ -536,11 +536,11 @@ def sell_coins():
                 if profit > 0:
                    win_trade_count = win_trade_count + 1
                    dynamic = 'performance_adjust_up'
-                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
+                   report('log',f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
                 else:
                    loss_trade_count = loss_trade_count + 1
                    dynamic = 'performance_adjust_down'
-                   write_log(f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
+                   report('log',f"Sell: {coins_sold[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} Profit: {profit:.{decimals()}f} {PriceChange-(TRADING_FEE*2):.{decimals()}f}%")
 
                 # LastPrice (10) - BuyPrice (5) = 5
                 # 5 * coins_sold (1) = 5
@@ -604,11 +604,6 @@ def remove_from_portfolio(coins_sold):
 
     session('save')
 
-def write_log(logline):
-    timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
-    with open(LOG_FILE,'a+') as f:
-        f.write(timestamp + ' ' + logline + '\n')
-
 def report(type, reportline):
 
     global session_profit, CURRENT_EXPOSURE, NEW_BALANCE
@@ -662,6 +657,12 @@ def report(type, reportline):
           data = {"content": bot_message}
           response = requests.post(mUrl, json=data)
           print(response.content)
+
+       if type == 'log':
+          timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
+          print(f'LOG_FILE: {LOG})
+          with open(LOG_FILE,'a+') as f:
+              f.write(timestamp + ' ' + reportline + '\n')
 
 #function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
 def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT, HOLDING_TAKE_PROFIT):
