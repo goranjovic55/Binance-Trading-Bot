@@ -52,11 +52,16 @@ trading_options:
 
   # List of trading pairs to exclude
   # by default we're excluding the most popular fiat pairs
-  FIATS:
+  EXCLUDED_PAIRS:
     - EURUSDT
     - GBPUSDT
     - JPYUSDT
     - USDUSDT
+
+  # Trading fee in % per trade.
+  # If using 0.75% (using BNB for fees) you must have BNB in your account to cover trading fees.
+  # If using BNB for fees, it MUST be enabled in your Binance 'Dashboard' page (checkbox).
+  TRADING_FEE: .075
 
   # Specify in minutes the frequency to check for trading signals from TradingView
   SIGNALS_FREQUENCY: 1
@@ -93,11 +98,6 @@ trading_options:
   TRAILING_STOP_LOSS: 0.3
   TRAILING_TAKE_PROFIT: .01
 
-  # Trading fee in % per trade.
-  # If using 0.75% (using BNB for fees) you must have BNB in your account to cover trading fees.
-  # If using BNB for fees, it MUST be enabled in your Binance 'Dashboard' page (checkbox).
-  TRADING_FEE: .075
-
   # gogo MOD Dynamic perecent applied to SL and TP upon WIN or LOSS trade
   DYNAMIC_SETTINGS: True
   DYNAMIC_WIN_LOSS_UP: 10
@@ -114,13 +114,12 @@ trading_options:
   SIGNALSAMPLEMOD_THRESHOLD : 18
 
 
-# multiplier for HOLDING_TIME_LIMIT wich gives acrtual TIME_DIFFERENCE * HOLDING_TIME_LIMIT_MULTIPLIER when to start lowering STOP_LOSS
-# holding take profit is % at wich we sell if holding time limit is passed defualt is 1 and after one timeperiod we will sell on holding take profit
+  # multiplier for HOLDING_TIME_LIMIT wich gives acrtual TIME_DIFFERENCE * HOLDING_TIME_LIMIT_MULTIPLIER when to start lowering STOP_LOSS
+  # holding take profit is % at wich we sell if holding time limit is passed defualt is 1 and after one timeperiod we will sell on holding take profit
   HOLDING_INTERVAL_LIMIT: 5
   HOLDING_TAKE_PROFIT: 3
 
- #sort list by volume or price_change
-
+  # sort list by volume or price_change
   LIST_AUTOCREATE: True
   LIST_CREATE_TYPE: tradingview
   SORT_LIST_TYPE: volume

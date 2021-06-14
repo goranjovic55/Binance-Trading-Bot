@@ -101,7 +101,7 @@ def analyze(pairs):
                     f.write(pair + '\n')
 
         last_RSI[pair] = RSI
-            print(f'Custsignalmod:{pair} Oscillators:{oscCheck}/{len(OSC_INDICATORS)} Moving averages:{maCheck}/{len(MA_INDICATORS)}')
+        print(f'Custsignalmod:{pair} Oscillators:{oscCheck}/{len(OSC_INDICATORS)} Moving averages:{maCheck}/{len(MA_INDICATORS)}')
 
     return signal_coins
 

@@ -149,3 +149,4 @@ def do_work():
                 print(f'buysellcustsignal: {len(signal_coins)} coins above {TA_BUY_THRESHOLD} treshold on three timeframes. Waiting {TIME_TO_WAIT} minutes for next analysis')
 
         time.sleep((TIME_TO_WAIT*60))
+        

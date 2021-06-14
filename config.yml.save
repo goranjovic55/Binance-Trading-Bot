@@ -17,7 +17,7 @@ script_options:
 #Bot id for BOT_MESSAGE_REPORTS
   BOT_ID: '>>'
 
-  REPORT_STYLE: fancy
+  DETAILED_REPORTS: fancy
 
 # These options apply to the trading methods the script executes
 trading_options:
@@ -35,7 +35,7 @@ trading_options:
 
   # List of trading pairs to exclude
   # by default we're excluding the most popular fiat pairs
-  FIATS:
+  EXCLUDED_PAIRS:
     - EURUSDT
     - GBPUSDT
     - JPYUSDT

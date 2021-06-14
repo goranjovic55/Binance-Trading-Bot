@@ -94,10 +94,10 @@ dynamic = 'none'
 sell_all_coins = False
 tickers_list_changed = False
 
-global CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN
+global CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN, STARTUP
 CURRENT_EXPOSURE = 0
 NEW_BALANCE = 0
-
+STARTUP = True
 
 # print with timestamps
 old_out = sys.stdout
@@ -151,10 +151,10 @@ def get_price(add_to_historical=True):
     for coin in prices:
 
         if CUSTOM_LIST:
-            if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in FIATS):
+            if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
                 initial_price[coin['symbol']] = { 'price': coin['price'], 'time': datetime.now()}
         else:
-            if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in FIATS):
+            if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
                 initial_price[coin['symbol']] = { 'price': coin['price'], 'time': datetime.now()}
 
     if add_to_historical:
@@ -672,8 +672,6 @@ def report(type, reportline):
        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
        report_string = 'SP:'+str(round(session_profit, 2))+'>CE:'+str(round(CURRENT_EXPOSURE, 4))+'>W:'+str(win_trade_count)+'>L:'+str(loss_trade_count)+'>IG:'+str(round(INVESTMENT_GAIN, 4))+'%'+'>IT:'+str(round(INVESTMENT, 4))+'>NB:'+str(round(NEW_BALANCE, 4))+'>IV:'+str(round(investment_value, 4))+str(exchange_symbol)+'>IGV:'+str(round(investment_value_gain, 4))+'>IVP:'+str(round(investment_value_gain, 4))
        bot_message = BOT_ID + SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
-       report_string = 'SP:'+str(round(session_profit, 2))+'>CE:'+str(round(CURRENT_EXPOSURE, 4))+'>W:'+str(win_trade_count)+'>L:'+str(loss_trade_count)+'>IG:'+str(round(INVESTMENT_GAIN, 4))+'%'+'>IT:'+str(round(INVESTMENT, 4))+'>NB:'+str(round(NEW_BALANCE, 4))+'>IV:'+str(round(investment_value, 4))+str(exchange_symbol)+'>IGV:'+str(round(investment_value_gain, 4))+'>IVP:'+str(round(investment_value_gain, 4))
-       bot_message = BOT_ID + SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
        if BOT_MESSAGE_REPORTS and TELEGRAM_BOT_TOKEN:
           bot_token = TELEGRAM_BOT_TOKEN
@@ -840,12 +838,12 @@ def tickers_list(type):
             for coin in tickers_binance:
 
                 if CUSTOM_LIST:
-                    if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in FIATS):
+                    if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
                         tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
                         tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
 
                 else:
-                    if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in FIATS):
+                    if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
                         tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
                         tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
 
@@ -893,6 +891,20 @@ def tickers_list(type):
        tickers_list_changed = True
        print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
+
+def bot_launch():
+    # Bot relays session start to Discord channel
+    global DISCORD_WEBHOOK, BOT_MESSAGE_REPORTS
+    TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
+    bot_message = BOT_ID + " is online and ready to trade"
+
+    if BOT_MESSAGE_REPORTS and DISCORD_WEBHOOK:
+        #Webhook of my channel. Click on edit channel --> Webhooks --> Creates webhook
+        mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
+        data = {"content": bot_message}
+        response = requests.post(mUrl, json=data)
+        print(response.content)
+
 if __name__ == '__main__':
 
     # Load arguments then parse settings
@@ -929,7 +941,7 @@ if __name__ == '__main__':
     PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
     INVESTMENT = parsed_config['trading_options']['INVESTMENT']
     TRADE_SLOTS = parsed_config['trading_options']['TRADE_SLOTS']
-    FIATS = parsed_config['trading_options']['FIATS']
+    EXCLUDED_PAIRS = parsed_config['trading_options']['EXCLUDED_PAIRS']
     TIME_DIFFERENCE = parsed_config['trading_options']['TIME_DIFFERENCE']
     RECHECK_INTERVAL = parsed_config['trading_options']['RECHECK_INTERVAL']
     CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN']
@@ -953,7 +965,7 @@ if __name__ == '__main__':
     LIST_CREATE_TYPE = parsed_config['trading_options']['LIST_CREATE_TYPE']
     IGNORE_LIST = parsed_config['trading_options']['IGNORE_LIST']
 
-    REPORT_STYLE = parsed_config['script_options']['REPORT_STYLE']
+    DETAILED_REPORTS = parsed_config['script_options']['DETAILED_REPORTS']
     HOLDING_INTERVAL_LIMIT = parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
     HOLDING_TAKE_PROFIT = parsed_config['trading_options']['HOLDING_TAKE_PROFIT']
 
@@ -1092,3 +1104,8 @@ if __name__ == '__main__':
         STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT, HOLDING_TAKE_PROFIT = dynamic_settings(dynamic, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT, HOLDING_TAKE_PROFIT)
         #session calculations like unrealised potential etc
         session('calc')
+
+        # add any 'first launch' style stuff in this
+        if STARTUP is True:
+            bot_launch()
+        STARTUP = False
