@@ -70,10 +70,10 @@ class txcolors:
     DEFAULT = '\033[39m'
     NOTICE = '\033[96m'
 
-
 # tracks profit/loss each session
 global session_profit, unrealised_percent, market_price, investment_value
 global investment_value_gain
+
 investment_value = 0
 investment_value_gain = 0
 session_profit = 0
@@ -720,6 +720,7 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
 def session(type):
 
     global unrealised_percent, investment_value, investment_value_gain
+
     global NEW_BALANCE, INVESTMENT_TOTAL, TOTAL_GAINS, INVESTMENT_GAIN
     global market_price, session_profit, win_trade_count, loss_trade_count
 
