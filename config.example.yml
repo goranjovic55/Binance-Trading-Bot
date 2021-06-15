@@ -42,10 +42,6 @@ trading_options:
   # - Using BTC?    Recommended 0.000175+ per TRADE_SLOT (min trade value: 0.0001)
   INVESTMENT: 0.00685
 
-  # TRADE_SLOTS = Maximum number of tradable 'slots' at any time.
-  # (your PAIR_WITH balance must be at least TRADE_SLOTS * QUANTITY)
-  TRADE_SLOTS: 3
-
   # Use more than one TRADE_SLOTS of the same coin? Set to False
   # allows buying the same coin again if a future buy signal is received
   UNIQUE_BUYS: False
@@ -68,6 +64,9 @@ trading_options:
   # Name of list that cointains currencies to be ignored
   IGNORE_LIST: 'ignorelist.txt'
 
+  # Maximum number of trade 'slots' at any time (your USDT balance must be at least TRADE_SLOTS * QUANTITY)
+  TRADE_SLOTS: 3
+
   # the amount of time in MINUTES to calculate the difference from the current price (minimum: 1).
   TIME_DIFFERENCE: 1
 
@@ -80,7 +79,7 @@ trading_options:
   CHANGE_IN_PRICE_MAX: -0.9
 
   # define in % when to sell a coin that's not making a profit.
-  STOP_LOSS: 0.2
+  STOP_LOSS: 3
 
   # define in % when to take profit on a profitable coin.
   TAKE_PROFIT: 0.01
@@ -116,8 +115,7 @@ trading_options:
 
 # multiplier for HOLDING_TIME_LIMIT wich gives acrtual TIME_DIFFERENCE * HOLDING_TIME_LIMIT_MULTIPLIER when to start lowering STOP_LOSS
 # holding take profit is % at wich we sell if holding time limit is passed defualt is 1 and after one timeperiod we will sell on holding take profit
-  HOLDING_INTERVAL_LIMIT: 5
-  HOLDING_TAKE_PROFIT: 3
+  HOLDING_INTERVAL_LIMIT: 60
 
  #sort list by volume or price_change
 
