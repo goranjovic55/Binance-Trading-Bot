@@ -571,7 +571,7 @@ def sell_coins():
                    loss_trade_count = loss_trade_count + 1
                    dynamic = 'performance_adjust_down'
 
-                REPORT = "SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
+                REPORT =  f"SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
 
                 session_profit = session_profit + profit
 
