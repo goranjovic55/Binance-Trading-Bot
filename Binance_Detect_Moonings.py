@@ -429,6 +429,8 @@ def buy():
         if BUYABLE:
             print(f"{txcolors.BUY}Preparing to buy {volume[coin]} {coin}{txcolors.DEFAULT}")
 
+            REPORT = str("Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
+
             if TEST_MODE:
                 orders[coin] = [{
                     'symbol': coin,
@@ -437,7 +439,7 @@ def buy():
                 }]
 
                 # Log trades
-                write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
+                write_log(REPORT)
 
                 continue
 
@@ -466,10 +468,10 @@ def buy():
                     time.sleep(1)
 
                 else:
+                    # Log, announce, and report trade
                     print('Order returned, saving order to file')
-
-                    # Log trade
-                    write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
+                    write_log(REPORT)
+                    report(REPORT)
 
 
         else:
@@ -514,7 +516,7 @@ def sell_coins():
             continue
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
-        if sell_all_coins == True or lastPrice < SL or lastPrice > TP and not USE_TRAILING_STOP_LOSS or (TL < datetime.now().timestamp() and PriceChange -(TRADING_FEE*2) > DYNAMIC_HOLDING_TAKE_PROFIT):
+        if sell_all_coins == True or lastPrice < SL or lastPrice > TP and not USE_TRAILING_STOP_LOSS or (TL < datetime.now().timestamp() and priceChangeWithFee > DYNAMIC_HOLDING_TAKE_PROFIT):
             print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin} - {buyPrice} - {lastPrice} : {priceChangeWithFee:.2f}% Est: {(QUANTITY * priceChangeWithFee) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
             DYNAMIC_HOLDING_TAKE_PROFIT = HOLDING_TAKE_PROFIT
             # try to create a real order
@@ -526,7 +528,6 @@ def sell_coins():
                         side = 'SELL',
                         type = 'MARKET',
                         quantity = coins_bought[coin]['volume']
-
                     )
 
             # error handling here in case position cannot be placed
@@ -564,7 +565,9 @@ def sell_coins():
         # no action; print once every TIME_DIFFERENCE
         if hsp_head == 1:
             if len(coins_bought) > 0:
-                print(f"TP:{TP:.{decimals()}f}:{coins_bought[coin]['take_profit']:.2f} or SL:{SL:.{decimals()}f}:{coins_bought[coin]['stop_loss']:.2f} not yet reached, not selling {coin} for now {buyPrice} - {lastPrice} : {txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}{priceChange-(buyFee+sellFee):.2f}% Est: {(QUANTITY*(priceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
+                BUY_PRICE = str(buyPrice)
+                LAST_PRICE = str(lastPrice)
+                print(f"TP:{TP:.{decimals()}f}:{coins_bought[coin]['take_profit']:.2f} or SL:{SL:.{decimals()}f}:{coins_bought[coin]['stop_loss']:.2f} not yet reached, not selling {coin} for now >> Bought at: {BUY_PRICE} - Now: {LAST_PRICE} : {txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}{priceChangeWithFee:.2f}% Est: {(QUANTITY*(priceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
 
     if hsp_head == 1 and len(coins_bought) == 0: print(f"No trade slots are currently in use")
 
@@ -650,7 +653,7 @@ def report(type, reportline):
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
         # print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol}> {reportline} <<{txcolors.DEFAULT}")
-        print(f"{txcolors.NOTICE}>> Tade slots: {len(coins_bought)}/{TRADE_SLOTS} ({CURRENT_EXPOSURE:g}/{INVESTMENT_TOTAL:g} {PAIR_WITH}) - Open: {UNREALISED_PERCENT:.2f}% - Closed: {session_profit:.2f}% - Est: {TOTAL_GAINS:g} {PAIR_WITH} - W/L: {WON}/{LOST} - Value: {investment_value:.2f} {exchange_symbol} - Gain: {INVESTMENT_GAIN:.2f}% ({str(INVESTMENT_VALUE_GAIN)} USD vs HODL){txcolors.DEFAULT}")
+        print(f"{txcolors.NOTICE}>> Tade slots: {len(coins_bought)}/{TRADE_SLOTS} ({CURRENT_EXPOSURE:g}/{INVESTMENT_TOTAL:g} {PAIR_WITH}) - Open: {UNREALISED_PERCENT:.2f}% - Closed: {session_profit:.2f}% - Est: {TOTAL_GAINS:g} {PAIR_WITH} - W/L: {WON}/{LOST} - Value: {investment_value:.2f} USD - Gain: {INVESTMENT_GAIN:.2f}% ({str(INVESTMENT_VALUE_GAIN)} USD vs HODL){txcolors.DEFAULT}")
 
     #More detailed/verbose report style
     if type == 'detailed':
