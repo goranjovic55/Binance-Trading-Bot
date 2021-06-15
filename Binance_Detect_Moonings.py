@@ -506,7 +506,18 @@ def sell_coins():
         buyFee = (coins_bought[coin]['volume'] * buyPrice) * (TRADING_FEE/100)
         # Note: priceChange and priceChangeWithFee are percentages!
         priceChange = float((lastPrice - buyPrice) / buyPrice * 100)
-        priceChangeWithFee = float(((lastPrice - buyPrice) - (sellFee + buyFee) ) / buyPrice * 100)
+        # priceChange = (0.00006648 - 0.00006733) / 0.00006733 * 100
+        # volume = 150
+        # buyPrice: 0.00006733
+        # lastPrice: 0.00006648
+        # buyFee = (150 * 0.00006733) * (0.075/100)
+        # buyFee = 0.000007574625
+        # sellFee = (150 * 0.00006648) * (0.075/100)
+        # sellFee = 0.000007479
+
+        # priceChangeWithFee = (0.00006648 - 0.00006733) - (0.000007479 - 0.000007574625) / 0.00006733 * 100
+
+        # priceChangeWithFee = float(((lastPrice - buyPrice) - (sellFee + buyFee) ) / buyPrice * 100)
 
         # check that the price is above the take profit and readjust SL and TP accordingly if trialing stop loss used
         if lastPrice > TP and USE_TRAILING_STOP_LOSS:
@@ -527,7 +538,7 @@ def sell_coins():
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
         if sell_all_coins == True or lastPrice < SL or lastPrice > TP and not USE_TRAILING_STOP_LOSS or TL < current_time:
-            print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChangeWithFee:.2f}% - Est: {(QUANTITY * priceChangeWithFee) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
+            print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChange:.2f}% - Est: {(QUANTITY * priceChange) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
             # try to create a real order
             try:
 
@@ -561,8 +572,8 @@ def sell_coins():
                    loss_trade_count = loss_trade_count + 1
                    dynamic = 'performance_adjust_down'
 
-                REPORT = "SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChangeWithFee:.2f}%)"
-
+                REPORT = "SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
+                
                 write_log(REPORT)
                 session_profit = session_profit + profit
 
@@ -574,7 +585,7 @@ def sell_coins():
         # no action; print once every TIME_DIFFERENCE
         if hsp_head == 1:
             if len(coins_bought) > 0:
-                print(f"TP:{TP:.{decimals()}f}:{coins_bought[coin]['take_profit']:.2f} or SL:{SL:.{decimals()}f}:{coins_bought[coin]['stop_loss']:.2f} not yet reached, not selling {coin} for now >> Bought at: {BUY_PRICE} - Now: {LAST_PRICE} : {txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}{priceChangeWithFee:.2f}% Est: {(QUANTITY*(priceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
+                print(f"TP:{TP:.{decimals()}f}:{coins_bought[coin]['take_profit']:.2f} or SL:{SL:.{decimals()}f}:{coins_bought[coin]['stop_loss']:.2f} not yet reached, not selling {coin} for now >> Bought at: {BUY_PRICE} - Now: {LAST_PRICE} : {txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}{priceChange:.2f}% Est: {(QUANTITY*(priceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
 
     if hsp_head == 1 and len(coins_bought) == 0: print(f"No trade slots are currently in use")
 
@@ -912,8 +923,8 @@ def bot_launch():
         #Webhook of my channel. Click on edit channel --> Webhooks --> Creates webhook
         mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
         data = {"content": bot_message}
-        response = requests.post(mUrl, json=data)
-        print(response.content)
+        requests.post(mUrl, json=data)
+ 
 
 if __name__ == '__main__':
 
