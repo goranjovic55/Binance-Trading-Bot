@@ -686,7 +686,7 @@ def report(type, reportline):
     if type == 'message':
 
        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
-       report_string = 'Session profit:'+str(round(session_profit, 2))+' > Exposure:'+str(round(CURRENT_EXPOSURE, 4))+' > W/L:'+str(win_trade_count)+'/'+str(loss_trade_count)+' > Gains:'+str(round(INVESTMENT_GAIN, 4))+'%'+' > Balance:'+str(round(NEW_BALANCE, 4))+' > Value:'+str(round(investment_value, 4))+str(exchange_symbol)+' > Value gain:'+str(round(investment_value_gain, 4))
+       report_string = 'Session profit: '+str(round(session_profit, 2))+' | Exposure: '+str(round(CURRENT_EXPOSURE, 4))+' | Win/Loss: '+str(win_trade_count)+'/'+str(loss_trade_count)+' | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(round(NEW_BALANCE, 4))+' | Value: '+str(round(investment_value, 4))+str(exchange_symbol)+' | Value gain: '+str(round(investment_value_gain, 4))
        bot_message = BOT_ID + SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
        if BOT_MESSAGE_REPORTS and TELEGRAM_BOT_TOKEN:
