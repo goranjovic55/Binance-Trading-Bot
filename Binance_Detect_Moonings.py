@@ -572,12 +572,12 @@ def sell_coins():
                    loss_trade_count = loss_trade_count + 1
                    dynamic = 'performance_adjust_down'
 
-                REPORT = "SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
+                REPORT = f"SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 
                 write_log(REPORT)
                 session_profit = session_profit + profit
 
-                report('message',f"{REPORT}")
+                report('message',REPORT)
                 tickers_list(SORT_LIST_TYPE)
 
             continue
@@ -679,7 +679,8 @@ def report(type, reportline):
        ,f"Profit on unsold coins: {txcolors.SELL_PROFIT if UNREALISED_PERCENT >= 0 else txcolors.SELL_LOSS}{UNREALISED_PERCENT:.2f}%\n"
        ,f"Session Pofit:          {txcolors.SELL_PROFIT if session_profit >= 0 else txcolors.SELL_LOSS}{session_profit:.2f}%\n"
        ,f"Est. total gains:       {txcolors.SELL_PROFIT if TOTAL_GAINS >= 0 else txcolors.SELL_LOSS}{TOTAL_GAINS:g} {PAIR_WITH}\n"
-       ,f"Trades won/lost:        {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{win_trade_count} / {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{loss_trade_count}\n"
+       ,f"Trades won:             {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{win_trade_count}\n"
+       ,f"Trades lost:            {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{loss_trade_count}\n"
        ,f"Investment:             {txcolors.DEFAULT}{INVESTMENT_TOTAL:g} {PAIR_WITH}\n"
        ,f"Current Exposure:       {txcolors.DEFAULT}{CURRENT_EXPOSURE:g} {PAIR_WITH}\n"
        ,f"New Balance:            {txcolors.SELL_PROFIT if NEW_BALANCE >= INVESTMENT_TOTAL else txcolors.SELL_LOSS}{NEW_BALANCE:g} {PAIR_WITH}\n"
