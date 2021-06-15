@@ -490,8 +490,15 @@ def sell_coins():
 
     for coin in list(coins_bought):
         # define stop loss and take profit
-        TP = float(coins_bought[coin]['bought_at']) + (float(coins_bought[coin]['bought_at']) * coins_bought[coin]['take_profit']) / 100
-        SL = float(coins_bought[coin]['bought_at']) + (float(coins_bought[coin]['bought_at']) * coins_bought[coin]['stop_loss']) / 100
+        10000 + ((10000 * 0.2) / 100) 
+        BUY_PRICE = float(coins_bought[coin]['bought_at'])
+        # TP is the price at which to 'take profit' based on config % markup
+        TP = BUY_PRICE + ((BUY_PRICE * coins_bought[coin]['take_profit']) / 100)
+        TP = "{:.8f}".format(TP)
+        # SL is the price at which to 'stop losses' based on config % markdown
+        SL = BUY_PRICE + ((BUY_PRICE * coins_bought[coin]['stop_loss']) / 100)
+        SL = "{:.8f}".format(SL)
+        # TL is the time limit for holding onto a coin
         TL = float(coins_bought[coin]['timestamp']) + HOLDING_TIME_LIMIT
 
         if TL < datetime.now().timestamp():
@@ -499,8 +506,10 @@ def sell_coins():
            print(f'HOLDING_TIME_LIMIT is up HOLDING_TAKE_PROFIT:{round(DYNAMIC_HOLDING_TAKE_PROFIT,2)}')
 
         lastPrice = float(last_price[coin]['price'])
+        LAST_PRICE = "{:.8f}".format(lastPrice)
         sellFee = (coins_bought[coin]['volume'] * lastPrice) * (TRADING_FEE/100)
         buyPrice = float(coins_bought[coin]['bought_at'])
+        BUY_PRICE = "{:.8f}". format(buyPrice)
         buyFee = (coins_bought[coin]['volume'] * buyPrice) * (TRADING_FEE/100)
         # Note: priceChange and priceChangeWithFee are percentages!
         priceChange = float((lastPrice - buyPrice) / buyPrice * 100)
@@ -512,12 +521,12 @@ def sell_coins():
             # increasing TP by TRAILING_TAKE_PROFIT (essentially next time to readjust SL)
             coins_bought[coin]['take_profit'] = priceChange + TRAILING_TAKE_PROFIT
             coins_bought[coin]['stop_loss'] = coins_bought[coin]['take_profit'] - TRAILING_STOP_LOSS
-            if DEBUG: print(f"{coin} TP reached, adjusting TP {coins_bought[coin]['take_profit']:.{decimals()}f}  and SL {coins_bought[coin]['stop_loss']:.{decimals()}f} accordingly to lock-in profit")
+            if DEBUG: print(f"{coin} TP reached, adjusting TP {coins_bought[coin]['take_profit']:.{decimals()}f} and SL {coins_bought[coin]['stop_loss']:.{decimals()}f} accordingly to lock-in profit")
             continue
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
         if sell_all_coins == True or lastPrice < SL or lastPrice > TP and not USE_TRAILING_STOP_LOSS or (TL < datetime.now().timestamp() and priceChangeWithFee > DYNAMIC_HOLDING_TAKE_PROFIT):
-            print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin} - {buyPrice} - {lastPrice} : {priceChangeWithFee:.2f}% Est: {(QUANTITY * priceChangeWithFee) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
+            print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin} - {BUY_PRICE} - {LAST_PRICE} : {priceChangeWithFee:.2f}% Est: {(QUANTITY * priceChangeWithFee) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
             DYNAMIC_HOLDING_TAKE_PROFIT = HOLDING_TAKE_PROFIT
             # try to create a real order
             try:
@@ -565,8 +574,6 @@ def sell_coins():
         # no action; print once every TIME_DIFFERENCE
         if hsp_head == 1:
             if len(coins_bought) > 0:
-                BUY_PRICE = str(buyPrice)
-                LAST_PRICE = str(lastPrice)
                 print(f"TP:{TP:.{decimals()}f}:{coins_bought[coin]['take_profit']:.2f} or SL:{SL:.{decimals()}f}:{coins_bought[coin]['stop_loss']:.2f} not yet reached, not selling {coin} for now >> Bought at: {BUY_PRICE} - Now: {LAST_PRICE} : {txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}{priceChangeWithFee:.2f}% Est: {(QUANTITY*(priceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
 
     if hsp_head == 1 and len(coins_bought) == 0: print(f"No trade slots are currently in use")
