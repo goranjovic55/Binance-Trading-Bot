@@ -469,7 +469,6 @@ def buy():
                 else:
                     # Log, announce, and report trade
                     print('Order returned, saving order to file')
-                    write_log(REPORT)
                     report('log',f"{REPORT}")
 
 
@@ -573,11 +572,11 @@ def sell_coins():
                    dynamic = 'performance_adjust_down'
 
                 REPORT = "SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
-                
-                write_log(REPORT)
+
                 session_profit = session_profit + profit
 
                 report('message',f"{REPORT}")
+                report('log',f"{REPORT}")
                 tickers_list(SORT_LIST_TYPE)
 
             continue
@@ -633,10 +632,6 @@ def remove_from_portfolio(coins_sold):
 
         session('save')
 
-def write_log(logline):
-    timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
-    with open(LOG_FILE,'a+') as f:
-        f.write(timestamp + ' ' + logline + '\n')
 
 def report(type, reportline):
 
