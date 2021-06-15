@@ -471,7 +471,7 @@ def buy():
                     # Log, announce, and report trade
                     print('Order returned, saving order to file')
                     write_log(REPORT)
-                    report(REPORT)
+                    report('message',f"{REPORT}")
 
 
         else:
@@ -564,7 +564,7 @@ def sell_coins():
                 write_log(REPORT)
                 session_profit = session_profit + profit
                 
-                report(REPORT)
+                report('message',f"{REPORT}")
                 tickers_list(SORT_LIST_TYPE)
 
             continue
