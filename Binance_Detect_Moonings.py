@@ -660,7 +660,7 @@ def report(type, reportline):
 
        if type == 'log':
           timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
-          print(f'LOG_FILE: {LOG})
+          print(f'LOG_FILE: {LOG}')
           with open(LOG_FILE,'a+') as f:
               f.write(timestamp + ' ' + reportline + '\n')
 
