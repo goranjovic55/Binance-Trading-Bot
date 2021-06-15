@@ -660,7 +660,7 @@ def report(type, reportline):
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
         # print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol}> {reportline} <<{txcolors.DEFAULT}")
-        print(f"{txcolors.NOTICE}>> Tade slots: {len(coins_bought)}/{TRADE_SLOTS} ({CURRENT_EXPOSURE:g}/{INVESTMENT_TOTAL:g} {PAIR_WITH}) - Open: {UNREALISED_PERCENT:.2f}% - Closed: {session_profit:.2f}% - Est: {TOTAL_GAINS:g} {PAIR_WITH} - W/L: {WON}/{LOST} - Value: {investment_value:.2f} USD - Gain: {INVESTMENT_GAIN:.2f}% ({str(INVESTMENT_VALUE_GAIN)} USD vs HODL){txcolors.DEFAULT}")
+        print(f"{txcolors.NOTICE}>> Trade slots: {len(coins_bought)}/{TRADE_SLOTS} ({CURRENT_EXPOSURE:g}/{INVESTMENT_TOTAL:g} {PAIR_WITH}) - Open: {UNREALISED_PERCENT:.2f}% - Closed: {session_profit:.2f}% - Est: {TOTAL_GAINS:g} {PAIR_WITH} - W/L: {WON}/{LOST} - Value: {investment_value:.2f} USD - Gain: {INVESTMENT_GAIN:.2f}% ({str(INVESTMENT_VALUE_GAIN)} USD vs HODL){txcolors.DEFAULT}")
 
     #More detailed/verbose report style
     if type == 'detailed':
