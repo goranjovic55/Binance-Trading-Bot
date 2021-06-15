@@ -420,6 +420,7 @@ def buy():
     orders = {}
 
     for coin in volume:
+        print(f"Attempting to buy {coin}")
         BUYABLE = True
         if (UNIQUE_BUYS == True) and (coin in coins_bought) :
             BUYABLE = False
@@ -513,7 +514,7 @@ def sell_coins():
             continue
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
-        if sell_all_coins == True or LastPrice < SL or LastPrice > TP and not USE_TRAILING_STOP_LOSS or (TL < datetime.now().timestamp() and PriceChange -(TRADING_FEE*2) > DYNAMIC_HOLDING_TAKE_PROFIT):
+        if sell_all_coins == True or lastPrice < SL or lastPrice > TP and not USE_TRAILING_STOP_LOSS or (TL < datetime.now().timestamp() and PriceChange -(TRADING_FEE*2) > DYNAMIC_HOLDING_TAKE_PROFIT):
             print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin} - {buyPrice} - {lastPrice} : {priceChangeWithFee:.2f}% Est: {(QUANTITY * priceChangeWithFee) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
             DYNAMIC_HOLDING_TAKE_PROFIT = HOLDING_TAKE_PROFIT
             # try to create a real order
