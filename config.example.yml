@@ -48,7 +48,7 @@ trading_options:
 
   # List of trading pairs to exclude
   # by default we're excluding the most popular fiat pairs
-  FIATS:
+  EXCLUDED_PAIRS:
     - EURUSDT
     - GBPUSDT
     - JPYUSDT
