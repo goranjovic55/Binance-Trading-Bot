@@ -494,10 +494,8 @@ def sell_coins():
         BUY_PRICE = float(coins_bought[coin]['bought_at'])
         # TP is the price at which to 'take profit' based on config % markup
         TP = BUY_PRICE + ((BUY_PRICE * coins_bought[coin]['take_profit']) / 100)
-        TP = "{:.8f}".format(TP)
         # SL is the price at which to 'stop losses' based on config % markdown
         SL = BUY_PRICE + ((BUY_PRICE * coins_bought[coin]['stop_loss']) / 100)
-        SL = "{:.8f}".format(SL)
         # TL is the time limit for holding onto a coin
         TL = float(coins_bought[coin]['timestamp']) + HOLDING_TIME_LIMIT
 
