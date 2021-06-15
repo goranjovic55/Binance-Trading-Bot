@@ -465,7 +465,7 @@ def buy():
 def sell_coins():
     '''sell coins that have reached the STOP LOSS or TAKE PROFIT threshold'''
 
-    global hsp_head, session_profit, win_trade_count, loss_trade_count, dynamic, sell_all_coins, market_resistance, market_support, DYNAMIC_HOLDING_TAKE_PROFIT
+    global hsp_head, session_profit, win_trade_count, loss_trade_count, dynamic, sell_all_coins, market_resistance, market_support
     last_price = get_price(False) # don't populate rolling window
     #last_price = get_price(add_to_historical=True) # don't populate rolling window
     coins_sold = {}
@@ -476,10 +476,6 @@ def sell_coins():
         SL = float(coins_bought[coin]['bought_at']) + (float(coins_bought[coin]['bought_at']) * coins_bought[coin]['stop_loss']) / 100
         TL = float(coins_bought[coin]['timestamp']) + HOLDING_TIME_LIMIT
 #        print(f'TL:{TL}, time: {round(time.time() * 1000)} HOLDING_TIME_LIMIT: {HOLDING_TIME_LIMIT}')
-
-        if TL < round(time.time() * 1000):
-           dynamic = 'holding'
-           print(f'HOLDING_TIME_LIMIT is up HOLDING_TAKE_PROFIT:{round(DYNAMIC_HOLDING_TAKE_PROFIT,2)}')
 
         LastPrice = float(last_price[coin]['price'])
         # sell fee below would ofc only apply if transaction was closed at the current LastPrice
@@ -497,10 +493,18 @@ def sell_coins():
             if DEBUG: print(f"{coin} TP reached, adjusting TP {coins_bought[coin]['take_profit']:.{decimals()}f}  and SL {coins_bought[coin]['stop_loss']:.{decimals()}f} accordingly to lock-in profit")
             continue
 
+        if not TEST_MODE:
+           current_time = float(round(time.time() * 1000))
+           print(f'TL:{TL}, time: {current_time} HOLDING_TIME_LIMIT: {HOLDING_TIME_LIMIT}')
+
+        if TEST_MODE:
+           current_time = float(round(time.time()))
+           print(f'TL:{TL}, time: {current_time} HOLDING_TIME_LIMIT: {HOLDING_TIME_LIMIT}')
+
+
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
-        if sell_all_coins == True or LastPrice < SL or LastPrice > TP and not USE_TRAILING_STOP_LOSS or (TL < round(time.time() * 1000) and PriceChange -(TRADING_FEE*2) > DYNAMIC_HOLDING_TAKE_PROFIT):
+        if sell_all_coins == True or LastPrice < SL or LastPrice > TP and not USE_TRAILING_STOP_LOSS or TL < current_time:
             print(f"{txcolors.SELL_PROFIT if PriceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin} - {BuyPrice} - {LastPrice} : {PriceChange-(buyFee+sellFee):.2f}% Est: {(QUANTITY*(PriceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
-            DYNAMIC_HOLDING_TAKE_PROFIT = HOLDING_TAKE_PROFIT
             # try to create a real order
             try:
 
@@ -658,16 +662,16 @@ def report(type, reportline):
           response = requests.post(mUrl, json=data)
           print(response.content)
 
-       if type == 'log':
-          timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
-          print(f'LOG_FILE: {LOG})
-          with open(LOG_FILE,'a+') as f:
-              f.write(timestamp + ' ' + reportline + '\n')
+    if type == 'log':
+       timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
+#       print(f'LOG_FILE: {LOG_FILE}')
+       with open(LOG_FILE,'a+') as f:
+            f.write(timestamp + ' ' + reportline + '\n')
 
 #function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
-def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT, HOLDING_TAKE_PROFIT):
+def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT):
 
-    global last_trade_won, last_trade_lost, dynamic, DYNAMIC_HOLDING_TAKE_PROFIT
+    global last_trade_won, last_trade_lost, dynamic
 
     if DYNAMIC_SETTINGS:
 
@@ -678,10 +682,8 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
         CHANGE_IN_PRICE_MAX = CHANGE_IN_PRICE_MAX + (CHANGE_IN_PRICE_MAX * DYNAMIC_WIN_LOSS_DOWN) /100
         CHANGE_IN_PRICE_MIN = CHANGE_IN_PRICE_MIN - (CHANGE_IN_PRICE_MIN * DYNAMIC_WIN_LOSS_DOWN) /100
         HOLDING_TIME_LIMIT = HOLDING_TIME_LIMIT + (HOLDING_TIME_LIMIT * DYNAMIC_WIN_LOSS_UP) / 100
-        HOLDING_TAKE_PROFIT = HOLDING_TAKE_PROFIT + (HOLDING_TAKE_PROFIT * DYNAMIC_WIN_LOSS_UP) / 100
         dynamic = 'none'
-        print(f'{txcolors.NOTICE}>> Last Trade WON Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f}  - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} CIP:{CHANGE_IN_PRICE_MIN:.4f}/{CHANGE_IN_PRICE_MAX:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} HTL: {HOLDING_TIME_LIMIT:.2f} HTP: {HOLDING_TAKE_PROFIT:.2f}<<{txcolors.DEFAULT}')
-
+        print(f'{txcolors.NOTICE}>> Last Trade WON Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f}  - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} CIP:{CHANGE_IN_PRICE_MIN:.4f}/{CHANGE_IN_PRICE_MAX:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} HTL: {HOLDING_TIME_LIMIT:.2f}<<{txcolors.DEFAULT}')
       if type == 'performance_adjust_down':
         STOP_LOSS = STOP_LOSS - (STOP_LOSS * DYNAMIC_WIN_LOSS_DOWN) / 100
         TAKE_PROFIT = TAKE_PROFIT - (TAKE_PROFIT * DYNAMIC_WIN_LOSS_DOWN) / 100
@@ -689,9 +691,8 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
         CHANGE_IN_PRICE_MAX = CHANGE_IN_PRICE_MAX - (CHANGE_IN_PRICE_MAX * DYNAMIC_WIN_LOSS_DOWN) /100
         CHANGE_IN_PRICE_MIN = CHANGE_IN_PRICE_MIN + (CHANGE_IN_PRICE_MIN * DYNAMIC_WIN_LOSS_DOWN) /100
         HOLDING_TIME_LIMIT = HOLDING_TIME_LIMIT - (HOLDING_TIME_LIMIT * DYNAMIC_WIN_LOSS_DOWN) / 100
-        HOLDING_TAKE_PROFIT = HOLDING_TAKE_PROFIT - (HOLDING_TAKE_PROFIT * DYNAMIC_WIN_LOSS_DOWN) / 100
         dynamic = 'none'
-        print(f'{txcolors.NOTICE}>> Last Trade LOST Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} CIP:{CHANGE_IN_PRICE_MIN:.4f}/{CHANGE_IN_PRICE_MAX:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} HTL:{HOLDING_TIME_LIMIT:.2f} HTP: {HOLDING_TAKE_PROFIT}<<{txcolors.DEFAULT}')
+        print(f'{txcolors.NOTICE}>> Last Trade LOST Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} CIP:{CHANGE_IN_PRICE_MIN:.4f}/{CHANGE_IN_PRICE_MAX:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} HTL:{HOLDING_TIME_LIMIT:.2f}<<{txcolors.DEFAULT}')
 
       if type == 'reset':
         STOP_LOSS = parsed_config['trading_options']['STOP_LOSS']
@@ -699,13 +700,9 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
         TRAILING_STOP_LOSS = parsed_config['trading_options']['TRAILING_STOP_LOSS']
         CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX']
         CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN']
-        HOLDING_TIME_LIMIT = (parsed_config['trading_options']['TIME_DIFFERENCE'] * 60) * parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
-        HOLDING_TAKE_PROFIT = (parsed_config)['trading_options']['HOLDING_TAKE_PROFIT']
-        print(f'{txcolors.NOTICE}>> DYNAMIC SETTINGS RESET - STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}CIP:{CHANGE_IN_PRICE_MIN:.4f}/{CHANGE_IN_PRICE_MAX:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} HTL: {HOLDING_TIME_LIMIT:.2f} HTP: {HOLDING_TAKE_PROFIT}<<{txcolors.DEFAULT}')
+        HOLDING_TIME_LIMIT = (parsed_config['trading_options']['TIME_DIFFERENCE'] * 60000) * parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
+        print(f'{txcolors.NOTICE}>> DYNAMIC SETTINGS RESET - STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}CIP:{CHANGE_IN_PRICE_MIN:.4f}/{CHANGE_IN_PRICE_MAX:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} HTL: {HOLDING_TIME_LIMIT:.2f}<<{txcolors.DEFAULT}')
         dynamic = 'none'
-
-      if type == 'holding':
-        DYNAMIC_HOLDING_TAKE_PROFIT = DYNAMIC_HOLDING_TAKE_PROFIT - (DYNAMIC_HOLDING_TAKE_PROFIT * DYNAMIC_WIN_LOSS_DOWN) / 100
 
       if CHANGE_IN_PRICE_MIN > 0:
          CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN'] - (CHANGE_IN_PRICE_MIN * market_support)
@@ -715,7 +712,7 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
         CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN'] + (CHANGE_IN_PRICE_MIN * market_support)
         CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX'] + (CHANGE_IN_PRICE_MAX * market_support)
 
-    return STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT, HOLDING_TAKE_PROFIT
+    return STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT
 
 #various session calculations like uptime 24H gain profit risk to reward ratio unrealised profit etc
 def session(type):
@@ -931,11 +928,14 @@ if __name__ == '__main__':
     IGNORE_LIST = parsed_config['trading_options']['IGNORE_LIST']
     REPORT_STYLE = parsed_config['script_options']['REPORT_STYLE']
     HOLDING_INTERVAL_LIMIT = parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
-    HOLDING_TAKE_PROFIT = parsed_config['trading_options']['HOLDING_TAKE_PROFIT']
 
-    DYNAMIC_HOLDING_TAKE_PROFIT = HOLDING_TAKE_PROFIT
-    HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60 * 1000) * HOLDING_INTERVAL_LIMIT
     QUANTITY = INVESTMENT/TRADE_SLOTS
+
+    if not TEST_MODE:
+       HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60 * 1000) * HOLDING_INTERVAL_LIMIT
+
+    if TEST_MODE:
+       HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60) * HOLDING_INTERVAL_LIMIT
 
     if DEBUG_SETTING or args.debug:
         DEBUG = True
@@ -1061,6 +1061,6 @@ if __name__ == '__main__':
             CONNECTION_ERROR_COUNT +=1
             print(f'{txcolors.WARNING}We got a timeout error from from binance. Going to re-loop. Current Count: {CONNECTION_ERROR_COUNT}\n{ce}{txcolors.DEFAULT}')
         #gogos MOD to adjust dynamically stoploss trailingstop loss and take profit based on wins
-        STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT, HOLDING_TAKE_PROFIT = dynamic_settings(dynamic, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT, HOLDING_TAKE_PROFIT)
+        STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT = dynamic_settings(dynamic, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT)
         #session calculations like unrealised potential etc
         session('calc')

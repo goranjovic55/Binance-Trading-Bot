@@ -42,7 +42,7 @@ trading_options:
     - USDUSDT
 
   # Maximum number of trade 'slots' at any time (your USDT balance must be at least TRADE_SLOTS * QUANTITY)
-  TRADE_SLOTS: 1
+  TRADE_SLOTS: 3
 
   # the amount of time in MINUTES to calculate the difference from the current price (minimum: 1).
   TIME_DIFFERENCE: 1
@@ -56,7 +56,7 @@ trading_options:
   CHANGE_IN_PRICE_MAX: -0.9
 
   # define in % when to sell a coin that's not making a profit.
-  STOP_LOSS: 0.2
+  STOP_LOSS: 3
 
   # define in % when to take profit on a profitable coin.
   TAKE_PROFIT: 0.01
@@ -103,8 +103,7 @@ trading_options:
 
 # multiplier for HOLDING_TIME_LIMIT wich gives acrtual TIME_DIFFERENCE * HOLDING_TIME_LIMIT_MULTIPLIER when to start lowering STOP_LOSS
 # holding take profit is % at wich we sell if holding time limit is passed defualt is 1 and after one timeperiod we will sell on holding take profit
-  HOLDING_INTERVAL_LIMIT: 5
-  HOLDING_TAKE_PROFIT: 3
+  HOLDING_INTERVAL_LIMIT: 60
 
  #sort list by volume or price_change
   LIST_AUTOCREATE: True
