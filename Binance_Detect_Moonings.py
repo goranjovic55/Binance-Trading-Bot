@@ -979,6 +979,12 @@ if __name__ == '__main__':
     HOLDING_INTERVAL_LIMIT = parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
     QUANTITY = INVESTMENT/TRADE_SLOTS
 
+    if not TEST_MODE:
+       HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60 * 1000) * HOLDING_INTERVAL_LIMIT
+
+    if TEST_MODE:
+       HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60) * HOLDING_INTERVAL_LIMIT
+
     if DEBUG_SETTING or args.debug:
         DEBUG = True
     # Load creds for correct environment
