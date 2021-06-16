@@ -1,4 +1,4 @@
-ETH
+sETH
 CHZ
 BNB
 DOGE
