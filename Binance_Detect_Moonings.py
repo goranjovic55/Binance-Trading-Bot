@@ -991,11 +991,8 @@ if __name__ == '__main__':
     HOLDING_INTERVAL_LIMIT = parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
     QUANTITY = INVESTMENT/TRADE_SLOTS
 
-    if not TEST_MODE:
-       HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60 * 1000) * HOLDING_INTERVAL_LIMIT
-
-    if TEST_MODE:
-       HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60) * HOLDING_INTERVAL_LIMIT
+    if not TEST_MODE: HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60 * 1000) * HOLDING_INTERVAL_LIMIT
+    if TEST_MODE: HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60) * HOLDING_INTERVAL_LIMIT
 
     if DEBUG_SETTING or args.debug:
         DEBUG = True
@@ -1004,8 +1001,7 @@ if __name__ == '__main__':
 
     # Telegram_Bot enabled? # **added by*Coding60plus
 
-    if BOT_MESSAGE_REPORTS:
-        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
+    if BOT_MESSAGE_REPORTS: TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
 
     # Telegram_Bot enabled? # **added by*Coding60plus
     if DEBUG:
