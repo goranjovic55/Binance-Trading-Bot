@@ -73,8 +73,9 @@ class txcolors:
 
 # tracks profit/loss each session
 global session_profit, unrealised_percent, market_price, investment_value
-global investment_value_gain
-
+global investment_value_gain, session_uptime, session_start_time
+session_uptime = 0
+session_start_time = 0
 investment_value = 0
 investment_value_gain = 0
 session_profit = 0
@@ -494,7 +495,7 @@ def sell_coins():
         # SL is the price at which to 'stop losses' based on config % markdown
         SL = BUY_PRICE + ((BUY_PRICE * coins_bought[coin]['stop_loss']) / 100)
         # TL is the time limit for holding onto a coin
-        TL = float(coins_bought[coin]['time']) + HOLDING_TIME_LIMIT
+        TL = float(coins_bought[coin]['timestamp']) + HOLDING_TIME_LIMIT
 
         lastPrice = float(last_price[coin]['price'])
         LAST_PRICE = "{:.8f}".format(lastPrice)
@@ -570,10 +571,10 @@ def sell_coins():
                    loss_trade_count = loss_trade_count + 1
                    dynamic = 'performance_adjust_down'
 
-                if sell_all_coins == True: REPORT =  f"TYPE: PAUSE_SELL - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
-                if lastPrice < SL: REPORT =  f"TYPE: STOP_LOSS - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
-                if lastPrice > TP: REPORT =  f"TYPE: TAKE_PROFIT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
-                if TL < current_time: REPORT =  f"TYPE: HOLDING_TIMEOUT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
+                if sell_all_coins == True: REPORT =  f"PAUSE_SELL - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
+                if lastPrice < SL: REPORT =  f"STOP_LOSS - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
+                if lastPrice > TP: REPORT =  f"TAKE_PROFIT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
+                if TL < current_time: REPORT =  f"HOLDING_TIMEOUT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
 
                 session_profit = session_profit + profit
 
@@ -639,7 +640,7 @@ def report(type, reportline):
 
     global session_profit, CURRENT_EXPOSURE, NEW_BALANCE
     global INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent
-    global investment_value, investment_value_gain, exchange_symbol
+    global investment_value, investment_value_gain, exchange_symbol, session_uptime, session_start_time
     try: # does it exist?
         investment_value_gain
     except NameError: # if not, set to 0
@@ -668,7 +669,7 @@ def report(type, reportline):
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
         # print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol}> {reportline} <<{txcolors.DEFAULT}")
-        print(f"{txcolors.NOTICE}>> Trade slots: {len(coins_bought)}/{TRADE_SLOTS} ({CURRENT_EXPOSURE:g}/{INVESTMENT_TOTAL:g} {PAIR_WITH}) - Open: {UNREALISED_PERCENT:.2f}% - Closed: {session_profit:.2f}% - Est: {TOTAL_GAINS:g} {PAIR_WITH} - W/L: {WON}/{LOST} - Value: {investment_value:.2f} USD - Gain: {INVESTMENT_GAIN:.2f}% ({str(INVESTMENT_VALUE_GAIN)} USD vs HODL){txcolors.DEFAULT}")
+        print(f"{txcolors.NOTICE}>> Trade slots: {len(coins_bought)}/{TRADE_SLOTS} ({CURRENT_EXPOSURE:g}/{INVESTMENT_TOTAL:g} {PAIR_WITH}) - Open: {UNREALISED_PERCENT:.2f}% - Closed: {session_profit:.2f}% - Est: {TOTAL_GAINS:g} {PAIR_WITH} - W/L: {WON}/{LOST} - Value: {investment_value:.2f} USD - Gain: {INVESTMENT_GAIN:.2f}% ({str(INVESTMENT_VALUE_GAIN)} USD vs HODL) - Session Uptime: {session_uptime/60/1000/24:.4f}H{txcolors.DEFAULT}")
 
     #More detailed/verbose report style
     if type == 'detailed':
@@ -688,7 +689,7 @@ def report(type, reportline):
     if type == 'message':
 
        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
-       report_string = 'Session profit: '+str(round(session_profit, 2))+' | Exposure: '+str(round(CURRENT_EXPOSURE, 4))+' | Win/Loss: '+str(win_trade_count)+'/'+str(loss_trade_count)+' | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(round(NEW_BALANCE, 4))+' | Value: '+str(round(investment_value, 4))+str(exchange_symbol)+' | Value gain: '+str(round(investment_value_gain, 4))
+       report_string = 'Session profit: '+str(round(session_profit, 2))+' | Exposure: '+str(round(CURRENT_EXPOSURE, 4))+' | Win/Loss: '+str(win_trade_count)+'/'+str(loss_trade_count)+' | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(round(NEW_BALANCE, 4))+' | Value: '+str(round(investment_value, 4))+str(exchange_symbol)+' | Value gain: '+str(round(investment_value_gain, 4))+' | Session uptime: '+str(round(session_uptime/60/1000))
        bot_message = BOT_ID + SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
        if BOT_MESSAGE_REPORTS and TELEGRAM_BOT_TOKEN:
@@ -767,6 +768,7 @@ def session(type):
     global unrealised_percent, investment_value, investment_value_gain
     global market_price, session_profit, win_trade_count, loss_trade_count
     global NEW_BALANCE, INVESTMENT_TOTAL, TOTAL_GAINS, INVESTMENT_GAIN, CURRENT_EXPOSURE
+    global session_start_time, session_uptime
 
     if type == 'calc':
         TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
@@ -789,6 +791,10 @@ def session(type):
         investment_value = float(market_price) * NEW_BALANCE
         investment_value_gain = float(market_price) * (NEW_BALANCE - INVESTMENT)
 
+        current_time = float(round(time.time() * 1000))
+        if session_start_time == 0: session_start_time = current_time
+        session_uptime = current_time - session_start_time
+
     if type == 'save':
 
         session_info = {}
@@ -799,6 +805,8 @@ def session(type):
             'loss_trade_count': loss_trade_count,
             # 'investment_value': investment_value,
             'new_balance': NEW_BALANCE,
+            'session_start_time': session_start_time,
+            'session_uptime': session_uptime,
             }
 
         # save the coins in a json file in the same directory
@@ -823,6 +831,7 @@ def session(type):
             loss_trade_count = session_info['loss_trade_count']
             # investment_value = session['investment_value']
             NEW_BALANCE = session_info['new_balance']
+            session_start_time = session_info['session_start_time']
 
         TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
         NEW_BALANCE = (INVESTMENT + TOTAL_GAINS)
@@ -916,7 +925,7 @@ def tickers_list(type):
 
 def bot_launch():
     # Bot relays session start to Discord channel
-    global DISCORD_WEBHOOK, BOT_MESSAGE_REPORTS
+    global DISCORD_WEBHOOK, BOT_MESSAGE_REPORTS, session_start_time, session_uptime
     TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
     bot_message = BOT_ID + " is online"
 
@@ -925,7 +934,6 @@ def bot_launch():
         mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
         data = {"content": bot_message}
         requests.post(mUrl, json=data)
-
 
 if __name__ == '__main__':
 
@@ -1101,6 +1109,7 @@ if __name__ == '__main__':
     CONNECTION_ERROR_COUNT = 0
     #load previous session stuff
     session('load')
+    bot_launch()
 
     while True:
 
@@ -1124,8 +1133,3 @@ if __name__ == '__main__':
         STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT = dynamic_settings(dynamic, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT)
         #session calculations like unrealised potential etc
         session('calc')
-
-        # add any 'first launch' style stuff in this
-        if STARTUP is True:
-            bot_launch()
-        STARTUP = False
