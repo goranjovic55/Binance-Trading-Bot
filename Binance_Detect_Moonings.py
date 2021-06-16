@@ -428,7 +428,7 @@ def buy():
         if BUYABLE:
             print(f"{txcolors.BUY}Preparing to buy {volume[coin]} {coin}{txcolors.DEFAULT}")
 
-            REPORT = str("Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
+            REPORT = str(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
 
             if TEST_MODE:
                 orders[coin] = [{
@@ -438,7 +438,7 @@ def buy():
                 }]
 
                 # Log trades
-                report('log', f"{REPORT}")
+                report('log',REPORT)
 
                 continue
 
@@ -469,7 +469,7 @@ def buy():
                 else:
                     # Log, announce, and report trade
                     print('Order returned, saving order to file')
-                    report('log',f"{REPORT}")
+                    report('log',REPORT)
 
 
         else:
@@ -755,6 +755,7 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
 
     return STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT
 
+
 def session(type):
     #various session calculations like uptime 24H gain profit risk to reward ratio unrealised profit etc
 
@@ -821,6 +822,7 @@ def session(type):
         TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
         NEW_BALANCE = (INVESTMENT + TOTAL_GAINS)
         INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT) * 100
+
 
 def tickers_list(type):
 
@@ -918,7 +920,7 @@ def bot_launch():
         mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
         data = {"content": bot_message}
         requests.post(mUrl, json=data)
- 
+
 
 if __name__ == '__main__':
 
