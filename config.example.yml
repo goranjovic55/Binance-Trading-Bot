@@ -68,7 +68,7 @@ trading_options:
 
   # TICKERS: Use custom 'tickers.txt' list for filtering pairs?
   CUSTOM_LIST: True
-  TICKERS_LIST: 'tickers_ETH.txt'
+  TICKERS_LIST: 'tickers/tickers_ETH.txt'
 
   # Name of list that cointains currencies to be ignored
   IGNORE_LIST: 'ignorelist.txt'
