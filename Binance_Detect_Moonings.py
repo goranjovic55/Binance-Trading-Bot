@@ -688,22 +688,29 @@ def report(type, reportline):
 
     if type == 'message':
 
-       TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
-       report_string = 'Session profit: '+str(round(session_profit, 2))+' | Exposure: '+str(round(CURRENT_EXPOSURE, 4))+' | Win/Loss: '+str(win_trade_count)+'/'+str(loss_trade_count)+' | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(round(NEW_BALANCE, 4))+' | Value: '+str(round(investment_value, 4))+str(exchange_symbol)+' | Value gain: '+str(round(investment_value_gain, 4))+' | Session uptime: '+str(round(session_uptime/60/1000))
-       bot_message = BOT_ID + SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
+        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
+        report_string = 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' | Session profit: '+str(round(session_profit, 2))+' | Exposure: '+str(round(CURRENT_EXPOSURE, 4))+' | Win/Loss: '+str(win_trade_count)+'/'+str(loss_trade_count)+' | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(round(NEW_BALANCE, 4))+' | Value: '+str(round(investment_value, 4))+str(exchange_symbol)+' | Value gain: '+str(round(investment_value_gain, 4))+' | Session uptime: '+str(round(session_uptime/60/1000/24))+'H'
+        # report_string = 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' ({CURRENT_EXPOSURE:g}/{INVESTMENT_TOTAL:g}) | Session profit: '+str(round(session_profit, 2))+' | Win/Loss: '+str(win_trade_count)+'/'+str(loss_trade_count)+' | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(round(NEW_BALANCE, 4))+' | Value: '+str(round(investment_value, 4))+' USD | Value gain: '+str(round(investment_value_gain, 4))+' | Session uptime: '+str(round(session_uptime/60/1000/24, 2))+'H'
+        bot_message = BOT_ID + SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
-       if BOT_MESSAGE_REPORTS and TELEGRAM_BOT_TOKEN:
-          bot_token = TELEGRAM_BOT_TOKEN
-          bot_chatID = TELEGRAM_BOT_ID
-          send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
-          response = requests.get(send_text)
 
-       if BOT_MESSAGE_REPORTS and DISCORD_WEBHOOK:
-          #Webhook of my channel. Click on edit channel --> Webhooks --> Creates webhook
-          mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
-          data = {"content": bot_message}
-          response = requests.post(mUrl, json=data)
-          print(response.content)
+        if BOT_MESSAGE_REPORTS and TELEGRAM_BOT_TOKEN:
+            bot_token = TELEGRAM_BOT_TOKEN
+            bot_chatID = TELEGRAM_BOT_ID
+            send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
+            response = requests.get(send_text)
+
+        if BOT_MESSAGE_REPORTS and DISCORD_WEBHOOK:
+            DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR')
+            CURRENT_EXPOSURE_STR = "%g" % CURRENT_EXPOSURE
+            INVESTMENT_TOTAL_STR = "%g" % INVESTMENT_TOTAL
+            report_string_discord = 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_STR)+'/'+str(INVESTMENT_TOTAL_STR)+') | Session profit: '+str(round(session_profit, 2))+' | Win/Loss: '+str(win_trade_count)+'/'+str(loss_trade_count)+' | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(round(NEW_BALANCE, 4))+' | Value: '+str(round(investment_value, 4))+' USD | Value gain: '+str(round(investment_value_gain, 4))+' | Uptime: '+str(round(session_uptime/60/1000/24, 2))+'H'
+            bot_message_discord = SETTINGS_STRING + '\n' + reportline + '\n' + report_string_discord + '\n'
+            #Webhook of my channel. Click on edit channel --> Webhooks --> Creates webhook
+            mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
+            data = {"username" : BOT_ID , "avatar_url": DISCORD_AVATAR, "content": bot_message_discord}
+            response = requests.post(mUrl, json=data)
+            #   print(response.content)
 
     if type == 'log':
         timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
@@ -925,15 +932,9 @@ def tickers_list(type):
 
 def bot_launch():
     # Bot relays session start to Discord channel
-    global DISCORD_WEBHOOK, BOT_MESSAGE_REPORTS, session_start_time, session_uptime
-    TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
-    bot_message = BOT_ID + " is online"
+    bot_message = "Bot initiated"
+    report('message', bot_message)
 
-    if BOT_MESSAGE_REPORTS and DISCORD_WEBHOOK:
-        #Webhook of my channel. Click on edit channel --> Webhooks --> Creates webhook
-        mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
-        data = {"content": bot_message}
-        requests.post(mUrl, json=data)
 
 if __name__ == '__main__':
 
@@ -1009,7 +1010,9 @@ if __name__ == '__main__':
 
     # Telegram_Bot enabled? # **added by*Coding60plus
 
-    if BOT_MESSAGE_REPORTS: TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
+    if BOT_MESSAGE_REPORTS:
+        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
+        DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR')
 
     # Telegram_Bot enabled? # **added by*Coding60plus
     if DEBUG:
