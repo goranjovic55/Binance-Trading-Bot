@@ -704,16 +704,9 @@ def report(type, reportline):
             response = requests.get(send_text)
 
         if BOT_MESSAGE_REPORTS and DISCORD_WEBHOOK:
-            # testing avatars dependant on PAIR_WITH, to be moved somewhere once agreed/tested..
-            if PAIR_WITH == 'ETH':
-                DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR_ETH')
-            if PAIR_WITH == 'BTC':
-                DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR_BTC')
-            if PAIR_WITH == 'USDT':
-                DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR_USDT')
-            # DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR_{PAIR_WITH}')
+
             mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
-            data = {"username" : BOT_ID , "avatar_url": DISCORD_AVATAR, "content": bot_message}
+            data = {"username" : BOT_ID , "avatar_url": discord_avatar(), "content": bot_message}
             response = requests.post(mUrl, json=data)
             #   print(response.content)
 
@@ -722,6 +715,18 @@ def report(type, reportline):
         # print(f'LOG_FILE: {LOG_FILE}')
         with open(LOG_FILE,'a+') as f:
             f.write(timestamp + ' ' + reportline + '\n')
+
+
+def discord_avatar():
+    # testing avatars dependant on PAIR_WITH
+    if PAIR_WITH == 'ETH':
+        DISCORD_AVATAR =  "https://i.imgur.com/L9Txc9F.jpeg"
+    if PAIR_WITH == 'BTC':
+        DISCORD_AVATAR =  "https://i.imgur.com/oIeAiEo.jpeg"
+    if PAIR_WITH == 'USDT':
+        DISCORD_AVATAR =  "https://i.imgur.com/VyOdlRS.jpeg"
+    return DISCORD_AVATAR
+
 
 #function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
 def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT):
@@ -1014,13 +1019,6 @@ if __name__ == '__main__':
 
     if BOT_MESSAGE_REPORTS:
         TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
-        if PAIR_WITH == 'ETH':
-            DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR_ETH')
-        if PAIR_WITH == 'BTC':
-            DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR_BTC')
-        if PAIR_WITH == 'USDT':
-            DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR_USDT')
-        # DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR_{PAIR_WITH}')
 
     # Telegram_Bot enabled? # **added by*Coding60plus
     if DEBUG:
