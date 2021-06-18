@@ -699,7 +699,13 @@ def report(type, reportline):
             response = requests.get(send_text)
 
         if BOT_MESSAGE_REPORTS and DISCORD_WEBHOOK:
-            DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR')
+            if PAIR_WITH == 'ETH':
+                DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR_ETH')
+            if PAIR_WITH == 'BTC':
+                DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR_BTC')
+            if PAIR_WITH == 'USDT':
+                DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR_USDT')
+            # DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR_{PAIR_WITH}')
             CURRENT_EXPOSURE_STR = "%g" % CURRENT_EXPOSURE
             INVESTMENT_TOTAL_STR = "%g" % INVESTMENT_TOTAL
             report_string_discord = 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_STR)+'/'+str(INVESTMENT_TOTAL_STR)+' '+PAIR_WITH+') | Session: '+str(round(session_profit, 2))+' | Win/Loss: '+str(WON)+'/'+str(LOST)+' | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(round(NEW_BALANCE, 4))+' | Value: '+str(INVESTMENT_VALUE_TRIM)+' USD | Value gain: '+str(INVESTMENT_VALUE_GAIN_TRIM)+' | Uptime: '+str(timedelta(seconds=(session_uptime/1000)))
@@ -1005,7 +1011,13 @@ if __name__ == '__main__':
 
     if BOT_MESSAGE_REPORTS:
         TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
-        DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR')
+        if PAIR_WITH == 'ETH':
+            DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR_ETH')
+        if PAIR_WITH == 'BTC':
+            DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR_BTC')
+        if PAIR_WITH == 'USDT':
+            DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR_USDT')
+        # DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR_{PAIR_WITH}')
 
     # Telegram_Bot enabled? # **added by*Coding60plus
     if DEBUG:
