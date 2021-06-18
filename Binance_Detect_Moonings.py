@@ -16,6 +16,7 @@ or others connected with the program.
 # use for environment variables
 from genericpath import exists
 import os
+from rsi_signalmod_nigec import FULL_LOG
 
 # use if needed to pass args to external modules
 import sys
@@ -483,6 +484,7 @@ def sell_coins():
     '''sell coins that have reached the STOP LOSS or TAKE PROFIT threshold'''
 
     global hsp_head, session_profit, win_trade_count, loss_trade_count, dynamic, sell_all_coins, market_resistance, market_support, closed_trades_percent
+    global FULL_LOG
     last_price = get_price(False) # don't populate rolling window
     #last_price = get_price(add_to_historical=True) # don't populate rolling window
     coins_sold = {}
@@ -584,8 +586,8 @@ def sell_coins():
         if hsp_head == 1:
             if len(coins_bought) > 0:
                 print(f"TP:{TP:.{decimals()}f}:{coins_bought[coin]['take_profit']:.2f} or SL:{SL:.{decimals()}f}:{coins_bought[coin]['stop_loss']:.2f} not yet reached, not selling {coin} for now >> Bought at: {BUY_PRICE} - Now: {LAST_PRICE} : {txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}{priceChange:.2f}% Est: {(QUANTITY*(priceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
-
-    if hsp_head == 1 and len(coins_bought) == 0: print(f"No trade slots are currently in use")
+    if FULL_LOG:
+        if hsp_head == 1 and len(coins_bought) == 0: print(f"No trade slots are currently in use")
 
     return coins_sold
 
@@ -660,7 +662,7 @@ def report(type, reportline):
     SESSION_PROFIT_TRIM = format(session_profit, '.8f')
     # SESSION_PROFIT_TRIM = "%g" % round(session_profit, DECIMALS)
 
-    SETTINGS_STRING = 'Time: '+str(round(TIME_DIFFERENCE, 2))+' | Interval: '+str(round(RECHECK_INTERVAL, 2))+' | Price change - min/max: '+str(round(CHANGE_IN_PRICE_MIN, 2))+'%/'+str(round(CHANGE_IN_PRICE_MAX, 2))+'% | SL: '+str(round(STOP_LOSS, 2))+' | TP: '+str(round(TAKE_PROFIT, 2))+' | TSL: '+str(round(TRAILING_STOP_LOSS, 2))+' | TTP: '+str(round(TRAILING_TAKE_PROFIT, 2))
+    SETTINGS_STRING = 'Time: '+str(round(TIME_DIFFERENCE, 2))+' | Interval: '+str(round(RECHECK_INTERVAL, 2))+' | Price change min/max: '+str(round(CHANGE_IN_PRICE_MIN, 2))+'/'+str(round(CHANGE_IN_PRICE_MAX, 2))+'% | Stop loss: '+str(round(STOP_LOSS, 2))+' | Take profit: '+str(round(TAKE_PROFIT, 2))+' | Trailing stop loss: '+str(round(TRAILING_STOP_LOSS, 2))+' | Trailing take profit: '+str(round(TRAILING_TAKE_PROFIT, 2))
 
     if len(coins_bought) > 0:
         UNREALISED_PERCENT = round(unrealised_percent/len(coins_bought), 2)
@@ -683,15 +685,16 @@ def report(type, reportline):
     if type == 'detailed':
         print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. << \n"
         ,f"Profit on unsold coins:  {txcolors.SELL_PROFIT if UNREALISED_PERCENT >= 0 else txcolors.SELL_LOSS}{UNREALISED_PERCENT:.2f}%\n"
-        ,f"Closed Trades:           {txcolors.SELL_PROFIT if closed_trades_percent >= 0 else txcolors.SELL_LOSS}{str(CLOSED_TRADES_PERCENT_TRIM)}%\n"
+        ,f"Closed trades:           {txcolors.SELL_PROFIT if closed_trades_percent >= 0 else txcolors.SELL_LOSS}{str(CLOSED_TRADES_PERCENT_TRIM)}%\n"
+        ,f"Session profit:          {txcolors.SELL_PROFIT if session_profit >= 0 else txcolors.SELL_LOSS}{str(SESSION_PROFIT_TRIM)} {PAIR_WITH}\n"
         ,f"Est. total gains:        {txcolors.SELL_PROFIT if TOTAL_GAINS >= 0 else txcolors.SELL_LOSS}{TOTAL_GAINS:g} {PAIR_WITH}\n"
         ,f"Trades won/lost:         {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{win_trade_count} / {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{loss_trade_count}\n"
         ,f"Investment:              {txcolors.DEFAULT}{INVESTMENT_TOTAL:g} {PAIR_WITH}\n"
-        ,f"Current Exposure:        {txcolors.DEFAULT}{CURRENT_EXPOSURE:g} {PAIR_WITH}\n"
-        ,f"New Balance:             {txcolors.SELL_PROFIT if NEW_BALANCE >= INVESTMENT_TOTAL else txcolors.SELL_LOSS}{NEW_BALANCE:g} {PAIR_WITH}\n"
-        ,f"Initial Investment:      {txcolors.SELL_PROFIT if investment_value >= INVESTMENT else txcolors.SELL_LOSS}{investment_value:.2f} USD\n"
-        ,f"Investment Gain:         {txcolors.SELL_PROFIT if INVESTMENT_GAIN >= 0 else txcolors.SELL_LOSS}{INVESTMENT_GAIN:.2f}%\n"
-        ,f"Investment Value Gain:   {txcolors.SELL_PROFIT if investment_value_gain >= 0 else txcolors.SELL_LOSS}{str(INVESTMENT_VALUE_GAIN)} USD\n"
+        ,f"Current exposure:        {txcolors.DEFAULT}{CURRENT_EXPOSURE:g} {PAIR_WITH}\n"
+        ,f"New balance:             {txcolors.SELL_PROFIT if NEW_BALANCE >= INVESTMENT_TOTAL else txcolors.SELL_LOSS}{NEW_BALANCE:g} {PAIR_WITH}\n"
+        ,f"Initial investment:      {txcolors.SELL_PROFIT if investment_value >= INVESTMENT else txcolors.SELL_LOSS}{investment_value:.2f} USD\n"
+        ,f"Investment gain:         {txcolors.SELL_PROFIT if INVESTMENT_GAIN >= 0 else txcolors.SELL_LOSS}{INVESTMENT_GAIN:.2f}%\n"
+        ,f"Investment value vain:   {txcolors.SELL_PROFIT if investment_value_gain >= 0 else txcolors.SELL_LOSS}{str(INVESTMENT_VALUE_GAIN)} USD\n"
         ,f"{reportline} {txcolors.DEFAULT}")
 
     if type == 'message':

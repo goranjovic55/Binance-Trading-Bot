@@ -13,6 +13,12 @@ import os
 import time
 import threading
 
+# for colourful logging to the console
+class txcolors:
+    WARNING = '\033[93m'
+    NEGATIVE = '\033[91m'
+    POSITIVE = '\033[32m'
+
 global market_resistance
 
 INTERVAL = Interval.INTERVAL_1_MINUTE #Timeframe for analysis
@@ -47,9 +53,9 @@ def analyze():
     ma_analysis = analysis.moving_averages[TYPE]
     if ma_analysis >= THRESHOLD:
         paused = True
-        print(f'pausebotmod: {SYMBOL} Market not looking too good, bot paused from buying {ma_analysis}/{THRESHOLD} Waiting {TIME_TO_WAIT} minutes for next market checkup')
+        print(f'pausebotmod: {txcolors.WARNING}{SYMBOL} {txcolors.NEGATIVE}Market not looking too good, bot paused from buying {txcolors.WARNING}{ma_analysis}/{THRESHOLD} Waiting {TIME_TO_WAIT} minutes for next market checkup')
     else:
-        print(f'pausebotmod: {SYMBOL} Market looks ok, bot is running {ma_analysis}/{THRESHOLD} Waiting {TIME_TO_WAIT} minutes for next market checkup ')
+        print(f'pausebotmod: {txcolors.WARNING}{SYMBOL} {txcolors.POSITIVE}Market looks ok, bot is running {txcolors.WARNING}{ma_analysis}/{THRESHOLD} Waiting {TIME_TO_WAIT} minutes for next market checkup ')
         paused = False
 
     return paused
