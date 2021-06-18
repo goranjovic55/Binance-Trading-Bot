@@ -94,10 +94,11 @@ dynamic = 'none'
 sell_all_coins = False
 tickers_list_changed = False
 
-global CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN, STARTUP
+global CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN, STARTUP, LIST_AUTOCREATE
 CURRENT_EXPOSURE = 0
 NEW_BALANCE = 0
 STARTUP = True
+LIST_AUTOCREATE = False
 
 # print with timestamps
 old_out = sys.stdout
@@ -149,7 +150,6 @@ def get_price(add_to_historical=True):
     prices = client.get_all_tickers()
 
     for coin in prices:
-
         if CUSTOM_LIST:
             if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
                 initial_price[coin['symbol']] = { 'price': coin['price'], 'time': datetime.now()}
@@ -314,6 +314,7 @@ def external_signals():
 def pause_bot():
     '''Pause the script when external indicators detect a bearish trend in the market'''
     global bot_paused, session_profit, hsp_head, dynamic, sell_all_coins
+    global LIST_AUTOCREATE
     # start counting for how long the bot has been paused
     start_time = time.perf_counter()
 
@@ -339,7 +340,6 @@ def pause_bot():
 
         #gogo MOD todo more verbose having all the report things in it!!!!!
         if hsp_head == 1:
-
            report('console', '.')
 
         time.sleep((TIME_DIFFERENCE * 60) / RECHECK_INTERVAL)
@@ -349,12 +349,11 @@ def pause_bot():
         stop_time = time.perf_counter()
         time_elapsed = timedelta(seconds=int(stop_time-start_time))
 
-
-
-        # resume the bot and ser pause_bot to False
+        # resume the bot and set pause_bot to False
         if  bot_paused == True:
             print(f"{txcolors.WARNING}Resuming buying due to positive market conditions, total sleep time: {time_elapsed}{txcolors.DEFAULT}")
-            tickers_list(SORT_LIST_TYPE)
+            if LIST_AUTOCREATE:
+                tickers_list(SORT_LIST_TYPE)
             dynamic = 'reset'
             sell_all_coins = False
             bot_paused = False
@@ -514,13 +513,8 @@ def sell_coins():
         # sellFee = (150 * 0.00006648) * (0.075/100)
         # sellFee = 0.000007479
 
-        # priceChangeWithFee = (0.00006648 - 0.00006733) - (0.000007479 - 0.000007574625) / 0.00006733 * 100
-
-        # priceChangeWithFee = float(((lastPrice - buyPrice) - (sellFee + buyFee) ) / buyPrice * 100)
-
         # check that the price is above the take profit and readjust SL and TP accordingly if trialing stop loss used
         if lastPrice > TP and USE_TRAILING_STOP_LOSS:
-
             # increasing TP by TRAILING_TAKE_PROFIT (essentially next time to readjust SL)
             coins_bought[coin]['take_profit'] = priceChange + TRAILING_TAKE_PROFIT
             coins_bought[coin]['stop_loss'] = coins_bought[coin]['take_profit'] - TRAILING_STOP_LOSS
@@ -655,7 +649,11 @@ def report(type, reportline):
     INVESTMENT_VALUE_GAIN = round(investment_value_gain, 2)
     NEW_BALANCE = round(NEW_BALANCE, DECIMALS)
 
-    SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+'>RI:'+str(round(RECHECK_INTERVAL, 2))+'>CIP:'+str(round(CHANGE_IN_PRICE_MIN, 2))+'-'+str(round(CHANGE_IN_PRICE_MAX, 2))+'>SL:'+str(round(STOP_LOSS, 2))+'>TP:'+str(round(TAKE_PROFIT, 2))+'>TSL:'+str(round(TRAILING_STOP_LOSS, 2))+'>TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
+    # testing:
+    INVESTMENT_VALUE_TRIM =  "%g" % round(investment_value, 2)
+    INVESTMENT_VALUE_GAIN_TRIM =  "%g" % round(investment_value_gain, 2)
+
+    SETTINGS_STRING = 'Time: '+str(round(TIME_DIFFERENCE, 2))+' | Interval: '+str(round(RECHECK_INTERVAL, 2))+' | Price change - min/max: '+str(round(CHANGE_IN_PRICE_MIN, 2))+'%/'+str(round(CHANGE_IN_PRICE_MAX, 2))+'% | SL: '+str(round(STOP_LOSS, 2))+' | TP: '+str(round(TAKE_PROFIT, 2))+' | TSL: '+str(round(TRAILING_STOP_LOSS, 2))+' | TTP: '+str(round(TRAILING_TAKE_PROFIT, 2))
 
     if len(coins_bought) > 0:
         UNREALISED_PERCENT = round(unrealised_percent/len(coins_bought), 2)
@@ -704,7 +702,7 @@ def report(type, reportline):
             DISCORD_AVATAR =  parsed_creds['discord'].get('DISCORD_AVATAR')
             CURRENT_EXPOSURE_STR = "%g" % CURRENT_EXPOSURE
             INVESTMENT_TOTAL_STR = "%g" % INVESTMENT_TOTAL
-            report_string_discord = 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_STR)+'/'+str(INVESTMENT_TOTAL_STR)+') | Session profit: '+str(round(session_profit, 2))+' | Win/Loss: '+str(win_trade_count)+'/'+str(loss_trade_count)+' | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(round(NEW_BALANCE, 4))+' | Value: '+str(round(investment_value, 4))+' USD | Value gain: '+str(round(investment_value_gain, 4))+' | Uptime: '+str(round(session_uptime/60/1000/24, 2))+'H'
+            report_string_discord = 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_STR)+'/'+str(INVESTMENT_TOTAL_STR)+' '+PAIR_WITH+') | Session: '+str(round(session_profit, 2))+' | Win/Loss: '+str(WON)+'/'+str(LOST)+' | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(round(NEW_BALANCE, 4))+' | Value: '+str(INVESTMENT_VALUE_TRIM)+' USD | Value gain: '+str(INVESTMENT_VALUE_GAIN_TRIM)+' | Uptime: '+str(timedelta(seconds=(session_uptime/1000)))
             bot_message_discord = SETTINGS_STRING + '\n' + reportline + '\n' + report_string_discord + '\n'
             #Webhook of my channel. Click on edit channel --> Webhooks --> Creates webhook
             mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
@@ -848,6 +846,7 @@ def session(type):
 def tickers_list(type):
 
     global historical_prices, hsp_head, tickers_list_changed
+    global LIST_AUTOCREATE
 
     tickers_list_volume = {}
     tickers_list_price_change = {}
@@ -857,77 +856,71 @@ def tickers_list(type):
     tickers_pairwith = {}
     tickers_new = {}
 
+    if LIST_AUTOCREATE:
     # pull coins from trading view and create a list
-    if type == 'create_ta':
+        if type == 'create_ta':
+            response = requests.get('https://scanner.tradingview.com/crypto/scan')
+            ta_data = response.json()
+            signals_file = open(TICKERS_LIST,'w')
+            with open (TICKERS_LIST, 'w') as f:
+                for i in ta_data['data']:
+                    if i['s'][:7]=='BINANCE' and i['s'][-len(PAIR_WITH):] == PAIR_WITH and (i['s'][-len(PAIR_WITH)-2:-len(PAIR_WITH)]) != 'UP' and (i['s'][-len(PAIR_WITH)-4:-len(PAIR_WITH)]) != 'DOWN' and i['s'][8:-len(PAIR_WITH)] not in ignorelist:
+                        f.writelines(str(i['s'][8:].replace(PAIR_WITH,''))+'\n')
+            tickers_list_changed = True
+            print(f'>> Tickers CREATED from TradingView tickers!!!{TICKERS_LIST} <<')
 
-        response = requests.get('https://scanner.tradingview.com/crypto/scan')
-        ta_data = response.json()
-        signals_file = open(TICKERS_LIST,'w')
+        if type == 'volume' or type == 'price_change':
+        #  create list with volume and change in price on our pairs
+                for coin in tickers_binance:
+                    if CUSTOM_LIST:
+                        if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
+                            tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
+                            tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
 
-        with open (TICKERS_LIST, 'w') as f:
-            for i in ta_data['data']:
-                if i['s'][:7]=='BINANCE' and i['s'][-len(PAIR_WITH):] == PAIR_WITH and (i['s'][-len(PAIR_WITH)-2:-len(PAIR_WITH)]) != 'UP' and (i['s'][-len(PAIR_WITH)-4:-len(PAIR_WITH)]) != 'DOWN' and i['s'][8:-len(PAIR_WITH)] not in ignorelist:
-                    f.writelines(str(i['s'][8:].replace(PAIR_WITH,''))+'\n')
-        tickers_list_changed = True
-        print(f'>> Tickers CREATED from TradingView tickers!!!{TICKERS_LIST} <<')
+                    else:
+                        if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
+                            tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
+                            tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
 
-    if type == 'volume' or type == 'price_change':
-    #  create list with volume and change in price on our pairs
+                # sort tickers by descending order volume and price
+                list_tickers_volume = list(sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True))
+                list_tickers_price_change = list(sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True))
+
+        # pull coins from binance and create list
+        if type == 'create_b':
             for coin in tickers_binance:
+                if PAIR_WITH in coin['symbol']:
+                    tickers_pairwith[coin['symbol']] = coin['symbol']
+                    if tickers_pairwith[coin['symbol']].endswith(PAIR_WITH):
+                        tickers_new[coin['symbol']] = tickers_pairwith[coin['symbol']]
 
-                if CUSTOM_LIST:
-                    if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-                        tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
-                        tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
-
-                else:
-                    if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-                        tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
-                        tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
-
-            # sort tickers by descending order volume and price
-            list_tickers_volume = list(sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True))
-            list_tickers_price_change = list(sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True))
-
-    # pull coins from binance and create list
-    if type == 'create_b':
-
-        for coin in tickers_binance:
-
-            if PAIR_WITH in coin['symbol']:
-                tickers_pairwith[coin['symbol']] = coin['symbol']
-                if tickers_pairwith[coin['symbol']].endswith(PAIR_WITH):
-                    tickers_new[coin['symbol']] = tickers_pairwith[coin['symbol']]
-
-        list_tickers_new = list(tickers_new)
+            list_tickers_new = list(tickers_new)
 
 
-        with open (TICKERS_LIST, 'w') as f:
-            for ele in list_tickers_new:
-                f.writelines(str(ele.replace(PAIR_WITH,''))+'\n')
-        tickers_list_changed = True
-        print(f'>> Tickers CREATED from binance tickers!!!{TICKERS_LIST} <<')
+            with open (TICKERS_LIST, 'w') as f:
+                for ele in list_tickers_new:
+                    f.writelines(str(ele.replace(PAIR_WITH,''))+'\n')
+            tickers_list_changed = True
+            print(f'>> Tickers CREATED from binance tickers!!!{TICKERS_LIST} <<')
 
-        tickers_list_changed = True
-        print(f'>> Tickers CREATED from Binance tickers!!!{TICKERS_LIST} <<')
+            tickers_list_changed = True
+            print(f'>> Tickers CREATED from Binance tickers!!!{TICKERS_LIST} <<')
 
-    if type == 'volume' and CUSTOM_LIST:
-    # write sorted lists to files
+        if type == 'volume' and CUSTOM_LIST:
+        # write sorted lists to files
+            with open (TICKERS_LIST, 'w') as f:
+                    for sublist in list_tickers_volume:
+                        f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
+            tickers_list_changed = True
+            print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
-       with open (TICKERS_LIST, 'w') as f:
-            for sublist in list_tickers_volume:
-                f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
-       tickers_list_changed = True
-       print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
-
-    if type == 'price_change':
-    # write sorted list to files
-
-       with open (TICKERS_LIST, 'w') as f:
-            for sublist in list_tickers_price_change:
-                f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
-       tickers_list_changed = True
-       print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
+        if type == 'price_change':
+        # write sorted list to files
+            with open (TICKERS_LIST, 'w') as f:
+                    for sublist in list_tickers_price_change:
+                        f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
+            tickers_list_changed = True
+            print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
 
 def bot_launch():
