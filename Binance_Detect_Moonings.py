@@ -637,8 +637,6 @@ def report(type, reportline):
 
     global session_struct
 
-    global INVESTMENT_GAIN
-    global exchange_symbol, session_uptime, session_start_time
     try: # does it exist?
         investment_value_gain
     except NameError: # if not, set to 0
@@ -688,12 +686,12 @@ def report(type, reportline):
         ,f"Closed trades:           {txcolors.SELL_PROFIT if session_struct['closed_trades_percent'] >= 0 else txcolors.SELL_LOSS}{str(CLOSED_TRADES_PERCENT_TRIM)}%\n"
         ,f"Session profit:          {txcolors.SELL_PROFIT if session_struct['session_profit'] >= 0 else txcolors.SELL_LOSS}{str(SESSION_PROFIT_TRIM)} {PAIR_WITH}\n"
         ,f"Est. total gains:        {txcolors.SELL_PROFIT if session_struct['TOTAL_GAINS'] >= 0 else txcolors.SELL_LOSS}{session_struct['TOTAL_GAINS']:g} {PAIR_WITH}\n"
-        ,f"Trades won/lost:         {txcolors.SELL_PROFIT if session_struct['win_trade_count'] >= loss_trade_count else txcolors.SELL_LOSS}{session_struct['win_trade_count']} / {txcolors.SELL_PROFIT if session_struct['win_trade_count'] >= session_struct['loss_trade_count'] else txcolors.SELL_LOSS}{loss_trade_count}\n"
+        ,f"Trades won/lost:         {txcolors.SELL_PROFIT if session_struct['win_trade_count'] >= session_struct['loss_trade_count'] else txcolors.SELL_LOSS}{session_struct['win_trade_count']} / {txcolors.SELL_PROFIT if session_struct['win_trade_count'] >= session_struct['loss_trade_count'] else txcolors.SELL_LOSS}{session_struct['loss_trade_count']}\n"
         ,f"Investment:              {txcolors.DEFAULT}{INVESTMENT_TOTAL:g} {PAIR_WITH}\n"
-        ,f"Current exposure:        {txcolors.DEFAULT}{CURRENT_EXPOSURE:g} {PAIR_WITH}\n"
+        ,f"Current exposure:        {txcolors.DEFAULT}{session_struct['CURRENT_EXPOSURE']:g} {PAIR_WITH}\n"
         ,f"New balance:             {txcolors.SELL_PROFIT if session_struct['NEW_BALANCE'] >= INVESTMENT_TOTAL else txcolors.SELL_LOSS}{session_struct['NEW_BALANCE']:g} {PAIR_WITH}\n"
         ,f"Initial investment:      {txcolors.SELL_PROFIT if session_struct['investment_value'] >= INVESTMENT else txcolors.SELL_LOSS}{session_struct['investment_value']:.2f} USD\n"
-        ,f"Investment gain:         {txcolors.SELL_PROFIT if INVESTMENT_GAIN >= 0 else txcolors.SELL_LOSS}{INVESTMENT_GAIN:.2f}%\n"
+        ,f"Investment gain:         {txcolors.SELL_PROFIT if session_struct['INVESTMENT_GAIN'] >= 0 else txcolors.SELL_LOSS}{session_struct['INVESTMENT_GAIN']:.2f}%\n"
         ,f"Investment value vain:   {txcolors.SELL_PROFIT if session_struct['investment_value_gain'] >= 0 else txcolors.SELL_LOSS}{str(INVESTMENT_VALUE_GAIN)} USD\n"
         ,f"{reportline} {txcolors.DEFAULT}")
 
