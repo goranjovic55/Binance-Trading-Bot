@@ -639,9 +639,9 @@ def report(type, reportline):
     global session_struct
 
     try: # does it exist?
-        investment_value_gain
+        session_struct['investment_value_gain']
     except NameError: # if not, set to 0
-        investment_value_gain = 0
+        session_struct['investment_value_gain'] = 0
 
     WON = session_struct['win_trade_count']
     LOST = session_struct['loss_trade_count']
