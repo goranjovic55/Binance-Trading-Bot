@@ -74,6 +74,7 @@ class txcolors:
 # tracks profit/loss each session
 global session_profit, unrealised_percent, market_price, investment_value
 global investment_value_gain, session_uptime, session_start_time
+global closed_trades_percent
 session_uptime = 0
 session_start_time = 0
 investment_value = 0
@@ -483,6 +484,7 @@ def sell_coins():
     '''sell coins that have reached the STOP LOSS or TAKE PROFIT threshold'''
 
     global hsp_head, session_profit, win_trade_count, loss_trade_count, dynamic, sell_all_coins, market_resistance, market_support
+    global closed_trades_percent
     last_price = get_price(False) # don't populate rolling window
     #last_price = get_price(add_to_historical=True) # don't populate rolling window
     coins_sold = {}
@@ -577,6 +579,7 @@ def sell_coins():
                 if TL < current_time: REPORT =  f"HOLDING_TIMEOUT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
 
                 session_profit = session_profit + profit
+                closed_trades_percent = closed_trades_percent + priceChange
 
                 report('message',f"{REPORT}")
                 report('log',f"{REPORT}")
@@ -638,7 +641,7 @@ def remove_from_portfolio(coins_sold):
 
 def report(type, reportline):
 
-    global session_profit, CURRENT_EXPOSURE, NEW_BALANCE
+    global session_profit, CURRENT_EXPOSURE, NEW_BALANCE, closed_trades_percent
     global INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent
     global investment_value, investment_value_gain, exchange_symbol, session_uptime, session_start_time
     try: # does it exist?
@@ -669,13 +672,13 @@ def report(type, reportline):
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
         # print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol}> {reportline} <<{txcolors.DEFAULT}")
-        print(f"{txcolors.NOTICE}>> Trade slots: {len(coins_bought)}/{TRADE_SLOTS} ({CURRENT_EXPOSURE:g}/{INVESTMENT_TOTAL:g} {PAIR_WITH}) - Open: {UNREALISED_PERCENT:.2f}% - Closed: {session_profit:.2f}% - Est: {TOTAL_GAINS:g} {PAIR_WITH} - W/L: {WON}/{LOST} - Value: {investment_value:.2f} USD - Gain: {INVESTMENT_GAIN:.2f}% ({str(INVESTMENT_VALUE_GAIN)} USD vs HODL) - Session Uptime: {session_uptime/60/1000/24:.4f}H{txcolors.DEFAULT}")
+        print(f"{txcolors.NOTICE}>> Trade slots: {len(coins_bought)}/{TRADE_SLOTS} ({CURRENT_EXPOSURE:g}/{INVESTMENT_TOTAL:g} {PAIR_WITH}) - Open: {UNREALISED_PERCENT:.2f}% - Closed: {closed_trades_percent:.2f}% - Est: {TOTAL_GAINS:g} {PAIR_WITH} - W/L: {WON}/{LOST} - Value: {investment_value:.2f} USD - Gain: {INVESTMENT_GAIN:.2f}% ({str(INVESTMENT_VALUE_GAIN)} USD vs HODL) - Session Uptime: {session_uptime/60/1000/24:.4f}H{txcolors.DEFAULT}")
 
     #More detailed/verbose report style
     if type == 'detailed':
        print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. << \n"
        ,f"Profit on unsold coins: {txcolors.SELL_PROFIT if UNREALISED_PERCENT >= 0 else txcolors.SELL_LOSS}{UNREALISED_PERCENT:.2f}%\n"
-       ,f"Session Pofit:          {txcolors.SELL_PROFIT if session_profit >= 0 else txcolors.SELL_LOSS}{session_profit:.2f}%\n"
+       ,f"Closed Trades:          {txcolors.SELL_PROFIT if closed_trades_percent >= 0 else txcolors.SELL_LOSS}{closed_trades_percent:.2f}%\n"
        ,f"Est. total gains:       {txcolors.SELL_PROFIT if TOTAL_GAINS >= 0 else txcolors.SELL_LOSS}{TOTAL_GAINS:g} {PAIR_WITH}\n"
        ,f"Trades won/lost:        {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{win_trade_count} / {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{loss_trade_count}\n"
        ,f"Investment:             {txcolors.DEFAULT}{INVESTMENT_TOTAL:g} {PAIR_WITH}\n"
@@ -689,7 +692,7 @@ def report(type, reportline):
     if type == 'message':
 
        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
-       report_string = 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' | Session profit: '+str(round(session_profit, 2))+' | Exposure: '+str(round(CURRENT_EXPOSURE, 4))+' | Win/Loss: '+str(win_trade_count)+'/'+str(loss_trade_count)+' | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(round(NEW_BALANCE, 4))+' | Value: '+str(round(investment_value, 4))+str(exchange_symbol)+' | Value gain: '+str(round(investment_value_gain, 4))+' | Session uptime: '+str(round(session_uptime/60/1000/24))+'H'
+       report_string = 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' | Closed trades: '+str(round(closed_trades_percent, 2))+' | Exposure: '+str(round(CURRENT_EXPOSURE, 4))+' | Win/Loss: '+str(win_trade_count)+'/'+str(loss_trade_count)+' | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(round(NEW_BALANCE, 4))+' | Value: '+str(round(investment_value, 4))+str(exchange_symbol)+' | Value gain: '+str(round(investment_value_gain, 4))+' | Session uptime: '+str(round(session_uptime/60/1000/24))+'H'
        bot_message = BOT_ID + SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
        if BOT_MESSAGE_REPORTS and TELEGRAM_BOT_TOKEN:
@@ -768,7 +771,7 @@ def session(type):
     global unrealised_percent, investment_value, investment_value_gain
     global market_price, session_profit, win_trade_count, loss_trade_count
     global NEW_BALANCE, INVESTMENT_TOTAL, TOTAL_GAINS, INVESTMENT_GAIN, CURRENT_EXPOSURE
-    global session_start_time, session_uptime
+    global session_start_time, session_uptime, closed_trades_percent
 
     if type == 'calc':
         TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
@@ -807,6 +810,7 @@ def session(type):
             'new_balance': NEW_BALANCE,
             'session_start_time': session_start_time,
             'session_uptime': session_uptime,
+            'closed_trades_percent': closed_trades_percent,
             }
 
         # save the coins in a json file in the same directory
@@ -832,6 +836,7 @@ def session(type):
             # investment_value = session['investment_value']
             NEW_BALANCE = session_info['new_balance']
             session_start_time = session_info['session_start_time']
+            closed_trades_percent = session_info['closed_trades_percent']
 
         TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
         NEW_BALANCE = (INVESTMENT + TOTAL_GAINS)
