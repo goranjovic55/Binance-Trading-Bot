@@ -72,37 +72,38 @@ class txcolors:
     DEFAULT = '\033[39m'
     NOTICE = '\033[96m'
 
-global session_struct = {}
+global session_struct
 
 session_struct = {
-   'session_profit': session_profit,
-   'unrealised_percent': unrealised_percent,
-   'market_price': market_price,
-   'investment_value': investment_value,
-   'investment_value_gain': investment_value_gain,
-   'session_uptime': session_uptime,
-   'session_start_time': session_start_time,
-   'closed_trades_percent': closed_trades_percent,
-   'win_trade_count': win_trade_count,
-   'loss_trade_count': loss_trade_count,
-   'market_support': market_support,
-   'market_resistance': market_resistance,
-   'dynamic': dynamic,
-   'sell_all_coins': sell_all_coins,
-   'tickers_list_changed': tickers_list_changed,
-   'exchange_symbol': exchange_symbol,
-   'price_list_counter': price_list_counter,
-   'CURRENT_EXPOSURE': CURRENT_EXPOSURE,
-   'TOTAL_GAINS': TOTAL_GAINS,
-   'NEW_BALANCE': NEW_BALANCE,
-   'INVESTMENT_GAIN': INVESTMENT_GAIN,
-   'STARTUP': STARTUP,
-   'LIST_AUTOCREATE':LIST_AUTOCREATE
+     'session_profit': 0,
+     'unrealised_percent': 0,
+     'market_price': 0,
+     'investment_value': 0,
+     'investment_value_gain': 0,
+     'session_uptime': 0,
+     'session_start_time': 0,
+     'closed_trades_percent': 0,
+     'win_trade_count': 0,
+     'loss_trade_count': 0,
+     'market_support': 0,
+     'market_resistance': 0,
+     'dynamic': 'none',
+     'sell_all_coins': False,
+     'tickers_list_changed': False,
+     'exchange_symbol': 'USDT',
+     'price_list_counter': 0,
+     'CURRENT_EXPOSURE': 0,
+     'TOTAL_GAINS': 0,
+     'NEW_BALANCE': 0,
+     'INVESTMENT_GAIN': 0,
+     'STARTUP': True,
+     'LIST_AUTOCREATE': False,
 }
 
 # tracks profit/loss each session
 global session_profit, unrealised_percent, market_price, investment_value
 global investment_value_gain, session_uptime, session_start_time, closed_trades_percent
+
 closed_trades_percent = 0
 session_uptime = 0
 session_start_time = 0
@@ -174,7 +175,7 @@ def decimals():
 def get_price(add_to_historical=True):
     '''Return the current price for all coins on binance'''
 
-    global historical_prices, hsp_head, market_price, exchange_symbol
+    global historical_prices, hsp_head, session_struct
 
     initial_price = {}
     prices = client.get_all_tickers()
@@ -197,13 +198,13 @@ def get_price(add_to_historical=True):
 
     if is_fiat():
 
-        market_price = 1
-        exchange_symbol = PAIR_WITH
+        session_struct['market_price'] = 1
+        session_struct['exchange_symbol'] = PAIR_WITH
 
     else:
-        exchange_symbol = PAIR_WITH + 'USDT'
-        market_historic = client.get_historical_trades(symbol=exchange_symbol)
-        market_price = market_historic[0].get('price')
+        session_struct['exchange_symbol'] = PAIR_WITH + 'USDT'
+        market_historic = client.get_historical_trades(symbol=session_struct['exchange_symbol'])
+        session_struct['market_price'] = market_historic[0].get('price')
 
     return initial_price
 
@@ -212,10 +213,10 @@ def wait_for_price(type):
     '''calls the initial price and ensures the correct amount of time has passed
     before reading the current price again'''
 
-    global historical_prices, prehistorical_prices, hsp_head, volatility_cooloff, market_support, market_resistance
+    global historical_prices, prehistorical_prices, hsp_head, volatility_cooloff, session_struct
 
-    market_resistance = 0
-    market_support = 0
+    session_struct['market_resistance'] = 0
+    session_struct['market_support'] = 0
 
     volatile_coins = {}
     externals = {}
@@ -244,10 +245,10 @@ def wait_for_price(type):
         threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (float(max_price[coin]['price']) - float(min_price[coin]['price'])) / float(min_price[coin]['price']) * 100
 
         if threshold_check > 0:
-            market_resistance = market_resistance + threshold_check
+            session_struct['market_resistance'] = session_struct['market_resistance'] + threshold_check
             coins_up = coins_up +1
         else:
-            market_support = market_support - threshold_check
+            session_struct['market_support'] = session_struct['market_support'] - threshold_check
             coins_down = coins_down +1
 
         if type == 'percent_mix_signal':
@@ -312,13 +313,13 @@ def wait_for_price(type):
         else:
             coins_unchanged +=1
 
-    if coins_up != 0: market_resistance = market_resistance / coins_up
-    if coins_down != 0: market_support = market_support / coins_down
+    if coins_up != 0: session_struct['market_resistance'] = session_struct['market_resistance'] / coins_up
+    if coins_down != 0: session_struct['market_support'] = session_struct['market_support'] / coins_down
 
     if DETAILED_REPORTS == True and hsp_head == 1:
-        report('detailed',f"Market Resistance:      {txcolors.DEFAULT}{market_resistance:.4f}\n Market Support:         {txcolors.DEFAULT}{market_support:.4f}")
+        report('detailed',f"Market Resistance:      {txcolors.DEFAULT}{session_struct['market_resistance']:.4f}\n Market Support:         {txcolors.DEFAULT}{session_struct['market_support']:.4f}")
     else:
-        report('console', f" MR:{market_resistance:.4f}/MS:{market_support:.4f} ")
+        report('console', f" MR:{session_struct['market_resistance']:.4f}/MS:{session_struct['market_support']:.4f} ")
 
     return volatile_coins, len(volatile_coins), historical_prices[hsp_head]
 
