@@ -16,6 +16,7 @@ or others connected with the program.
 # use for environment variables
 from genericpath import exists
 import os
+from rsi_signalmod_nigec import FULL_LOG
 
 # use if needed to pass args to external modules
 import sys
@@ -73,7 +74,8 @@ class txcolors:
 
 # tracks profit/loss each session
 global session_profit, unrealised_percent, market_price, investment_value
-global investment_value_gain, session_uptime, session_start_time
+global investment_value_gain, session_uptime, session_start_time, closed_trades_percent
+closed_trades_percent = 0
 session_uptime = 0
 session_start_time = 0
 investment_value = 0
@@ -94,10 +96,11 @@ dynamic = 'none'
 sell_all_coins = False
 tickers_list_changed = False
 
-global CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN, STARTUP
+global CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN, STARTUP, LIST_AUTOCREATE
 CURRENT_EXPOSURE = 0
 NEW_BALANCE = 0
 STARTUP = True
+LIST_AUTOCREATE = False
 
 # print with timestamps
 old_out = sys.stdout
@@ -149,7 +152,6 @@ def get_price(add_to_historical=True):
     prices = client.get_all_tickers()
 
     for coin in prices:
-
         if CUSTOM_LIST:
             if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
                 initial_price[coin['symbol']] = { 'price': coin['price'], 'time': datetime.now()}
@@ -314,6 +316,7 @@ def external_signals():
 def pause_bot():
     '''Pause the script when external indicators detect a bearish trend in the market'''
     global bot_paused, session_profit, hsp_head, dynamic, sell_all_coins
+    global LIST_AUTOCREATE
     # start counting for how long the bot has been paused
     start_time = time.perf_counter()
 
@@ -339,7 +342,6 @@ def pause_bot():
 
         #gogo MOD todo more verbose having all the report things in it!!!!!
         if hsp_head == 1:
-
            report('console', '.')
 
         time.sleep((TIME_DIFFERENCE * 60) / RECHECK_INTERVAL)
@@ -349,12 +351,11 @@ def pause_bot():
         stop_time = time.perf_counter()
         time_elapsed = timedelta(seconds=int(stop_time-start_time))
 
-
-
-        # resume the bot and ser pause_bot to False
+        # resume the bot and set pause_bot to False
         if  bot_paused == True:
             print(f"{txcolors.WARNING}Resuming buying due to positive market conditions, total sleep time: {time_elapsed}{txcolors.DEFAULT}")
-            tickers_list(SORT_LIST_TYPE)
+            if LIST_AUTOCREATE:
+                tickers_list(SORT_LIST_TYPE)
             dynamic = 'reset'
             sell_all_coins = False
             bot_paused = False
@@ -422,7 +423,7 @@ def buy():
 
     for coin in volume:
         BUYABLE = True
-        if (UNIQUE_BUYS == True) and (coin in coins_bought) :
+        if UNIQUE_BUYS and (coin in coins_bought):
             BUYABLE = False
 
         # only buy if the there are no active trades on the coin
@@ -482,7 +483,8 @@ def buy():
 def sell_coins():
     '''sell coins that have reached the STOP LOSS or TAKE PROFIT threshold'''
 
-    global hsp_head, session_profit, win_trade_count, loss_trade_count, dynamic, sell_all_coins, market_resistance, market_support
+    global hsp_head, session_profit, win_trade_count, loss_trade_count, dynamic, sell_all_coins, market_resistance, market_support, closed_trades_percent
+    global FULL_LOG
     last_price = get_price(False) # don't populate rolling window
     #last_price = get_price(add_to_historical=True) # don't populate rolling window
     coins_sold = {}
@@ -514,13 +516,8 @@ def sell_coins():
         # sellFee = (150 * 0.00006648) * (0.075/100)
         # sellFee = 0.000007479
 
-        # priceChangeWithFee = (0.00006648 - 0.00006733) - (0.000007479 - 0.000007574625) / 0.00006733 * 100
-
-        # priceChangeWithFee = float(((lastPrice - buyPrice) - (sellFee + buyFee) ) / buyPrice * 100)
-
         # check that the price is above the take profit and readjust SL and TP accordingly if trialing stop loss used
         if lastPrice > TP and USE_TRAILING_STOP_LOSS:
-
             # increasing TP by TRAILING_TAKE_PROFIT (essentially next time to readjust SL)
             coins_bought[coin]['take_profit'] = priceChange + TRAILING_TAKE_PROFIT
             coins_bought[coin]['stop_loss'] = coins_bought[coin]['take_profit'] - TRAILING_STOP_LOSS
@@ -577,6 +574,7 @@ def sell_coins():
                 if TL < current_time: REPORT =  f"HOLDING_TIMEOUT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
 
                 session_profit = session_profit + profit
+                closed_trades_percent = closed_trades_percent + priceChange
 
                 report('message',f"{REPORT}")
                 report('log',f"{REPORT}")
@@ -588,8 +586,8 @@ def sell_coins():
         if hsp_head == 1:
             if len(coins_bought) > 0:
                 print(f"TP:{TP:.{decimals()}f}:{coins_bought[coin]['take_profit']:.2f} or SL:{SL:.{decimals()}f}:{coins_bought[coin]['stop_loss']:.2f} not yet reached, not selling {coin} for now >> Bought at: {BUY_PRICE} - Now: {LAST_PRICE} : {txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}{priceChange:.2f}% Est: {(QUANTITY*(priceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
-
-    if hsp_head == 1 and len(coins_bought) == 0: print(f"No trade slots are currently in use")
+    if FULL_LOG:
+        if hsp_head == 1 and len(coins_bought) == 0: print(f"No trade slots are currently in use")
 
     return coins_sold
 
@@ -639,7 +637,7 @@ def remove_from_portfolio(coins_sold):
 def report(type, reportline):
 
     global session_profit, CURRENT_EXPOSURE, NEW_BALANCE
-    global INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent
+    global INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent, closed_trades_percent
     global investment_value, investment_value_gain, exchange_symbol, session_uptime, session_start_time
     try: # does it exist?
         investment_value_gain
@@ -653,9 +651,18 @@ def report(type, reportline):
     CURRENT_EXPOSURE = round(CURRENT_EXPOSURE, DECIMALS)
     TOTAL_GAINS = round(TOTAL_GAINS, DECIMALS)
     INVESTMENT_VALUE_GAIN = round(investment_value_gain, 2)
-    NEW_BALANCE = round(NEW_BALANCE, DECIMALS)
 
-    SETTINGS_STRING = 'TD:'+str(round(TIME_DIFFERENCE, 2))+' | RI:'+str(round(RECHECK_INTERVAL, 2))+' | CIP:'+str(round(CHANGE_IN_PRICE_MIN, 2))+'-'+str(round(CHANGE_IN_PRICE_MAX, 2))+' | SL:'+str(round(STOP_LOSS, 2))+' | TP:'+str(round(TAKE_PROFIT, 2))+' | TSL:'+str(round(TRAILING_STOP_LOSS, 2))+' | TTP:'+str(round(TRAILING_TAKE_PROFIT, 2))
+    # testing:
+    NEW_BALANCE_TRIM = "%g" % round(NEW_BALANCE, DECIMALS)
+    INVESTMENT_VALUE_TRIM =  "%g" % round(investment_value, 2)
+    INVESTMENT_VALUE_GAIN_TRIM =  "%g" % round(investment_value_gain, 2)
+    CURRENT_EXPOSURE_TRIM = "%g" % CURRENT_EXPOSURE
+    INVESTMENT_TOTAL_TRIM = "%g" % INVESTMENT_TOTAL
+    CLOSED_TRADES_PERCENT_TRIM = "%g" % round(closed_trades_percent, 2)
+    SESSION_PROFIT_TRIM = format(session_profit, '.8f')
+    # SESSION_PROFIT_TRIM = "%g" % round(session_profit, DECIMALS)
+
+    SETTINGS_STRING = 'Time: '+str(round(TIME_DIFFERENCE, 2))+' | Interval: '+str(round(RECHECK_INTERVAL, 2))+' | Price change min/max: '+str(round(CHANGE_IN_PRICE_MIN, 2))+'/'+str(round(CHANGE_IN_PRICE_MAX, 2))+'% | Stop loss: '+str(round(STOP_LOSS, 2))+' | Take profit: '+str(round(TAKE_PROFIT, 2))+' | Trailing stop loss: '+str(round(TRAILING_STOP_LOSS, 2))+' | Trailing take profit: '+str(round(TRAILING_TAKE_PROFIT, 2))
 
     if len(coins_bought) > 0:
         UNREALISED_PERCENT = round(unrealised_percent/len(coins_bought), 2)
@@ -666,50 +673,64 @@ def report(type, reportline):
     else:
         WIN_LOSS_PERCENT = 100
 
+    # adding all the stats together:
+    report_string= 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_TRIM)+'/'+str(INVESTMENT_TOTAL_TRIM)+' '+PAIR_WITH+') | Session: '+str(SESSION_PROFIT_TRIM)+' '+PAIR_WITH+' ('+str(CLOSED_TRADES_PERCENT_TRIM)+'%) | Win/Loss: '+str(WON)+'/'+str(LOST)+' ('+str(WIN_LOSS_PERCENT)+'%) | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(NEW_BALANCE_TRIM)+' | Value: '+str(INVESTMENT_VALUE_TRIM)+' USD | Value gain: '+str(INVESTMENT_VALUE_GAIN_TRIM)+' | Uptime: '+str(timedelta(seconds=(int(session_uptime/1000))))
+
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
         # print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol}> {reportline} <<{txcolors.DEFAULT}")
-        print(f"{txcolors.NOTICE}>> Trade slots: {len(coins_bought)}/{TRADE_SLOTS} ({CURRENT_EXPOSURE:g}/{INVESTMENT_TOTAL:g} {PAIR_WITH}) - Open: {UNREALISED_PERCENT:.2f}% - Closed: {session_profit:.2f}% - Est: {TOTAL_GAINS:g} {PAIR_WITH} - W/L: {WON}/{LOST} - Value: {investment_value:.2f} USD - Gain: {INVESTMENT_GAIN:.2f}% ({str(INVESTMENT_VALUE_GAIN)} USD vs HODL) - Session Uptime: {session_uptime/60/1000/24:.4f}H{txcolors.DEFAULT}")
+        print(f"{report_string}")
 
     #More detailed/verbose report style
     if type == 'detailed':
-       print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. << \n"
-       ,f"Profit on unsold coins: {txcolors.SELL_PROFIT if UNREALISED_PERCENT >= 0 else txcolors.SELL_LOSS}{UNREALISED_PERCENT:.2f}%\n"
-       ,f"Session Pofit:          {txcolors.SELL_PROFIT if session_profit >= 0 else txcolors.SELL_LOSS}{session_profit:.2f}%\n"
-       ,f"Est. total gains:       {txcolors.SELL_PROFIT if TOTAL_GAINS >= 0 else txcolors.SELL_LOSS}{TOTAL_GAINS:g} {PAIR_WITH}\n"
-       ,f"Trades won/lost:        {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{win_trade_count} / {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{loss_trade_count}\n"
-       ,f"Investment:             {txcolors.DEFAULT}{INVESTMENT_TOTAL:g} {PAIR_WITH}\n"
-       ,f"Current Exposure:       {txcolors.DEFAULT}{CURRENT_EXPOSURE:g} {PAIR_WITH}\n"
-       ,f"New Balance:            {txcolors.SELL_PROFIT if NEW_BALANCE >= INVESTMENT_TOTAL else txcolors.SELL_LOSS}{NEW_BALANCE:g} {PAIR_WITH}\n"
-       ,f"Initial Investment:     {txcolors.SELL_PROFIT if investment_value >= INVESTMENT else txcolors.SELL_LOSS}{investment_value:.2f} USD\n"
-       ,f"Investment Gain:        {txcolors.SELL_PROFIT if INVESTMENT_GAIN >= 0 else txcolors.SELL_LOSS}{INVESTMENT_GAIN:.2f}%\n"
-       ,f"Investment Value Gain:  {txcolors.SELL_PROFIT if investment_value_gain >= 0 else txcolors.SELL_LOSS}{str(INVESTMENT_VALUE_GAIN)} USD\n"
-       ,f"{reportline} {txcolors.DEFAULT}")
+        print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. << \n"
+        ,f"Profit on unsold coins:  {txcolors.SELL_PROFIT if UNREALISED_PERCENT >= 0 else txcolors.SELL_LOSS}{UNREALISED_PERCENT:.2f}%\n"
+        ,f"Closed trades:           {txcolors.SELL_PROFIT if closed_trades_percent >= 0 else txcolors.SELL_LOSS}{str(CLOSED_TRADES_PERCENT_TRIM)}%\n"
+        ,f"Session profit:          {txcolors.SELL_PROFIT if session_profit >= 0 else txcolors.SELL_LOSS}{str(SESSION_PROFIT_TRIM)} {PAIR_WITH}\n"
+        ,f"Est. total gains:        {txcolors.SELL_PROFIT if TOTAL_GAINS >= 0 else txcolors.SELL_LOSS}{TOTAL_GAINS:g} {PAIR_WITH}\n"
+        ,f"Trades won/lost:         {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{win_trade_count} / {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{loss_trade_count}\n"
+        ,f"Investment:              {txcolors.DEFAULT}{INVESTMENT_TOTAL:g} {PAIR_WITH}\n"
+        ,f"Current exposure:        {txcolors.DEFAULT}{CURRENT_EXPOSURE:g} {PAIR_WITH}\n"
+        ,f"New balance:             {txcolors.SELL_PROFIT if NEW_BALANCE >= INVESTMENT_TOTAL else txcolors.SELL_LOSS}{NEW_BALANCE:g} {PAIR_WITH}\n"
+        ,f"Initial investment:      {txcolors.SELL_PROFIT if investment_value >= INVESTMENT else txcolors.SELL_LOSS}{investment_value:.2f} USD\n"
+        ,f"Investment gain:         {txcolors.SELL_PROFIT if INVESTMENT_GAIN >= 0 else txcolors.SELL_LOSS}{INVESTMENT_GAIN:.2f}%\n"
+        ,f"Investment value vain:   {txcolors.SELL_PROFIT if investment_value_gain >= 0 else txcolors.SELL_LOSS}{str(INVESTMENT_VALUE_GAIN)} USD\n"
+        ,f"{reportline} {txcolors.DEFAULT}")
 
     if type == 'message':
+        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
+        bot_message = SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
-       TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
-       report_string = 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' | Session profit: '+str(round(session_profit, 2))+' | Exposure: '+str(round(CURRENT_EXPOSURE, 4))+' | Win/Loss: '+str(win_trade_count)+'/'+str(loss_trade_count)+' | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(round(NEW_BALANCE, 4))+' | Value: '+str(round(investment_value, 4))+str(exchange_symbol)+' | Value gain: '+str(round(investment_value_gain, 4))+' | Session uptime: '+str(round(session_uptime/60/1000/24))+'H'
-       bot_message = BOT_ID + SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
+        if BOT_MESSAGE_REPORTS and TELEGRAM_BOT_TOKEN:
+            bot_token = TELEGRAM_BOT_TOKEN
+            bot_chatID = TELEGRAM_BOT_ID
+            send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + BOT_ID + bot_message
+            response = requests.get(send_text)
 
-       if BOT_MESSAGE_REPORTS and TELEGRAM_BOT_TOKEN:
-          bot_token = TELEGRAM_BOT_TOKEN
-          bot_chatID = TELEGRAM_BOT_ID
-          send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
-          response = requests.get(send_text)
+        if BOT_MESSAGE_REPORTS and DISCORD_WEBHOOK:
 
-       if BOT_MESSAGE_REPORTS and DISCORD_WEBHOOK:
-          #Webhook of my channel. Click on edit channel --> Webhooks --> Creates webhook
-          mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
-          data = {"content": bot_message}
-          response = requests.post(mUrl, json=data)
-          print(response.content)
+            mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
+            data = {"username" : BOT_ID , "avatar_url": discord_avatar(), "content": bot_message}
+            response = requests.post(mUrl, json=data)
+            #   print(response.content)
 
     if type == 'log':
         timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
         # print(f'LOG_FILE: {LOG_FILE}')
         with open(LOG_FILE,'a+') as f:
             f.write(timestamp + ' ' + reportline + '\n')
+
+
+def discord_avatar():
+    # testing avatars dependant on PAIR_WITH
+    if PAIR_WITH == 'ETH':
+        DISCORD_AVATAR =  "https://i.imgur.com/L9Txc9F.jpeg"
+    if PAIR_WITH == 'BTC':
+        DISCORD_AVATAR =  "https://i.imgur.com/oIeAiEo.jpeg"
+    if PAIR_WITH == 'USDT':
+        DISCORD_AVATAR =  "https://i.imgur.com/VyOdlRS.jpeg"
+    return DISCORD_AVATAR
+
 
 #function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
 def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT):
@@ -768,7 +789,7 @@ def session(type):
     global unrealised_percent, investment_value, investment_value_gain
     global market_price, session_profit, win_trade_count, loss_trade_count
     global NEW_BALANCE, INVESTMENT_TOTAL, TOTAL_GAINS, INVESTMENT_GAIN, CURRENT_EXPOSURE
-    global session_start_time, session_uptime
+    global session_start_time, session_uptime, closed_trades_percent
 
     if type == 'calc':
         TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
@@ -807,6 +828,7 @@ def session(type):
             'new_balance': NEW_BALANCE,
             'session_start_time': session_start_time,
             'session_uptime': session_uptime,
+            'closed_trades_percent': closed_trades_percent,
             }
 
         # save the coins in a json file in the same directory
@@ -832,6 +854,7 @@ def session(type):
             # investment_value = session['investment_value']
             NEW_BALANCE = session_info['new_balance']
             session_start_time = session_info['session_start_time']
+            closed_trades_percent = session_info['closed_trades_percent']
 
         TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
         NEW_BALANCE = (INVESTMENT + TOTAL_GAINS)
@@ -841,6 +864,7 @@ def session(type):
 def tickers_list(type):
 
     global historical_prices, hsp_head, tickers_list_changed
+    global LIST_AUTOCREATE
 
     tickers_list_volume = {}
     tickers_list_price_change = {}
@@ -850,90 +874,78 @@ def tickers_list(type):
     tickers_pairwith = {}
     tickers_new = {}
 
+    if LIST_AUTOCREATE:
     # pull coins from trading view and create a list
-    if type == 'create_ta':
+        if type == 'create_ta':
+            response = requests.get('https://scanner.tradingview.com/crypto/scan')
+            ta_data = response.json()
+            signals_file = open(TICKERS_LIST,'w')
+            with open (TICKERS_LIST, 'w') as f:
+                for i in ta_data['data']:
+                    if i['s'][:7]=='BINANCE' and i['s'][-len(PAIR_WITH):] == PAIR_WITH and (i['s'][-len(PAIR_WITH)-2:-len(PAIR_WITH)]) != 'UP' and (i['s'][-len(PAIR_WITH)-4:-len(PAIR_WITH)]) != 'DOWN' and i['s'][8:-len(PAIR_WITH)] not in ignorelist:
+                        f.writelines(str(i['s'][8:].replace(PAIR_WITH,''))+'\n')
+            tickers_list_changed = True
+            print(f'>> Tickers CREATED from TradingView tickers!!!{TICKERS_LIST} <<')
 
-        response = requests.get('https://scanner.tradingview.com/crypto/scan')
-        ta_data = response.json()
-        signals_file = open(TICKERS_LIST,'w')
+        if type == 'volume' or type == 'price_change':
+        #  create list with volume and change in price on our pairs
+                for coin in tickers_binance:
+                    if CUSTOM_LIST:
+                        if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
+                            tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
+                            tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
 
-        with open (TICKERS_LIST, 'w') as f:
-            for i in ta_data['data']:
-                if i['s'][:7]=='BINANCE' and i['s'][-len(PAIR_WITH):] == PAIR_WITH and i['s'][8:-len(PAIR_WITH)] not in ignorelist:
-                    f.writelines(str(i['s'][8:-len(PAIR_WITH)])+'\n')
-        tickers_list_changed = True
-        print(f'>> Tickers CREATED from TradingView tickers!!!{TICKERS_LIST} <<')
+                    else:
+                        if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
+                            tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
+                            tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
 
-    if type == 'volume' or type == 'price_change':
-    #  create list with volume and change in price on our pairs
+                # sort tickers by descending order volume and price
+                list_tickers_volume = list(sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True))
+                list_tickers_price_change = list(sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True))
+
+        # pull coins from binance and create list
+        if type == 'create_b':
             for coin in tickers_binance:
+                if PAIR_WITH in coin['symbol']:
+                    tickers_pairwith[coin['symbol']] = coin['symbol']
+                    if tickers_pairwith[coin['symbol']].endswith(PAIR_WITH):
+                        tickers_new[coin['symbol']] = tickers_pairwith[coin['symbol']]
 
-                if CUSTOM_LIST:
-                    if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-                        tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
-                        tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
-
-                else:
-                    if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-                        tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
-                        tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
-
-            # sort tickers by descending order volume and price
-            list_tickers_volume = list(sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True))
-            list_tickers_price_change = list(sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True))
-
-    # pull coins from binance and create list
-    if type == 'create_b':
-
-        for coin in tickers_binance:
-
-            if PAIR_WITH in coin['symbol']:
-                tickers_pairwith[coin['symbol']] = coin['symbol']
-                if tickers_pairwith[coin['symbol']].endswith(PAIR_WITH):
-                    tickers_new[coin['symbol']] = tickers_pairwith[coin['symbol']]
-
-        list_tickers_new = list(tickers_new)
+            list_tickers_new = list(tickers_new)
 
 
-        with open (TICKERS_LIST, 'w') as f:
-            for ele in list_tickers_new:
-                f.writelines(str(ele.replace(PAIR_WITH,''))+'\n')
-        tickers_list_changed = True
-        print(f'>> Tickers CREATED from binance tickers!!!{TICKERS_LIST} <<')
+            with open (TICKERS_LIST, 'w') as f:
+                for ele in list_tickers_new:
+                    f.writelines(str(ele.replace(PAIR_WITH,''))+'\n')
+            tickers_list_changed = True
+            print(f'>> Tickers CREATED from binance tickers!!!{TICKERS_LIST} <<')
 
-        tickers_list_changed = True
-        print(f'>> Tickers CREATED from Binance tickers!!!{TICKERS_LIST} <<')
+            tickers_list_changed = True
+            print(f'>> Tickers CREATED from Binance tickers!!!{TICKERS_LIST} <<')
 
-    if type == 'volume' and CUSTOM_LIST:
-    # write sorted lists to files
+        if type == 'volume' and CUSTOM_LIST:
+        # write sorted lists to files
+            with open (TICKERS_LIST, 'w') as f:
+                    for sublist in list_tickers_volume:
+                        f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
+            tickers_list_changed = True
+            print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
-       with open (TICKERS_LIST, 'w') as f:
-            for sublist in list_tickers_volume:
-                f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
-       tickers_list_changed = True
-       print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
-
-    if type == 'price_change':
-    # write sorted list to files
-
-       with open (TICKERS_LIST, 'w') as f:
-            for sublist in list_tickers_price_change:
-                f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
-       tickers_list_changed = True
-       print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
+        if type == 'price_change':
+        # write sorted list to files
+            with open (TICKERS_LIST, 'w') as f:
+                    for sublist in list_tickers_price_change:
+                        f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
+            tickers_list_changed = True
+            print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
 
 def bot_launch():
     # Bot relays session start to Discord channel
-    global DISCORD_WEBHOOK, BOT_MESSAGE_REPORTS, session_start_time, session_uptime
-    TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
-    bot_message = BOT_ID + " is online"
+    bot_message = "Bot initiated"
+    report('message', bot_message)
 
-    if BOT_MESSAGE_REPORTS and DISCORD_WEBHOOK:
-        #Webhook of my channel. Click on edit channel --> Webhooks --> Creates webhook
-        mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
-        data = {"content": bot_message}
-        requests.post(mUrl, json=data)
 
 if __name__ == '__main__':
 
@@ -1009,7 +1021,8 @@ if __name__ == '__main__':
 
     # Telegram_Bot enabled? # **added by*Coding60plus
 
-    if BOT_MESSAGE_REPORTS: TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
+    if BOT_MESSAGE_REPORTS:
+        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
 
     # Telegram_Bot enabled? # **added by*Coding60plus
     if DEBUG:
