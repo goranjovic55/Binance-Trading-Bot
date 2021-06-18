@@ -72,6 +72,34 @@ class txcolors:
     DEFAULT = '\033[39m'
     NOTICE = '\033[96m'
 
+global session_struct = {}
+
+session_struct = {
+   'session_profit': session_profit,
+   'unrealised_percent': unrealised_percent,
+   'market_price': market_price,
+   'investment_value': investment_value,
+   'investment_value_gain': investment_value_gain,
+   'session_uptime': session_uptime,
+   'session_start_time': session_start_time,
+   'closed_trades_percent': closed_trades_percent,
+   'win_trade_count': win_trade_count,
+   'loss_trade_count': loss_trade_count,
+   'market_support': market_support,
+   'market_resistance': market_resistance,
+   'dynamic': dynamic,
+   'sell_all_coins': sell_all_coins,
+   'tickers_list_changed': tickers_list_changed,
+   'exchange_symbol': exchange_symbol,
+   'price_list_counter': price_list_counter,
+   'CURRENT_EXPOSURE': CURRENT_EXPOSURE,
+   'TOTAL_GAINS': TOTAL_GAINS,
+   'NEW_BALANCE': NEW_BALANCE,
+   'INVESTMENT_GAIN': INVESTMENT_GAIN,
+   'STARTUP': STARTUP,
+   'LIST_AUTOCREATE':LIST_AUTOCREATE
+}
+
 # tracks profit/loss each session
 global session_profit, unrealised_percent, market_price, investment_value
 global investment_value_gain, session_uptime, session_start_time, closed_trades_percent
