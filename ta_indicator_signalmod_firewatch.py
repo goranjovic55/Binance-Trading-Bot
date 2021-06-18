@@ -44,8 +44,8 @@ def analyze(pairs):
     if os.path.exists(f'{SIGNAL_OUTPUT_PATH}/firewatch_signalsample.exs'):
         os.remove(f'{SIGNAL_OUTPUT_PATH}/firewatch_signalsample.exs')
 
-    if os.path.exists(f'{SIGNAL_OUTPUT_PATH}/signalsample.sell'):
-        os.remove(f'{SIGNAL_OUTPUT_PATH}/signalsample.sell')
+    if os.path.exists(f'{SIGNAL_OUTPUT_PATH}/firewatch_signalsample.sell'):
+        os.remove(f'{SIGNAL_OUTPUT_PATH}/firewatch_signalsample.sell')
 
     for pair in pairs:
         first_handler[pair] = TA_Handler(
