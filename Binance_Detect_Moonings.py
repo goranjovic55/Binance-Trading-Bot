@@ -72,35 +72,33 @@ class txcolors:
     DEFAULT = '\033[39m'
     NOTICE = '\033[96m'
 
-# tracks profit/loss each session
-global session_profit, unrealised_percent, market_price, investment_value
-global investment_value_gain, session_uptime, session_start_time, closed_trades_percent
-closed_trades_percent = 0
-session_uptime = 0
-session_start_time = 0
-investment_value = 0
-investment_value_gain = 0
-session_profit = 0
-unrealised_percent = 0
+global session_struct
 
-#gogo MOD WIN/LOSS COunter and global dynamic stoploss and takeprofit and trailing takeprofit etc
-global win_trade_count, loss_trade_count, market_support, market_resistance
-market_support = 0
-market_resistance = 0
-win_trade_count = 0
-loss_trade_count = 0
-
-global dynamic, sell_all_coins, tickers_list_changed, exchange_symbol, price_list_counter
-price_list_counter = 0
-dynamic = 'none'
-sell_all_coins = False
-tickers_list_changed = False
-
-global CURRENT_EXPOSURE, TOTAL_GAINS, NEW_BALANCE, INVESTMENT_GAIN, STARTUP, LIST_AUTOCREATE
-CURRENT_EXPOSURE = 0
-NEW_BALANCE = 0
-STARTUP = True
-LIST_AUTOCREATE = False
+session_struct = {
+     'session_profit': 0,
+     'unrealised_percent': 0,
+     'market_price': 0,
+     'investment_value': 0,
+     'investment_value_gain': 0,
+     'session_uptime': 0,
+     'session_start_time': 0,
+     'closed_trades_percent': 0,
+     'win_trade_count': 0,
+     'loss_trade_count': 0,
+     'market_support': 0,
+     'market_resistance': 0,
+     'dynamic': 'none',
+     'sell_all_coins': False,
+     'tickers_list_changed': False,
+     'exchange_symbol': 'USDT',
+     'price_list_counter': 0,
+     'CURRENT_EXPOSURE': 0,
+     'TOTAL_GAINS': 0,
+     'NEW_BALANCE': 0,
+     'INVESTMENT_GAIN': 0,
+     'STARTUP': True,
+     'LIST_AUTOCREATE': False,
+}
 
 # print with timestamps
 old_out = sys.stdout
@@ -146,7 +144,7 @@ def decimals():
 def get_price(add_to_historical=True):
     '''Return the current price for all coins on binance'''
 
-    global historical_prices, hsp_head, market_price, exchange_symbol
+    global historical_prices, hsp_head, session_struct
 
     initial_price = {}
     prices = client.get_all_tickers()
@@ -169,13 +167,13 @@ def get_price(add_to_historical=True):
 
     if is_fiat():
 
-        market_price = 1
-        exchange_symbol = PAIR_WITH
+        session_struct['market_price'] = 1
+        session_struct['exchange_symbol'] = PAIR_WITH
 
     else:
-        exchange_symbol = PAIR_WITH + 'USDT'
-        market_historic = client.get_historical_trades(symbol=exchange_symbol)
-        market_price = market_historic[0].get('price')
+        session_struct['exchange_symbol'] = PAIR_WITH + 'USDT'
+        market_historic = client.get_historical_trades(symbol=session_struct['exchange_symbol'])
+        session_struct['market_price'] = market_historic[0].get('price')
 
     return initial_price
 
@@ -184,10 +182,10 @@ def wait_for_price(type):
     '''calls the initial price and ensures the correct amount of time has passed
     before reading the current price again'''
 
-    global historical_prices, prehistorical_prices, hsp_head, volatility_cooloff, market_support, market_resistance
+    global historical_prices, prehistorical_prices, hsp_head, volatility_cooloff, session_struct
 
-    market_resistance = 0
-    market_support = 0
+    session_struct['market_resistance'] = 0
+    session_struct['market_support'] = 0
 
     volatile_coins = {}
     externals = {}
@@ -216,10 +214,10 @@ def wait_for_price(type):
         threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (float(max_price[coin]['price']) - float(min_price[coin]['price'])) / float(min_price[coin]['price']) * 100
 
         if threshold_check > 0:
-            market_resistance = market_resistance + threshold_check
+            session_struct['market_resistance'] = session_struct['market_resistance'] + threshold_check
             coins_up = coins_up +1
         else:
-            market_support = market_support - threshold_check
+            session_struct['market_support'] = session_struct['market_support'] - threshold_check
             coins_down = coins_down +1
 
         if type == 'percent_mix_signal':
@@ -284,13 +282,13 @@ def wait_for_price(type):
         else:
             coins_unchanged +=1
 
-    if coins_up != 0: market_resistance = market_resistance / coins_up
-    if coins_down != 0: market_support = market_support / coins_down
+    if coins_up != 0: session_struct['market_resistance'] = session_struct['market_resistance'] / coins_up
+    if coins_down != 0: session_struct['market_support'] = session_struct['market_support'] / coins_down
 
     if DETAILED_REPORTS == True and hsp_head == 1:
-        report('detailed',f"Market Resistance:      {txcolors.DEFAULT}{market_resistance:.4f}\n Market Support:         {txcolors.DEFAULT}{market_support:.4f}")
+        report('detailed',f"Market Resistance:      {txcolors.DEFAULT}{session_struct['market_resistance']:.4f}\n Market Support:         {txcolors.DEFAULT}{session_struct['market_support']:.4f}")
     else:
-        report('console', f" MR:{market_resistance:.4f}/MS:{market_support:.4f} ")
+        report('console', f" MR:{session_struct['market_resistance']:.4f}/MS:{session_struct['market_support']:.4f} ")
 
     return volatile_coins, len(volatile_coins), historical_prices[hsp_head]
 
@@ -305,6 +303,7 @@ def external_signals():
         for line in open(filename):
             symbol = line.strip()
             external_list[symbol] = symbol
+            print(f'>>> SIGNAL DETECTED ON: {symbol} - SIGNALMOD: {filename} <<<<')
         try:
             os.remove(filename)
         except:
@@ -315,23 +314,23 @@ def external_signals():
 
 def pause_bot():
     '''Pause the script when external indicators detect a bearish trend in the market'''
-    global bot_paused, session_profit, hsp_head, dynamic, sell_all_coins
+    global bot_paused, hsp_head
     global LIST_AUTOCREATE
     # start counting for how long the bot has been paused
     start_time = time.perf_counter()
 
-    while os.path.isfile("signals/paused.exc") or market_resistance > 0.3:
+    while os.path.isfile("signals/paused.exc"):
 
         if bot_paused == False:
             print(f"{txcolors.WARNING}Buying paused due to negative market conditions, stop loss and take profit will continue to work...{txcolors.DEFAULT}")
             # sell all bought coins if bot is bot_paused
             if STOP_LOSS_ON_PAUSE == True:
-               sell_all_coins = True
+               session_struct['sell_all_coins'] = True
             bot_paused = True
 
         # sell all bought coins if bot is bot_paused
         if STOP_LOSS_ON_PAUSE == True:
-           sell_all_coins = True
+           session_struct['sell_all_coins'] = True
 
         # Sell function needs to work even while paused
         coins_sold = sell_coins()
@@ -356,8 +355,8 @@ def pause_bot():
             print(f"{txcolors.WARNING}Resuming buying due to positive market conditions, total sleep time: {time_elapsed}{txcolors.DEFAULT}")
             if LIST_AUTOCREATE:
                 tickers_list(SORT_LIST_TYPE)
-            dynamic = 'reset'
-            sell_all_coins = False
+            session_struct['dynamic'] = 'reset'
+            session_struct['sell_all_coins'] = False
             bot_paused = False
 
     return
@@ -482,8 +481,9 @@ def buy():
 
 def sell_coins():
     '''sell coins that have reached the STOP LOSS or TAKE PROFIT threshold'''
+    global session_struct
 
-    global hsp_head, session_profit, win_trade_count, loss_trade_count, dynamic, sell_all_coins, market_resistance, market_support, closed_trades_percent
+    global hsp_head
     global FULL_LOG
     last_price = get_price(False) # don't populate rolling window
     #last_price = get_price(add_to_historical=True) # don't populate rolling window
@@ -533,7 +533,7 @@ def sell_coins():
 #           print(f'TL:{TL}, time: {current_time} HOLDING_TIME_LIMIT: {HOLDING_TIME_LIMIT}, TimeLeft: {(TL - current_time)/60} ')
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
-        if sell_all_coins == True or lastPrice < SL or lastPrice > TP and not USE_TRAILING_STOP_LOSS or TL < current_time:
+        if session_struct['sell_all_coins'] == True or lastPrice < SL or lastPrice > TP and not USE_TRAILING_STOP_LOSS or TL < current_time:
             print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChange:.2f}% - Est: {(QUANTITY * priceChange) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
             # try to create a real order
             try:
@@ -562,19 +562,19 @@ def sell_coins():
 
                 #gogo MOD to trigger trade lost or won and to count lost or won trades
                 if profit > 0:
-                   win_trade_count = win_trade_count + 1
-                   dynamic = 'performance_adjust_up'
+                   session_struct['win_trade_count'] = session_struct['win_trade_count'] + 1
+                   session_struct['dynamic'] = 'performance_adjust_up'
                 else:
-                   loss_trade_count = loss_trade_count + 1
+                   session_struct['loss_trade_count'] = session_struct['loss_trade_count'] + 1
                    dynamic = 'performance_adjust_down'
 
-                if sell_all_coins == True: REPORT =  f"PAUSE_SELL - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
+                if session_struct['sell_all_coins'] == True: REPORT =  f"PAUSE_SELL - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if lastPrice < SL: REPORT =  f"STOP_LOSS - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if lastPrice > TP: REPORT =  f"TAKE_PROFIT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if TL < current_time: REPORT =  f"HOLDING_TIMEOUT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
 
-                session_profit = session_profit + profit
-                closed_trades_percent = closed_trades_percent + priceChange
+                session_struct['session_profit'] = session_struct['session_profit'] + profit
+                session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
 
                 report('message',f"{REPORT}")
                 report('log',f"{REPORT}")
@@ -636,45 +636,44 @@ def remove_from_portfolio(coins_sold):
 
 def report(type, reportline):
 
-    global session_profit, CURRENT_EXPOSURE, NEW_BALANCE
-    global INVESTMENT_GAIN, TOTAL_GAINS, win_trade_count, loss_trade_count, unrealised_perecent, closed_trades_percent
-    global investment_value, investment_value_gain, exchange_symbol, session_uptime, session_start_time
+    global session_struct
+
     try: # does it exist?
         investment_value_gain
     except NameError: # if not, set to 0
         investment_value_gain = 0
 
-    WON = win_trade_count
-    LOST = loss_trade_count
+    WON = session_struct['win_trade_count']
+    LOST = session_struct['loss_trade_count']
     DECIMALS = int(decimals())
     INVESTMENT_TOTAL = round((QUANTITY * TRADE_SLOTS), DECIMALS)
-    CURRENT_EXPOSURE = round(CURRENT_EXPOSURE, DECIMALS)
-    TOTAL_GAINS = round(TOTAL_GAINS, DECIMALS)
-    INVESTMENT_VALUE_GAIN = round(investment_value_gain, 2)
+    CURRENT_EXPOSURE = round(session_struct['CURRENT_EXPOSURE'], DECIMALS)
+    session_struct['TOTAL_GAINS'] = round(session_struct['TOTAL_GAINS'], DECIMALS)
+    INVESTMENT_VALUE_GAIN = round(session_struct['investment_value_gain'], 2)
 
     # testing:
-    NEW_BALANCE_TRIM = "%g" % round(NEW_BALANCE, DECIMALS)
-    INVESTMENT_VALUE_TRIM =  "%g" % round(investment_value, 2)
-    INVESTMENT_VALUE_GAIN_TRIM =  "%g" % round(investment_value_gain, 2)
-    CURRENT_EXPOSURE_TRIM = "%g" % CURRENT_EXPOSURE
+    NEW_BALANCE_TRIM = "%g" % round(session_struct['NEW_BALANCE'], DECIMALS)
+    INVESTMENT_VALUE_TRIM =  "%g" % round(session_struct['investment_value'], 2)
+    INVESTMENT_VALUE_GAIN_TRIM =  "%g" % round(session_struct['investment_value_gain'], 2)
+    CURRENT_EXPOSURE_TRIM = "%g" % session_struct['CURRENT_EXPOSURE']
     INVESTMENT_TOTAL_TRIM = "%g" % INVESTMENT_TOTAL
-    CLOSED_TRADES_PERCENT_TRIM = "%g" % round(closed_trades_percent, 2)
-    SESSION_PROFIT_TRIM = format(session_profit, '.8f')
+    CLOSED_TRADES_PERCENT_TRIM = "%g" % round(session_struct['closed_trades_percent'], 2)
+    SESSION_PROFIT_TRIM = format(session_struct['session_profit'], '.8f')
     # SESSION_PROFIT_TRIM = "%g" % round(session_profit, DECIMALS)
 
     SETTINGS_STRING = 'Time: '+str(round(TIME_DIFFERENCE, 2))+' | Interval: '+str(round(RECHECK_INTERVAL, 2))+' | Price change min/max: '+str(round(CHANGE_IN_PRICE_MIN, 2))+'/'+str(round(CHANGE_IN_PRICE_MAX, 2))+'% | Stop loss: '+str(round(STOP_LOSS, 2))+' | Take profit: '+str(round(TAKE_PROFIT, 2))+' | Trailing stop loss: '+str(round(TRAILING_STOP_LOSS, 2))+' | Trailing take profit: '+str(round(TRAILING_TAKE_PROFIT, 2))
 
     if len(coins_bought) > 0:
-        UNREALISED_PERCENT = round(unrealised_percent/len(coins_bought), 2)
+        UNREALISED_PERCENT = round(session_struct['unrealised_percent']/len(coins_bought), 2)
     else:
         UNREALISED_PERCENT = 0
-    if (win_trade_count > 0) and (loss_trade_count > 0):
-        WIN_LOSS_PERCENT = round((win_trade_count  / (win_trade_count  + loss_trade_count)) * 100, 2)
+    if (session_struct['win_trade_count'] > 0) and (session_struct['loss_trade_count'] > 0):
+        WIN_LOSS_PERCENT = round((session_struct['win_trade_count']  / (session_struct['win_trade_count']  + session_struct['loss_trade_count'])) * 100, 2)
     else:
         WIN_LOSS_PERCENT = 100
 
     # adding all the stats together:
-    report_string= 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_TRIM)+'/'+str(INVESTMENT_TOTAL_TRIM)+' '+PAIR_WITH+') | Session: '+str(SESSION_PROFIT_TRIM)+' '+PAIR_WITH+' ('+str(CLOSED_TRADES_PERCENT_TRIM)+'%) | Win/Loss: '+str(WON)+'/'+str(LOST)+' ('+str(WIN_LOSS_PERCENT)+'%) | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(NEW_BALANCE_TRIM)+' | Value: '+str(INVESTMENT_VALUE_TRIM)+' USD | Value gain: '+str(INVESTMENT_VALUE_GAIN_TRIM)+' | Uptime: '+str(timedelta(seconds=(int(session_uptime/1000))))
+    report_string= 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_TRIM)+'/'+str(INVESTMENT_TOTAL_TRIM)+' '+PAIR_WITH+') | Session: '+str(SESSION_PROFIT_TRIM)+' '+PAIR_WITH+' ('+str(CLOSED_TRADES_PERCENT_TRIM)+'%) | Win/Loss: '+str(WON)+'/'+str(LOST)+' ('+str(WIN_LOSS_PERCENT)+'%) | Gains: '+str(round(session_struct['INVESTMENT_GAIN'], 4))+'%'+' | Balance: '+str(NEW_BALANCE_TRIM)+' | Value: '+str(INVESTMENT_VALUE_TRIM)+' USD | Value gain: '+str(INVESTMENT_VALUE_GAIN_TRIM)+' | Uptime: '+str(timedelta(seconds=(int(session_struct['session_uptime']/1000))))
 
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
@@ -685,16 +684,16 @@ def report(type, reportline):
     if type == 'detailed':
         print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. << \n"
         ,f"Profit on unsold coins:  {txcolors.SELL_PROFIT if UNREALISED_PERCENT >= 0 else txcolors.SELL_LOSS}{UNREALISED_PERCENT:.2f}%\n"
-        ,f"Closed trades:           {txcolors.SELL_PROFIT if closed_trades_percent >= 0 else txcolors.SELL_LOSS}{str(CLOSED_TRADES_PERCENT_TRIM)}%\n"
-        ,f"Session profit:          {txcolors.SELL_PROFIT if session_profit >= 0 else txcolors.SELL_LOSS}{str(SESSION_PROFIT_TRIM)} {PAIR_WITH}\n"
-        ,f"Est. total gains:        {txcolors.SELL_PROFIT if TOTAL_GAINS >= 0 else txcolors.SELL_LOSS}{TOTAL_GAINS:g} {PAIR_WITH}\n"
-        ,f"Trades won/lost:         {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{win_trade_count} / {txcolors.SELL_PROFIT if win_trade_count >= loss_trade_count else txcolors.SELL_LOSS}{loss_trade_count}\n"
+        ,f"Closed trades:           {txcolors.SELL_PROFIT if session_struct['closed_trades_percent'] >= 0 else txcolors.SELL_LOSS}{str(CLOSED_TRADES_PERCENT_TRIM)}%\n"
+        ,f"Session profit:          {txcolors.SELL_PROFIT if session_struct['session_profit'] >= 0 else txcolors.SELL_LOSS}{str(SESSION_PROFIT_TRIM)} {PAIR_WITH}\n"
+        ,f"Est. total gains:        {txcolors.SELL_PROFIT if session_struct['TOTAL_GAINS'] >= 0 else txcolors.SELL_LOSS}{session_struct['TOTAL_GAINS']:g} {PAIR_WITH}\n"
+        ,f"Trades won/lost:         {txcolors.SELL_PROFIT if session_struct['win_trade_count'] >= session_struct['loss_trade_count'] else txcolors.SELL_LOSS}{session_struct['win_trade_count']} / {txcolors.SELL_PROFIT if session_struct['win_trade_count'] >= session_struct['loss_trade_count'] else txcolors.SELL_LOSS}{session_struct['loss_trade_count']}\n"
         ,f"Investment:              {txcolors.DEFAULT}{INVESTMENT_TOTAL:g} {PAIR_WITH}\n"
-        ,f"Current exposure:        {txcolors.DEFAULT}{CURRENT_EXPOSURE:g} {PAIR_WITH}\n"
-        ,f"New balance:             {txcolors.SELL_PROFIT if NEW_BALANCE >= INVESTMENT_TOTAL else txcolors.SELL_LOSS}{NEW_BALANCE:g} {PAIR_WITH}\n"
-        ,f"Initial investment:      {txcolors.SELL_PROFIT if investment_value >= INVESTMENT else txcolors.SELL_LOSS}{investment_value:.2f} USD\n"
-        ,f"Investment gain:         {txcolors.SELL_PROFIT if INVESTMENT_GAIN >= 0 else txcolors.SELL_LOSS}{INVESTMENT_GAIN:.2f}%\n"
-        ,f"Investment value vain:   {txcolors.SELL_PROFIT if investment_value_gain >= 0 else txcolors.SELL_LOSS}{str(INVESTMENT_VALUE_GAIN)} USD\n"
+        ,f"Current exposure:        {txcolors.DEFAULT}{session_struct['CURRENT_EXPOSURE']:g} {PAIR_WITH}\n"
+        ,f"New balance:             {txcolors.SELL_PROFIT if session_struct['NEW_BALANCE'] >= INVESTMENT_TOTAL else txcolors.SELL_LOSS}{session_struct['NEW_BALANCE']:g} {PAIR_WITH}\n"
+        ,f"Initial investment:      {txcolors.SELL_PROFIT if session_struct['investment_value'] >= INVESTMENT else txcolors.SELL_LOSS}{session_struct['investment_value']:.2f} USD\n"
+        ,f"Investment gain:         {txcolors.SELL_PROFIT if session_struct['INVESTMENT_GAIN'] >= 0 else txcolors.SELL_LOSS}{session_struct['INVESTMENT_GAIN']:.2f}%\n"
+        ,f"Investment value vain:   {txcolors.SELL_PROFIT if session_struct['investment_value_gain'] >= 0 else txcolors.SELL_LOSS}{str(INVESTMENT_VALUE_GAIN)} USD\n"
         ,f"{reportline} {txcolors.DEFAULT}")
 
     if type == 'message':
@@ -735,7 +734,7 @@ def discord_avatar():
 #function to perform dynamic stoploss, take profit and trailing stop loss modification on the fly
 def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT):
 
-    global last_trade_won, last_trade_lost, dynamic
+    global session_struct
 
     if DYNAMIC_SETTINGS:
 
@@ -746,7 +745,7 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
             CHANGE_IN_PRICE_MAX = CHANGE_IN_PRICE_MAX + (CHANGE_IN_PRICE_MAX * DYNAMIC_WIN_LOSS_DOWN) /100
             CHANGE_IN_PRICE_MIN = CHANGE_IN_PRICE_MIN - (CHANGE_IN_PRICE_MIN * DYNAMIC_WIN_LOSS_DOWN) /100
             HOLDING_TIME_LIMIT = HOLDING_TIME_LIMIT + (HOLDING_TIME_LIMIT * DYNAMIC_WIN_LOSS_UP) / 100
-            dynamic = 'none'
+            session_struct['dynamic'] = 'none'
             print(f'{txcolors.NOTICE}>> Last Trade WON Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f}  - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} CIP:{CHANGE_IN_PRICE_MIN:.4f}/{CHANGE_IN_PRICE_MAX:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} HTL: {HOLDING_TIME_LIMIT:.2f} <<{txcolors.DEFAULT}')
 
         if type == 'performance_adjust_down':
@@ -756,7 +755,7 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
             CHANGE_IN_PRICE_MAX = CHANGE_IN_PRICE_MAX - (CHANGE_IN_PRICE_MAX * DYNAMIC_WIN_LOSS_DOWN) /100
             CHANGE_IN_PRICE_MIN = CHANGE_IN_PRICE_MIN + (CHANGE_IN_PRICE_MIN * DYNAMIC_WIN_LOSS_DOWN) /100
             HOLDING_TIME_LIMIT = HOLDING_TIME_LIMIT - (HOLDING_TIME_LIMIT * DYNAMIC_WIN_LOSS_DOWN) / 100
-            dynamic = 'none'
+            session_struct['dynamic'] = 'none'
             print(f'{txcolors.NOTICE}>> Last Trade LOST Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} CIP:{CHANGE_IN_PRICE_MIN:.4f}/{CHANGE_IN_PRICE_MAX:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} HTL:{HOLDING_TIME_LIMIT:.2f} <<{txcolors.DEFAULT}')
 
         if type == 'reset':
@@ -770,33 +769,29 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
             if TEST_MODE: HOLDING_TIME_LIMIT = (parsed_config['trading_options']['TIME_DIFFERENCE'] * 60) * parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
 
             print(f'{txcolors.NOTICE}>> DYNAMIC SETTINGS RESET - STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}CIP:{CHANGE_IN_PRICE_MIN:.4f}/{CHANGE_IN_PRICE_MAX:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} HTL: {HOLDING_TIME_LIMIT:.2f} <<{txcolors.DEFAULT}')
-            dynamic = 'none'
+            session_struct['dynamic'] = 'none'
 
         if CHANGE_IN_PRICE_MIN > 0:
-            CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN'] - (CHANGE_IN_PRICE_MIN * market_support)
-            CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX'] - (CHANGE_IN_PRICE_MAX * market_support)
+            CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN'] - (CHANGE_IN_PRICE_MIN * session_struct['market_support'])
+            CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX'] - (CHANGE_IN_PRICE_MAX * session_struct['market_support'])
 
         if CHANGE_IN_PRICE_MAX < 0:
-            CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN'] + (CHANGE_IN_PRICE_MIN * market_support)
-            CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX'] + (CHANGE_IN_PRICE_MAX * market_support)
+            CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN'] + (CHANGE_IN_PRICE_MIN * session_struct['market_support'])
+            CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX'] + (CHANGE_IN_PRICE_MAX * session_struct['market_support'])
 
     return STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT
 
 
 def session(type):
     #various session calculations like uptime 24H gain profit risk to reward ratio unrealised profit etc
-
-    global unrealised_percent, investment_value, investment_value_gain
-    global market_price, session_profit, win_trade_count, loss_trade_count
-    global NEW_BALANCE, INVESTMENT_TOTAL, TOTAL_GAINS, INVESTMENT_GAIN, CURRENT_EXPOSURE
-    global session_start_time, session_uptime, closed_trades_percent
+    global session_struct
 
     if type == 'calc':
-        TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
-        NEW_BALANCE = (INVESTMENT + TOTAL_GAINS)
-        INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT) * 100
-        CURRENT_EXPOSURE = (QUANTITY * len(coins_bought))
-        unrealised_percent = 0
+        session_struct['TOTAL_GAINS'] = ((QUANTITY * session_struct['session_profit']) / 100)
+        session_struct['NEW_BALANCE'] = (INVESTMENT + session_struct['TOTAL_GAINS'])
+        session_struct['INVESTMENT_GAIN'] = (session_struct['TOTAL_GAINS'] / INVESTMENT) * 100
+        session_struct['CURRENT_EXPOSURE'] = (QUANTITY * len(coins_bought))
+        session_struct['unrealised_percent'] = 0
 
         for coin in list(coins_bought):
             lastPrice = float(last_price[coin]['price'])
@@ -805,30 +800,30 @@ def session(type):
             buyFee = (coins_bought[coin]['volume'] * buyPrice) * (TRADING_FEE/100)
             priceChange = float((lastPrice - buyPrice) / buyPrice * 100)
             if len(coins_bought) > 0:
-                unrealised_percent = unrealised_percent + (priceChange-(buyFee+sellFee))
+                session_struct['unrealised_percent'] = session_struct['unrealised_percent'] + (priceChange-(buyFee+sellFee))
 
         # this number is your actual ETH or other coin value in correspondence to USDT aka your market investment_value
         # it is important cuz your exchange aha ETH or BTC can vary and if you pause bot during that time you gain profit
-        investment_value = float(market_price) * NEW_BALANCE
-        investment_value_gain = float(market_price) * (NEW_BALANCE - INVESTMENT)
+        session_struct['investment_value'] = float(session_struct['market_price']) * session_struct['NEW_BALANCE']
+        session_struct['investment_value_gain'] = float(session_struct['market_price']) * (session_struct['NEW_BALANCE'] - INVESTMENT)
 
         current_time = float(round(time.time() * 1000))
-        if session_start_time == 0: session_start_time = current_time
-        session_uptime = current_time - session_start_time
+        if session_struct['session_start_time'] == 0: session_struct['session_start_time'] = current_time
+        session_struct['session_uptime'] = current_time - session_struct['session_start_time']
 
     if type == 'save':
 
         session_info = {}
         session_info_file_path = 'session_info.json'
         session_info = {
-            'session_profit': session_profit,
-            'win_trade_count': win_trade_count,
-            'loss_trade_count': loss_trade_count,
+            'session_profit': session_struct['session_profit'],
+            'win_trade_count': session_struct['win_trade_count'],
+            'loss_trade_count': session_struct['loss_trade_count'],
             # 'investment_value': investment_value,
-            'new_balance': NEW_BALANCE,
-            'session_start_time': session_start_time,
-            'session_uptime': session_uptime,
-            'closed_trades_percent': closed_trades_percent,
+            'new_balance': session_struct['NEW_BALANCE'],
+            'session_start_time': session_struct['session_start_time'],
+            'session_uptime': session_struct['session_uptime'],
+            'closed_trades_percent': session_struct['closed_trades_percent'],
             }
 
         # save the coins in a json file in the same directory
@@ -848,22 +843,22 @@ def session(type):
             session_info=json.load(json_file)
             json_file.close()
 
-            session_profit = session_info['session_profit']
-            win_trade_count = session_info['win_trade_count']
-            loss_trade_count = session_info['loss_trade_count']
+            session_struct['session_profit'] = session_info['session_profit']
+            session_struct['win_trade_count'] = session_info['win_trade_count']
+            session_struct['loss_trade_count'] = session_info['loss_trade_count']
             # investment_value = session['investment_value']
-            NEW_BALANCE = session_info['new_balance']
-            session_start_time = session_info['session_start_time']
-            closed_trades_percent = session_info['closed_trades_percent']
+            session_struct['NEW_BALANCE'] = session_info['new_balance']
+            session_struct['session_start_time'] = session_info['session_start_time']
+            session_struct['closed_trades_percent'] = session_info['closed_trades_percent']
 
-        TOTAL_GAINS = ((QUANTITY * session_profit) / 100)
-        NEW_BALANCE = (INVESTMENT + TOTAL_GAINS)
-        INVESTMENT_GAIN = (TOTAL_GAINS / INVESTMENT) * 100
+        session_struct['TOTAL_GAINS'] = ((QUANTITY * session_struct['session_profit']) / 100)
+        session_struct['NEW_BALANCE'] = (INVESTMENT + session_struct['TOTAL_GAINS'])
+        session_struct['INVESTMENT_GAIN'] = (session_struct['TOTAL_GAINS'] / INVESTMENT) * 100
 
 
 def tickers_list(type):
 
-    global historical_prices, hsp_head, tickers_list_changed
+    global historical_prices, hsp_head
     global LIST_AUTOCREATE
 
     tickers_list_volume = {}
@@ -884,7 +879,7 @@ def tickers_list(type):
                 for i in ta_data['data']:
                     if i['s'][:7]=='BINANCE' and i['s'][-len(PAIR_WITH):] == PAIR_WITH and i['s'][8:-len(PAIR_WITH)] not in ignorelist:
                         f.writelines(str(i['s'][8:-len(PAIR_WITH)])+'\n')
-            tickers_list_changed = True
+            session_struct['tickers_list_changed'] = True
             print(f'>> Tickers CREATED from TradingView tickers!!!{TICKERS_LIST} <<')
 
         if type == 'volume' or type == 'price_change':
@@ -918,10 +913,10 @@ def tickers_list(type):
             with open (TICKERS_LIST, 'w') as f:
                 for ele in list_tickers_new:
                     f.writelines(str(ele.replace(PAIR_WITH,''))+'\n')
-            tickers_list_changed = True
+            session_struct['tickers_list_changed'] = True
             print(f'>> Tickers CREATED from binance tickers!!!{TICKERS_LIST} <<')
 
-            tickers_list_changed = True
+            session_struct['tickers_list_changed'] = True
             print(f'>> Tickers CREATED from Binance tickers!!!{TICKERS_LIST} <<')
 
         if type == 'volume' and CUSTOM_LIST:
@@ -929,7 +924,7 @@ def tickers_list(type):
             with open (TICKERS_LIST, 'w') as f:
                     for sublist in list_tickers_volume:
                         f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
-            tickers_list_changed = True
+            session_struct['tickers_list_changed'] = True
             print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
         if type == 'price_change':
@@ -937,7 +932,7 @@ def tickers_list(type):
             with open (TICKERS_LIST, 'w') as f:
                     for sublist in list_tickers_price_change:
                         f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
-            tickers_list_changed = True
+            session_struct['tickers_list_changed'] = True
             print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
 
@@ -1127,7 +1122,7 @@ if __name__ == '__main__':
     while True:
 
         #reload tickers list by volume if triggered recreation
-        if tickers_list_changed == True :
+        if session_struct['tickers_list_changed'] == True :
             tickers=[line.strip() for line in open(TICKERS_LIST)]
             tickers_list_changed = False
         # print(f'Tickers list changed and loaded: {tickers}')
@@ -1143,6 +1138,6 @@ if __name__ == '__main__':
             CONNECTION_ERROR_COUNT +=1
             print(f'{txcolors.WARNING}We got a timeout error from from binance. Going to re-loop. Current Count: {CONNECTION_ERROR_COUNT}\n{ce}{txcolors.DEFAULT}')
         #gogos MOD to adjust dynamically stoploss trailingstop loss and take profit based on wins
-        STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT = dynamic_settings(dynamic, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT)
+        STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT = dynamic_settings(session_struct['dynamic'], DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT)
         #session calculations like unrealised potential etc
         session('calc')
