@@ -226,8 +226,9 @@ def wait_for_price(type):
            if threshold_check > CHANGE_IN_PRICE_MIN and threshold_check < CHANGE_IN_PRICE_MAX:
                coins_up +=1
 
-               if os.path.exists('signals/*.exs'):
+               if os.path.exists('signals/nigec_custsignalmod.exs') or os.path.exists('signals/djcommie_custsignalmod.exs') or os.path.exists('signals/firewatch_signalsample.exs'):
                   externals = external_signals()
+                  print(f'>>>> Signal Detected!!!')
 
                   for excoin in externals:
 
