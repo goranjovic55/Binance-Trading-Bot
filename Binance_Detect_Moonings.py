@@ -657,7 +657,8 @@ def report(type, reportline):
     CURRENT_EXPOSURE_TRIM = "%g" % CURRENT_EXPOSURE
     INVESTMENT_TOTAL_TRIM = "%g" % INVESTMENT_TOTAL
     CLOSED_TRADES_PERCENT_TRIM = "%g" % round(closed_trades_percent, 2)
-    SESSION_PROFIT_TRIM = "%g" % round(session_profit, DECIMALS)
+    SESSION_PROFIT_TRIM = format(session_profit, '.8f')
+    # SESSION_PROFIT_TRIM = "%g" % round(session_profit, DECIMALS)
 
     SETTINGS_STRING = 'Time: '+str(round(TIME_DIFFERENCE, 2))+' | Interval: '+str(round(RECHECK_INTERVAL, 2))+' | Price change - min/max: '+str(round(CHANGE_IN_PRICE_MIN, 2))+'%/'+str(round(CHANGE_IN_PRICE_MAX, 2))+'% | SL: '+str(round(STOP_LOSS, 2))+' | TP: '+str(round(TAKE_PROFIT, 2))+' | TSL: '+str(round(TRAILING_STOP_LOSS, 2))+' | TTP: '+str(round(TRAILING_TAKE_PROFIT, 2))
 
@@ -671,7 +672,7 @@ def report(type, reportline):
         WIN_LOSS_PERCENT = 100
 
     # adding all the stats together:
-    report_string= 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_TRIM)+'/'+str(INVESTMENT_TOTAL_TRIM)+' '+PAIR_WITH+') | Session: '+str(SESSION_PROFIT_TRIM)+' '+PAIR_WITH+' ('+str(CLOSED_TRADES_PERCENT_TRIM)+'%) | Win/Loss: '+str(WON)+'/'+str(LOST)+' | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(NEW_BALANCE_TRIM)+' | Value: '+str(INVESTMENT_VALUE_TRIM)+' USD | Value gain: '+str(INVESTMENT_VALUE_GAIN_TRIM)+' | Uptime: '+str(timedelta(seconds=(int(session_uptime/1000))))
+    report_string= 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_TRIM)+'/'+str(INVESTMENT_TOTAL_TRIM)+' '+PAIR_WITH+') | Session: '+str(SESSION_PROFIT_TRIM)+' '+PAIR_WITH+' ('+str(CLOSED_TRADES_PERCENT_TRIM)+'%) | Win/Loss: '+str(WON)+'/'+str(LOST)+' ('+str(WIN_LOSS_PERCENT)+'%) | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(NEW_BALANCE_TRIM)+' | Value: '+str(INVESTMENT_VALUE_TRIM)+' USD | Value gain: '+str(INVESTMENT_VALUE_GAIN_TRIM)+' | Uptime: '+str(timedelta(seconds=(int(session_uptime/1000))))
 
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
