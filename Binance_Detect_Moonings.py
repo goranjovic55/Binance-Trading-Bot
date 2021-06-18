@@ -228,7 +228,6 @@ def wait_for_price(type):
 
                if os.path.exists('signals/nigec_custsignalmod.exs') or os.path.exists('signals/djcommie_custsignalmod.exs') or os.path.exists('signals/firewatch_signalsample.exs'):
                   externals = external_signals()
-                  print(f'>>>> Signal Detected!!!')
 
                   for excoin in externals:
 
@@ -304,6 +303,7 @@ def external_signals():
         for line in open(filename):
             symbol = line.strip()
             external_list[symbol] = symbol
+            print(f'>>> SIGNAL DETECTED ON: {symbol} - SIGNALMOD: {filename} <<<<')
         try:
             os.remove(filename)
         except:
