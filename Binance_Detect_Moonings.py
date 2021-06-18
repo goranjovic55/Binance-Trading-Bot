@@ -421,7 +421,7 @@ def buy():
 
     for coin in volume:
         BUYABLE = True
-        if (UNIQUE_BUYS == True) and (coin in coins_bought) :
+        if UNIQUE_BUYS and (coin in coins_bought):
             BUYABLE = False
 
         # only buy if the there are no active trades on the coin
