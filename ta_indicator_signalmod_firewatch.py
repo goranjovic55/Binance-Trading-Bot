@@ -41,8 +41,8 @@ def analyze(pairs):
     second_handler = {}
     third_handler = {}
 
-    if os.path.exists(f'{SIGNAL_OUTPUT_PATH}/signalsample.exs'):
-        os.remove(f'{SIGNAL_OUTPUT_PATH}/signalsample.exs')
+    if os.path.exists(f'{SIGNAL_OUTPUT_PATH}/firewatch_signalsample.exs'):
+        os.remove(f'{SIGNAL_OUTPUT_PATH}/firewatch_signalsample.exs')
 
     if os.path.exists(f'{SIGNAL_OUTPUT_PATH}/signalsample.sell'):
         os.remove(f'{SIGNAL_OUTPUT_PATH}/signalsample.sell')
@@ -115,7 +115,7 @@ def analyze(pairs):
 
                     if FULL_LOG:
                         print(f'buysellcustsignal: Buy Signal detected on {pair}')
-                    with open('signals/signalsample.exs','a+') as f:
+                    with open('signals/firewatch_signalsample.exs','a+') as f:
                         f.write(pair + '\n')
 
         if (first_recommendation == "SELL" or first_recommendation == "STRONG_SELL") and (second_recommendation == "SELL" or second_recommendation == "STRONG_SELL") and \
@@ -123,7 +123,7 @@ def analyze(pairs):
                 #signal_coins[pair] = pair
                 if FULL_LOG:
                     print(f'buysellcustsignal: Sell Signal detected on {pair}')
-                with open('signals/signalsample.sell','a+') as f:
+                with open('signals/firewatch_signalsample.sell','a+') as f:
                     f.write(pair + '\n')
 
     #print(f'buysellcustsignal: Max signal by {taMaxCoin} at {taMax} on shortest timeframe')

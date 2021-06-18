@@ -78,11 +78,11 @@ def analyze(pairs):
     analysis2 = {}
     handler2 = {}
 
-    if os.path.exists('signals/custsignalmod.exs'):
-        os.remove('signals/custsignalmod.exs')
+    if os.path.exists('signals/nigec_custsignalmod.exs'):
+        os.remove('signals/nigec_custsignalmod.exs')
 
-    if os.path.exists('signals/custsignalmod.sell'):
-        os.remove('signals/custsignalmod.sell')
+    if os.path.exists('signals/nigec_custsignalmod.sell'):
+        os.remove('signals/nigec_custsignalmod.sell')
 
     for pair in pairs:
         handler[pair] = TA_Handler(
@@ -151,7 +151,7 @@ def analyze(pairs):
             if (oscCheck >= OSC_THRESHOLD and maCheck >= MA_THRESHOLD):
                 signal_coins[pair] = pair
 #                print(f'\033[92mSignals RSI: {pair} - Buy Signal Detected | {BUY_SIGS}_{BUY_SIGS2}/26')
-                with open('signals/custsignalmod.exs','a+') as f:
+                with open('signals/nigec_custsignalmod.exs','a+') as f:
                     f.write(pair + '\n')
 #          else:
 #            print(f'Signals RSI: {pair} - Stoch/RSI ok, not enough buy signals | {BUY_SIGS}_{BUY_SIGS2}/26 | {STOCH_DIFF}/{RSI_DIFF} | {STOCH_K}')
@@ -160,7 +160,7 @@ def analyze(pairs):
          if (BUY_SIGS < SIGNALS_SELL) and (BUY_SIGS2 < SIGNALS_SELL) and (STOCH_DIFF < STOCH_SELL) and (RSI_DIFF < RSI_SELL) and (STOCH_K < STOCH_K1):
           #signal_coins[pair] = pair
 #          print(f'\033[33mSignals RSI: {pair} - Sell Signal Detected | {BUY_SIGS}_{BUY_SIGS2}/26')
-          with open('signals/custsignalmod.sell','a+') as f:
+          with open('signals/_nigec_custsignalmod.sell','a+') as f:
              f.write(pair + '\n')
          #else:
          #   print(f'Signal: {pair} - Not selling!')

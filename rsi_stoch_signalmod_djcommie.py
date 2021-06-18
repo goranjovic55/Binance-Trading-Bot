@@ -45,8 +45,8 @@ def analyze(pairs):
     analysis = {}
     handler = {}
 
-    if os.path.exists(f'{SIGNAL_OUTPUT_PATH}/custsignalmod.exs'):
-        os.remove(f'{SIGNAL_OUTPUT_PATH}/custsignalmod.exs')
+    if os.path.exists(f'{SIGNAL_OUTPUT_PATH}/djcommie_custsignalmod.exs'):
+        os.remove(f'{SIGNAL_OUTPUT_PATH}/djcommie_custsignalmod.exs')
 
     for pair in pairs:
         handler[pair] = TA_Handler(
@@ -97,7 +97,7 @@ def analyze(pairs):
 
                 if FULL_LOG:
                     print(f'\033[92mCustsignalmod: Signal detected on {pair} at {oscCheck}/{len(OSC_INDICATORS)} oscillators and {maCheck}/{len(MA_INDICATORS)} moving averages.')
-                with open('signals/custsignalmod.exs','a+') as f:
+                with open('signals/djcommie_custsignalmod.exs','a+') as f:
                     f.write(pair + '\n')
 
         last_RSI[pair] = RSI
