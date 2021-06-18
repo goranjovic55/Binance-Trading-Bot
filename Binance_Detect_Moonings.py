@@ -75,6 +75,7 @@ class txcolors:
 global session_profit, unrealised_percent, market_price, investment_value
 global investment_value_gain, session_uptime, session_start_time
 global closed_trades_percent
+closed_trades_percent = 0
 session_uptime = 0
 session_start_time = 0
 investment_value = 0
@@ -692,7 +693,7 @@ def report(type, reportline):
     if type == 'message':
 
        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
-       report_string = 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' | Closed trades: '+str(round(closed_trades_percent, 2))+' | Exposure: '+str(round(CURRENT_EXPOSURE, 4))+' | Win/Loss: '+str(win_trade_count)+'/'+str(loss_trade_count)+' | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(round(NEW_BALANCE, 4))+' | Value: '+str(round(investment_value, 4))+str(exchange_symbol)+' | Value gain: '+str(round(investment_value_gain, 4))+' | Session uptime: '+str(round(session_uptime/60/1000/24))+'H'
+       report_string = 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' | Closed trades: '+str(round(closed_trades_percent, 2))+'% | Exposure: '+str(round(CURRENT_EXPOSURE, 4))+' | Win/Loss: '+str(win_trade_count)+'/'+str(loss_trade_count)+' | Gains: '+str(round(INVESTMENT_GAIN, 4))+'%'+' | Balance: '+str(round(NEW_BALANCE, 4))+' | Value: '+str(round(investment_value, 4))+str(exchange_symbol)+' | Value gain: '+str(round(investment_value_gain, 4))+' | Session uptime: '+str(round(session_uptime/60/1000/24))+'H'
        bot_message = BOT_ID + SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
        if BOT_MESSAGE_REPORTS and TELEGRAM_BOT_TOKEN:
