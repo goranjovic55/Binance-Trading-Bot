@@ -63,7 +63,7 @@ EXCHANGE = 'BINANCE'
 SCREENER = 'CRYPTO'
 PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
 TICKERS = parsed_config['trading_options']['TICKERS_LIST']
-TIME_TO_WAIT = 1 # Minutes to wait between analysis
+TIME_TO_WAIT = parsed_config['trading_options']['SIGNALS_FREQUENCY'] # Minutes to wait between analysis
 FULL_LOG = False # List analysis result to console
 
 ########################################
