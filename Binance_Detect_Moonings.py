@@ -133,6 +133,7 @@ def is_fiat():
     else:
         return False
 
+
 def decimals():
     # set number of decimals for reporting fractions
     if is_fiat():
@@ -226,7 +227,10 @@ def wait_for_price(type):
            if threshold_check > CHANGE_IN_PRICE_MIN and threshold_check < CHANGE_IN_PRICE_MAX:
                coins_up +=1
 
-               if os.path.exists('signals/nigec_custsignalmod.exs') or os.path.exists('signals/djcommie_custsignalmod.exs') or os.path.exists('signals/firewatch_signalsample.exs'):
+               #if os.path.exists('signals/nigec_custsignalmod.exs') or os.path.exists('signals/djcommie_custsignalmod.exs') or os.path.exists('signals/firewatch_signalsample.exs'):
+               signals = glob.glob("signals/*.exs")
+               for filename in signals:
+                  print(f'SIGNALS_MOD: {filename}')
                   externals = external_signals()
 
                   for excoin in externals:
@@ -850,6 +854,7 @@ def session(type):
             session_struct['NEW_BALANCE'] = session_info['new_balance']
             session_struct['session_start_time'] = session_info['session_start_time']
             session_struct['closed_trades_percent'] = session_info['closed_trades_percent']
+            session_struct['session_uptime'] = session_info['session_uptime']
 
         session_struct['TOTAL_GAINS'] = ((QUANTITY * session_struct['session_profit']) / 100)
         session_struct['NEW_BALANCE'] = (INVESTMENT + session_struct['TOTAL_GAINS'])
