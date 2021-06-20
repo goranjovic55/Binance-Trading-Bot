@@ -435,13 +435,16 @@ def buy():
         if BUYABLE:
             print(f"{txcolors.BUY}Preparing to buy {volume[coin]} {coin}{txcolors.DEFAULT}")
 
-            TEST_REPORT = str(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
+            TEST_REPORT = str(f"BUY: bought {volume[coin]} {coin} - average price: {last_price[coin]['price']}  {PAIR_WITH}")
 
             if TEST_MODE:
                 order_details = [{
                     'symbol': coin,
                     'orderId': test_order_id(),
-                    'time': datetime.now().timestamp()
+                    'timestamp': datetime.now().timestamp(),
+                    'avgPrice': last_price[coin]['price'],
+                    'volume': volume[coin],
+                    'tradeFee': (volume[coin] * last_price[coin]['price']) * (TRADING_FEE/100),
                 }]
 
                 # Log trades
@@ -479,7 +482,7 @@ def buy():
                         print(f"order data returned: {order_details}")
                     orders[coin] = extract_order_data(order_details)
 
-                    REPORT = str(f"Buy : {volume[coin]} {coin} - {orders[coin]['avgPrice']}")
+                    REPORT = str(f"BUY: bought {orders[coin]['volume']} {coin} - average price: {orders[coin]['avgPrice']} {PAIR_WITH}")
                     report('log',REPORT)
 
         else:
