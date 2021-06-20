@@ -558,6 +558,7 @@ def sell_coins():
                 sellPrice = coins_sold[coin]['avgPrice']
                 sellFee = coins_sold[coin]['tradeFee']
                 coins_sold[coin]['originalOrderID'] = coins_bought[coin]['orderid']
+                order_priceChange = float((sellPrice - buyPrice) / buyPrice * 100)
                 # coins_sold[coin] = coins_bought[coin]
 
                 # prevent system from buying this coin for the next TIME_DIFFERENCE minutes
@@ -580,7 +581,7 @@ def sell_coins():
                 if coinHoldingTimeLimit < current_time: REPORT =  f"HOLDING_TIMEOUT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {sellPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
 
                 session_struct['session_profit'] = session_struct['session_profit'] + profit
-                session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
+                session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + order_priceChange
 
                 report('message',f"{REPORT}")
                 report('log',f"{REPORT}")
