@@ -1,5 +1,5 @@
 # Binance API trading keys (only give your bot trading access, for security purposes)
-binance API:
+binanceAPI:
         access_key: replace_me
         secret_key: replace_me
 
