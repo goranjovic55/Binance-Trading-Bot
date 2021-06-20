@@ -478,7 +478,7 @@ def buy():
                     print(f"order data returned: {order_details}")
                     orders[coin] = extract_order_data(order_details)
 
-                    REPORT = str(f"Buy : {volume[coin]} {coin} - {coins_bought[coin]['avgPrice']}")
+                    REPORT = str(f"Buy : {volume[coin]} {coin} - {orders[coin]['avgPrice']}")
                     report('log',REPORT)
 
         else:
