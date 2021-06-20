@@ -1,19 +1,15 @@
-# MAIN NET
-prod:
-  access_key: replace_me
-  secret_key: replace_me
+# Binance API trading keys (only give your bot trading access, for security purposes)
+binance API:
+        access_key: replace_me
+        secret_key: replace_me
 
-# TEST NET
-test:
-    access_key: replace_me
-    secret_key: replace_me
-
-#creds for telegrambot
+# Telegram bot credentials
 telegram:
         TELEGRAM_BOT_TOKEN: '1234567890:ABECDEFG2HIJKLMNOPROSTUWVXYZQABCD-ABDEFG'
         TELEGRAM_BOT_ID: '1234567890'
 
 
-#this is used to give bot performance to discord channel
+# This is used to relay bot performance to the discord channel, you do not need to edit the below values!
 discord:
-        DISCORD_WEBHOOK: '/852094287763472385/GbKS-0n-EvNUcl6iekXIp-XJI5g0wRee1zrMg_94Jkacx9r6cuDE6L2D0BT-2Tu554MF'
+        DISCORD_WEBHOOK_TEST:   '852094287763472385/GbKS-0n-EvNUcl6iekXIp-XJI5g0wRee1zrMg_94Jkacx9r6cuDE6L2D0BT-2Tu554MF'
+        DISCORD_WEBHOOK_LIVE:   '854046894041202739/BV8-la1zj7kauMnNL25ZpGPF7kSRzJNliqXg0f8YbzQxBXeBNfO8kCCn6QJDqxLDLA6-'

@@ -438,7 +438,7 @@ def buy():
             TEST_REPORT = str(f"BUY: bought {volume[coin]} {coin} - average price: {last_price[coin]['price']}  {PAIR_WITH}")
 
             if TEST_MODE:
-                order_details = [{
+                orders[coin] = [{
                     'symbol': coin,
                     'orderId': test_order_id(),
                     'timestamp': datetime.now().timestamp(),
@@ -721,7 +721,13 @@ def report(type, reportline):
     SESSION_PROFIT_TRIM = format(session_struct['session_profit'], '.8f')
     # SESSION_PROFIT_TRIM = "%g" % round(session_profit, DECIMALS)
 
-    SETTINGS_STRING = 'Time: '+str(round(TIME_DIFFERENCE, 2))+' | Interval: '+str(round(RECHECK_INTERVAL, 2))+' | Price change min/max: '+str(round(CHANGE_IN_PRICE_MIN, 2))+'/'+str(round(CHANGE_IN_PRICE_MAX, 2))+'% | Stop loss: '+str(round(STOP_LOSS, 2))+' | Take profit: '+str(round(TAKE_PROFIT, 2))+' | Trailing stop loss: '+str(round(TRAILING_STOP_LOSS, 2))+' | Trailing take profit: '+str(round(TRAILING_TAKE_PROFIT, 2))
+    SETTINGS_STRING = 'Time: '+str(round(TIME_DIFFERENCE, 2))+' | '
+    'Interval: '+str(round(RECHECK_INTERVAL, 2))+' | '
+    'Price change min/max: '+str(round(CHANGE_IN_PRICE_MIN, 2))+'/'+str(round(CHANGE_IN_PRICE_MAX, 2))+'% | '
+    'Stop loss: '+str(round(STOP_LOSS, 2))+' | '
+    'Take profit: '+str(round(TAKE_PROFIT, 2))+' | '
+    'Trailing stop loss: '+str(round(TRAILING_STOP_LOSS, 2))+' | '
+    'Trailing take profit: '+str(round(TRAILING_TAKE_PROFIT, 2))
 
     if len(coins_bought) > 0:
         UNREALISED_PERCENT = round(session_struct['unrealised_percent']/len(coins_bought), 2)
@@ -733,7 +739,14 @@ def report(type, reportline):
         WIN_LOSS_PERCENT = 100
 
     # adding all the stats together:
-    report_string= 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_TRIM)+'/'+str(INVESTMENT_TOTAL_TRIM)+' '+PAIR_WITH+') | Session: '+str(SESSION_PROFIT_TRIM)+' '+PAIR_WITH+' ('+str(CLOSED_TRADES_PERCENT_TRIM)+'%) | Win/Loss: '+str(WON)+'/'+str(LOST)+' ('+str(WIN_LOSS_PERCENT)+'%) | Gains: '+str(round(session_struct['INVESTMENT_GAIN'], 4))+'%'+' | Balance: '+str(NEW_BALANCE_TRIM)+' | Value: '+str(INVESTMENT_VALUE_TRIM)+' USD | Value gain: '+str(INVESTMENT_VALUE_GAIN_TRIM)+' | Uptime: '+str(timedelta(seconds=(int(session_struct['session_uptime']/1000))))
+    report_string= 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_TRIM)+'/'+str(INVESTMENT_TOTAL_TRIM)+' '+PAIR_WITH+') | '
+    'Session: '+str(SESSION_PROFIT_TRIM)+' '+PAIR_WITH+' ('+str(CLOSED_TRADES_PERCENT_TRIM)+'%) | '
+    'Win/Loss: '+str(WON)+'/'+str(LOST)+' ('+str(WIN_LOSS_PERCENT)+'%) | '
+    'Gains: '+str(round(session_struct['INVESTMENT_GAIN'], 4))+'%'+' | '
+    'Balance: '+str(NEW_BALANCE_TRIM)+' | '
+    'Value: '+str(INVESTMENT_VALUE_TRIM)+' USD | '
+    'Value gain: '+str(INVESTMENT_VALUE_GAIN_TRIM)+' | '
+    'Uptime: '+str(timedelta(seconds=(int(session_struct['session_uptime']/1000))))
 
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
@@ -757,7 +770,12 @@ def report(type, reportline):
         ,f"{reportline} {txcolors.DEFAULT}")
 
     if type == 'message':
-        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
+        # TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
+        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK_TEST, DISCORD_WEBHOOK_LIVE = load_telegram_creds(parsed_creds)
+        if TEST_MODE:
+            DISCORD_WEBHOOK = DISCORD_WEBHOOK_TEST
+        else:
+            DISCORD_WEBHOOK = DISCORD_WEBHOOK_LIVE
         bot_message = SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
         if BOT_MESSAGE_REPORTS and TELEGRAM_BOT_TOKEN:
@@ -765,13 +783,13 @@ def report(type, reportline):
             bot_chatID = TELEGRAM_BOT_ID
             send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + BOT_ID + bot_message
             response = requests.get(send_text)
+            # print(response.content)
 
         if BOT_MESSAGE_REPORTS and DISCORD_WEBHOOK:
-
             mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
             data = {"username" : BOT_ID , "avatar_url": discord_avatar(), "content": bot_message}
             response = requests.post(mUrl, json=data)
-            #   print(response.content)
+            # print(response.content)
 
     if type == 'log':
         timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
@@ -781,7 +799,9 @@ def report(type, reportline):
 
 
 def discord_avatar():
-    # testing avatars dependant on PAIR_WITH
+    # Custom coin avatar dependant on PAIR_WITH
+    # Fallback image is a nice Binance logo, yay!
+    DISCORD_AVATAR =  "https://i.imgur.com/w1vS5Oc.png"
     if PAIR_WITH == 'ETH':
         DISCORD_AVATAR =  "https://i.imgur.com/L9Txc9F.jpeg"
     if PAIR_WITH == 'BTC':
@@ -790,8 +810,6 @@ def discord_avatar():
         DISCORD_AVATAR =  "https://i.imgur.com/VyOdlRS.jpeg"
     if PAIR_WITH == 'BUSD':
         DISCORD_AVATAR =  "https://i.imgur.com/KFjfssF.png"
-    else:
-        DISCORD_AVATAR =  "https://i.imgur.com/w1vS5Oc.png"
     return DISCORD_AVATAR
 
 
@@ -1079,11 +1097,6 @@ if __name__ == '__main__':
 
     # Load creds for correct environment
     access_key, secret_key = load_correct_creds(parsed_creds)
-
-    # Telegram_Bot enabled? # **added by*Coding60plus
-
-    if BOT_MESSAGE_REPORTS:
-        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
 
     # Telegram_Bot enabled? # **added by*Coding60plus
     if DEBUG:
