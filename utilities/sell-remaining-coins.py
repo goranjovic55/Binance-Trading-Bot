@@ -50,7 +50,7 @@ with open('../coins_bought.json', 'r') as f:
             quantity = coins[coin]['volume']
         )
 
-        buyPrice = float(coins[coin]['bought_at'])
+        buyPrice = float(coins[coin]['avgPrice'])
         lastPrice = float(sell_coin['fills'][0]['price'])
         profit = (lastPrice - buyPrice) * coins[coin]['volume']
         priceChange = float((lastPrice - buyPrice) / buyPrice * 100)
