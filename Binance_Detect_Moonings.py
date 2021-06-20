@@ -475,7 +475,8 @@ def buy():
                 else:
                     # Log, announce, and report trade
                     print("Order returned, saving order to file")
-                    print(f"order data returned: {order_details}")
+                    if DEBUG:
+                        print(f"order data returned: {order_details}")
                     orders[coin] = extract_order_data(order_details)
 
                     REPORT = str(f"Buy : {volume[coin]} {coin} - {orders[coin]['avgPrice']}")
@@ -546,7 +547,8 @@ def sell_coins():
                         type = 'MARKET',
                         quantity = coins_bought[coin]['volume']
                     )
-                    print(f"Selling return: {order_details}")
+                    if DEBUG:
+                        print(f"Selling return: {order_details}")
 
             # error handling here in case position cannot be placed
             except Exception as e:
