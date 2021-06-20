@@ -2,7 +2,8 @@ def load_correct_creds(creds):
     return creds['prod']['access_key'], creds['prod']['secret_key']
 
 def load_telegram_creds(creds):
-    return creds['telegram']['TELEGRAM_BOT_TOKEN'], creds['telegram']['TELEGRAM_BOT_ID'], creds['discord']['DISCORD_WEBHOOK_TEST'], creds['discord']['DISCORD_WEBHOOK_LIVE']
+    return creds['telegram']['TELEGRAM_BOT_TOKEN'], creds['telegram']['TELEGRAM_BOT_ID'], \
+           creds['discord']['DISCORD_WEBHOOK_TEST'], creds['discord']['DISCORD_WEBHOOK_LIVE']
 
 
 def test_api_key(client, BinanceAPIException):
@@ -27,7 +28,8 @@ def test_api_key(client, BinanceAPIException):
             america = "If you are in america, you will have to update the config to set AMERICAN_USER: True"
             ip_b = "If you set an IP block on your keys make sure this IP address is allowed. check ipinfo.io/ip"
 
-            msg = f"Your API key is either incorrect, IP blocked, or incorrect tld/permissons...\n  most likely: {bad_key}\n  {america}\n  {ip_b}"
+            msg = f"Your API key is either incorrect, IP blocked, or incorrect tld/permissons...\n  most likely:" \
+                  f" {bad_key}\n  {america}\n  {ip_b}"
 
         elif e.code == -2021:
             issue = "https://github.com/CyberPunkMetalHead/Binance-volatility-trading-bot/issues/28"
