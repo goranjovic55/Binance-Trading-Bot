@@ -555,6 +555,7 @@ def sell_coins():
                 coins_sold[coin] = extract_order_data(order_details)
                 sellPrice = coins_sold[coin]['avgPrice']
                 sellFee = coins_sold[coin]['tradeFee']
+                coins_sold[coin]['originalOrderID'] = coins_bought[coin]['orderid']
                 # coins_sold[coin] = coins_bought[coin]
 
                 # prevent system from buying this coin for the next TIME_DIFFERENCE minutes
@@ -586,7 +587,7 @@ def sell_coins():
             continue
 
         # no action; print once every TIME_DIFFERENCE
-        if FULL_LOG and (hsp_head == 1) and (len(coins_bought) == 0):
+        if (hsp_head == 1) and (len(coins_bought) > 0):
                 print(f"TP:{coinTakeProfit:.{decimals()}f}:{coins_bought[coin]['take_profit']:.2f} or SL:{coinStopLoss:.{decimals()}f}:{coins_bought[coin]['stop_loss']:.2f} not yet reached, not selling {coin} for now >> Bought at: {BUY_PRICE} - Now: {LAST_PRICE} : {txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}{priceChange:.2f}% Est: {(QUANTITY*(priceChange-(buyFee+sellFee))):.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
     
     # else if no trade slots, shout it out:
@@ -594,6 +595,7 @@ def sell_coins():
         print(f"No trade slots are currently in use")
 
     return coins_sold
+
 
 def extract_order_data(order_details):
     global TRADING_FEE, STOP_LOSS, TAKE_PROFIT
@@ -670,7 +672,8 @@ def remove_from_portfolio(coins_sold):
     '''Remove coins sold due to SL or TP from portfolio'''
     for coin,data in coins_sold.items():
         symbol = coin
-        order_id = data['orderid']
+        # order_id = data['orderid']
+        order_id = data['originalOrderID']
         # code below created by getsec <3
         for bought_coin, bought_coin_data in coins_bought.items():
             if bought_coin_data['orderid'] == order_id:
