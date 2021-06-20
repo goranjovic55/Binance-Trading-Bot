@@ -477,7 +477,8 @@ def buy():
                     print("Order returned, saving order to file")
                     print(f"order data returned: {order_details}")
                     orders[coin] = extract_order_data(order_details)
-                    # report('log',REPORT)
+                    REPORT = str(f"Buy : {volume[coin]} {coin} - {float(coins_bought[coin]['avgPrice'])}")
+                    report('log',REPORT)
 
         else:
             print(f'Signal detected, but there is already an active trade on {coin}')
@@ -780,6 +781,10 @@ def discord_avatar():
         DISCORD_AVATAR =  "https://i.imgur.com/oIeAiEo.jpeg"
     if PAIR_WITH == 'USDT':
         DISCORD_AVATAR =  "https://i.imgur.com/VyOdlRS.jpeg"
+    if PAIR_WITH == 'BUSD':
+        DISCORD_AVATAR =  "https://i.imgur.com/KFjfssF.png"
+    else:
+        DISCORD_AVATAR =  "https://i.imgur.com/w1vS5Oc.png"
     return DISCORD_AVATAR
 
 
