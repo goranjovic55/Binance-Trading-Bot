@@ -477,7 +477,9 @@ def buy():
                     print("Order returned, saving order to file")
                     print(f"order data returned: {order_details}")
                     orders[coin] = extract_order_data(order_details)
-                    # report('log',REPORT)
+
+                    REPORT = str(f"Buy : {volume[coin]} {coin} - {float(coins_bought[coin]['avgPrice'])}")
+                    report('log',REPORT)
 
         else:
             print(f'Signal detected, but there is already an active trade on {coin}')
@@ -589,7 +591,7 @@ def sell_coins():
         # no action; print once every TIME_DIFFERENCE
         if (hsp_head == 1) and (len(coins_bought) > 0):
                 print(f"TP:{coinTakeProfit:.{decimals()}f}:{coins_bought[coin]['take_profit']:.2f} or SL:{coinStopLoss:.{decimals()}f}:{coins_bought[coin]['stop_loss']:.2f} not yet reached, not selling {coin} for now >> Bought at: {BUY_PRICE} - Now: {LAST_PRICE} : {txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}{priceChange:.2f}% Est: {(QUANTITY*(priceChange-(buyFee+sellFee))):.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
-    
+
     # else if no trade slots, shout it out:
     if FULL_LOG and (hsp_head == 1) and (len(coins_bought) == 0):
         print(f"No trade slots are currently in use")
@@ -624,7 +626,7 @@ def extract_order_data(order_details):
         # add to running total of fills quantity
         FILLS_QTY += FILL_QTY
         # increase fills array index by 1
-    
+
     # calculate average fill price:
     FILL_AVG = (FILLS_TOTAL / FILLS_QTY)
 
@@ -1023,7 +1025,7 @@ if __name__ == '__main__':
     # LOG_TRADES = parsed_config['script_options'].get('LOG_TRADES')
     LOG_FILE = parsed_config['script_options'].get('LOG_FILE')
     DETAILED_REPORTS = parsed_config['script_options']['DETAILED_REPORTS']
-    
+
 
     AMERICAN_USER = parsed_config['script_options'].get('AMERICAN_USER')
     BOT_MESSAGE_REPORTS =  parsed_config['script_options'].get('BOT_MESSAGE_REPORTS')
