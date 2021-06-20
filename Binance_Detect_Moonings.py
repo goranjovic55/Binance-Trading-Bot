@@ -443,11 +443,11 @@ def buy():
             if TEST_MODE:
                 orders[coin] = [{
                     'symbol': coin,
-                    'orderId': test_order_id(),
+                    'orderid': test_order_id(),
                     'timestamp': datetime.now().timestamp(),
                     'avgPrice': last_price[coin]['price'],
                     'volume': volume[coin],
-                    'tradeFee': (volume[coin] * last_price[coin]['price']) * (TRADING_FEE/100),
+                    'tradeFee': (float(volume[coin]) * float(last_price[coin]['price'])) * (TRADING_FEE/100),
                 }]
 
                 # Log trades
@@ -471,7 +471,6 @@ def buy():
             # run the else block if the position has been placed and return order info
             else:
                 # orders[coin] = client.get_all_orders(symbol=coin, limit=1)
-
                 # binance sometimes returns an empty list, the code will wait here until binance returns the order
                 while orders == []:
                     print('Binance is being slow in returning the order, calling the API again...')
@@ -481,8 +480,8 @@ def buy():
                 else:
                     # Log, announce, and report trade
                     print("Order returned, saving order to file")
-                    if DEBUG:
-                        print(f"order data returned: {order_details}")
+                    # if DEBUG:
+                    print(f"order data returned: {order_details}")
                     orders[coin] = extract_order_data(order_details)
 
                     REPORT = str(f"BUY: bought {orders[coin]['volume']} {coin} - average price: {orders[coin]['avgPrice']} {PAIR_WITH}")
@@ -505,8 +504,6 @@ def sell_coins():
     coins_sold = {}
 
     for coin in list(coins_bought):
-
-
         buyPrice = float(coins_bought[coin]['avgPrice'])
         # coinTakeProfit is the price at which to 'take profit' based on config % markup
         coinTakeProfit = buyPrice + ((buyPrice * coins_bought[coin]['take_profit']) / 100)
@@ -562,7 +559,18 @@ def sell_coins():
 
             # run the else block if coin has been sold and create a dict for each coin sold
             else:
-                coins_sold[coin] = extract_order_data(order_details)
+                if not TEST_MODE:
+                    coins_sold[coin] = extract_order_data(order_details)
+                else:
+                    # create fake sell order
+                    coins_sold[coin] = {
+                        "symbol": coin,
+                        "orderId": coins_bought[coin]['orderid'],
+                        "volume": coins_bought[coin]['volume'],
+                        "avgPrice": lastPrice,
+                        "tradeFee": sellFee
+                    }
+
                 sellPrice = coins_sold[coin]['avgPrice']
                 sellFee = coins_sold[coin]['tradeFee']
                 coins_sold[coin]['originalOrderID'] = coins_bought[coin]['orderid']
@@ -611,9 +619,6 @@ def sell_coins():
 def extract_order_data(order_details):
     global TRADING_FEE, STOP_LOSS, TAKE_PROFIT
     transactionInfo = {}
-    # adding order fill extractions here
-    #
-    # just to explain what I am doing here:
     # Market orders are not always filled at one price, we need to find the averages of all 'parts' (fills) of this order.
     #
     # reset other variables to 0 before use
@@ -642,39 +647,53 @@ def extract_order_data(order_details):
     tradeFeeApprox = (float(FILLS_QTY) * float(FILL_AVG)) * (TRADING_FEE/100)
     # create object with received data from Binance
     transactionInfo = {
-        'symbol': order_details['symbol'],
-        'orderid': order_details['orderId'],
-        'timestamp': order_details['transactTime'],
-        'avgPrice': float(FILL_AVG),
-        'volume': float(FILLS_QTY),
-        'tradeFeeBNB': float(FILLS_FEE),
-        'tradeFee': tradeFeeApprox,
+        order_details['symbol']: [{
+            'symbol': order_details['symbol'],
+            'orderid': order_details['orderId'],
+            'timestamp': order_details['transactTime'],
+            'avgPrice': float(FILL_AVG),
+            'volume': float(FILLS_QTY),
+            'tradeFeeBNB': float(FILLS_FEE),
+            'tradeFee': tradeFeeApprox,
+        }]
     }
     return transactionInfo
 
 
 def update_portfolio(orders, last_price, volume):
     '''add every coin bought to our portfolio for tracking/selling later'''
-    if DEBUG:
-        print(f"request received to update portfolio with: {orders}")
+    coins_bought = {}
     # loop through bought coin data and populate
     for coin in orders:
+        if DEBUG:
+            print(f"request received to update portfolio with: {orders}")
+        print(f"orders are:")
+        print(orders)
+        # print(f"coin:")
+        # print(coin)
+        # print(f"orders[coin] are:")
+        # print(orders[coin])
+        # if TEST_MODE:
+        #     coins_bought_index = orders[coin]
+        # else:
+        #     coins_bought_index = coins_bought[coin]
+
         coins_bought[coin] = {
-            'symbol':       orders[coin]['symbol'],
-            'orderid':      orders[coin]['orderid'],
-            'timestamp':    orders[coin]['timestamp'],
-            'avgPrice':     orders[coin]['avgPrice'],
-            'volume':       orders[coin]['volume'],
-            'buyFeeBNB':    orders[coin]['tradeFeeBNB'],
-            'buyFee':       orders[coin]['tradeFee'],
-            'stop_loss':    -STOP_LOSS,
-            'take_profit':  TAKE_PROFIT,
+            'symbol': orders[coin][0]['symbol'],
+            'orderid': orders[coin][0]['orderid'],
+            'timestamp': orders[coin][0]['timestamp'],
+            'avgPrice': orders[coin][0]['avgPrice'],
+            'volume': orders[coin][0]['volume'],
+            # 'buyFeeBNB': orders[coin][0]['tradeFeeBNB'],
+            'buyFee': orders[coin][0]['tradeFee'],
+            'stop_loss': -STOP_LOSS,
+            'take_profit': TAKE_PROFIT,
         }
         # save the coins in a json file in the same directory
         with open(coins_bought_file_path, 'w') as file:
             json.dump(coins_bought, file, indent=4)
 
-        print(f'Order for {orders[coin]["symbol"]} with ID {orders[coin]["orderid"]} placed and saved to file.')
+        print(f'Order for {orders[coin][0]["symbol"]} with ID {orders[coin][0]["orderid"]} placed and saved to file.')
 
         session('save')
 
@@ -724,13 +743,7 @@ def report(type, reportline):
     SESSION_PROFIT_TRIM = format(session_struct['session_profit'], '.8f')
     # SESSION_PROFIT_TRIM = "%g" % round(session_profit, DECIMALS)
 
-    SETTINGS_STRING = 'Time: '+str(round(TIME_DIFFERENCE, 2))+' | '
-    'Interval: '+str(round(RECHECK_INTERVAL, 2))+' | '
-    'Price change min/max: '+str(round(CHANGE_IN_PRICE_MIN, 2))+'/'+str(round(CHANGE_IN_PRICE_MAX, 2))+'% | '
-    'Stop loss: '+str(round(STOP_LOSS, 2))+' | '
-    'Take profit: '+str(round(TAKE_PROFIT, 2))+' | '
-    'Trailing stop loss: '+str(round(TRAILING_STOP_LOSS, 2))+' | '
-    'Trailing take profit: '+str(round(TRAILING_TAKE_PROFIT, 2))
+    SETTINGS_STRING = 'Time: '+str(round(TIME_DIFFERENCE, 2))+' | Interval: '+str(round(RECHECK_INTERVAL, 2))+' | Price change min/max: '+str(round(CHANGE_IN_PRICE_MIN, 2))+'/'+str(round(CHANGE_IN_PRICE_MAX, 2))+'% | Stop loss: '+str(round(STOP_LOSS, 2))+' | Take profit: '+str(round(TAKE_PROFIT, 2))+' | Trailing stop loss: '+str(round(TRAILING_STOP_LOSS, 2))+' | Trailing take profit: '+str(round(TRAILING_TAKE_PROFIT, 2))
 
     if len(coins_bought) > 0:
         UNREALISED_PERCENT = round(session_struct['unrealised_percent']/len(coins_bought), 2)
@@ -742,14 +755,7 @@ def report(type, reportline):
         WIN_LOSS_PERCENT = 100
 
     # adding all the stats together:
-    report_string= 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_TRIM)+'/'+str(INVESTMENT_TOTAL_TRIM)+' '+PAIR_WITH+') | '
-    'Session: '+str(SESSION_PROFIT_TRIM)+' '+PAIR_WITH+' ('+str(CLOSED_TRADES_PERCENT_TRIM)+'%) | '
-    'Win/Loss: '+str(WON)+'/'+str(LOST)+' ('+str(WIN_LOSS_PERCENT)+'%) | '
-    'Gains: '+str(round(session_struct['INVESTMENT_GAIN'], 4))+'%'+' | '
-    'Balance: '+str(NEW_BALANCE_TRIM)+' | '
-    'Value: '+str(INVESTMENT_VALUE_TRIM)+' USD | '
-    'Value gain: '+str(INVESTMENT_VALUE_GAIN_TRIM)+' | '
-    'Uptime: '+str(timedelta(seconds=(int(session_struct['session_uptime']/1000))))
+    report_string = 'Trade slots: '+str(len(coins_bought))+'/'+str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_TRIM)+'/'+str(INVESTMENT_TOTAL_TRIM)+' '+PAIR_WITH+') | Session: '+str(SESSION_PROFIT_TRIM)+' '+PAIR_WITH+' ('+str(CLOSED_TRADES_PERCENT_TRIM)+'%) | Win/Loss: '+str(WON)+'/'+str(LOST)+' ('+str(WIN_LOSS_PERCENT)+'%) | Gains: '+str(round(session_struct['INVESTMENT_GAIN'], 4))+'%'+' | Balance: '+str(NEW_BALANCE_TRIM)+' | Value: '+str(INVESTMENT_VALUE_TRIM)+' USD | Value gain: '+str(INVESTMENT_VALUE_GAIN_TRIM)+' | Uptime: '+str(timedelta(seconds=(int(session_struct['session_uptime']/1000))))
 
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
@@ -1023,7 +1029,7 @@ def tickers_list(type):
 
 
 def bot_launch():
-    # Bot relays session start to Discord channel
+    # Bot relays session start message and config to Discord channel
     bot_message = "Bot initiated"
     report('message', bot_message)
 
@@ -1155,6 +1161,20 @@ if __name__ == '__main__':
         with open(coins_bought_file_path) as file:
                 coins_bought = json.load(file)
 
+    gogobot_logo = """
+     .88888.            .88888.            888888ba             dP   
+    d8'   `88          d8'   `88           88    `8b            88   
+    88        .d8888b. 88        .d8888b. a88aaaa8P' .d8888b. d8888P 
+    88   YP88 88'  `88 88   YP88 88'  `88  88   `8b. 88'  `88   88   
+    Y8.   .88 88.  .88 Y8.   .88 88.  .88  88    .88 88.  .88   88   
+    `88888'  `88888P'  `88888'  `88888P'  88888888P `88888P'   dP   
+    ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+    _ _  _ _ ___ _ ____ ___ _ _  _ ____       ___  _    ____ ____ ____ ____    _ _ _ ____ _ ___ 
+    | |\ | |  |  | |__|  |  | |\ | | __       |__] |    |___ |__| [__  |___    | | | |__| |  |  
+    | | \| |  |  | |  |  |  | | \| |__] ...   |    |___ |___ |  | ___] |___    |_|_| |  | |  |  ...
+                                                                                                
+    """
+    print(gogobot_logo)
     print('Press Ctrl-Q to stop the script')
 
     if not TEST_MODE:
