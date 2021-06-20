@@ -662,7 +662,6 @@ def extract_order_data(order_details):
 
 def update_portfolio(orders, last_price, volume):
     '''add every coin bought to our portfolio for tracking/selling later'''
-    coins_bought = {}
     # loop through bought coin data and populate
     for coin in orders:
         if DEBUG:
