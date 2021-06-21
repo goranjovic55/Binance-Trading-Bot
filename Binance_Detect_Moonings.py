@@ -398,7 +398,6 @@ def convert_volume():
             # not retrieved at startup, try again
             try:
                 coin_info = client.get_symbol_info(coin)
-                print(f'API call for volatile {coin}')
                 step_size = coin_info['filters'][2]['stepSize']
                 lot_size[coin] = step_size.index('1') - 1
             except:
