@@ -162,7 +162,7 @@ def get_price(add_to_historical=True):
     if add_to_historical:
         hsp_head += 1
 
-        if hsp_head == RECHECK_INTERVAL:
+        if hsp_head == 2:
             hsp_head = 0
 
         historical_prices[hsp_head] = initial_price
@@ -258,8 +258,8 @@ def wait_for_price(type):
                          if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
                             volatile_coins[coin] = round(threshold_check, 3)
                             print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes, and coin {excoin} recived a signal... calculating {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
-                         else:
-                            print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes, , and coin {excoin} recived a signal... but you are using all available trade slots!{txcolors.DEFAULT}")
+                         #else:
+                            #print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes, , and coin {excoin} recived a signal... but you are using all available trade slots!{txcolors.DEFAULT}")
 
 
         if type == 'percent_and_signal':
@@ -279,8 +279,8 @@ def wait_for_price(type):
                     volatile_coins[coin] = round(threshold_check, 3)
                     print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
 
-                else:
-                   print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes but you are using all available trade slots!{txcolors.DEFAULT}")
+                #else:
+                   #print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes but you are using all available trade slots!{txcolors.DEFAULT}")
 
             externals = external_signals()
             exnumber = 0
@@ -1157,3 +1157,4 @@ if __name__ == '__main__':
         STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT = dynamic_settings(session_struct['dynamic'], DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT)
         #session calculations like unrealised potential etc
         session('calc')
+        time.sleep(RECHECK_INTERVAL)
