@@ -213,7 +213,7 @@ def wait_for_price(type):
 
     if session_struct['price_timedelta'] < current_time_minutes - float(TIME_DIFFERENCE):
 
-       print(f'GET PRICE TRIGGERED !!!!! PRICE_TIMEDELTA: {price_timedelta_value} - TIME_DIFFERENCE: {TIME_DIFFERENCE}')
+       #print(f'GET PRICE TRIGGERED !!!!! PRICE_TIMEDELTA: {price_timedelta_value} - TIME_DIFFERENCE: {TIME_DIFFERENCE}')
        # retrieve latest prices
        get_price()
        session_struct['price_timedelta'] = current_time_minutes
