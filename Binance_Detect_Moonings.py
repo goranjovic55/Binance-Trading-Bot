@@ -98,6 +98,7 @@ session_struct = {
      'INVESTMENT_GAIN': 0,
      'STARTUP': True,
      'LIST_AUTOCREATE': False,
+     'price_timedelta': 0,
 }
 
 # print with timestamps
@@ -195,15 +196,28 @@ def wait_for_price(type):
     coins_down = 0
     coins_unchanged = 0
 
+    current_time_minutes = float(round(time.time()))/60
+
     pause_bot()
 
-    if historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'] > datetime.now() - timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)):
+    #first time we just skip untill we find a way for historic fata to be grabbed here
+    if session_struct['price_timedelta'] == 0: session_struct['price_timedelta'] = current_time_minutes
+    #we give local variable value of time that we use for checking to grab prices again
+    price_timedelta_value = session_struct['price_timedelta']
+
+    #if historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'] > datetime.now() - timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)):
 
         # sleep for exactly the amount of time required
-        time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
+        #time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
+    #print(f'PRICE_TIMEDELTA: {price_timedelta_value} - CURRENT_TIME: {current_time_minutes} - TIME_DIFFERENCE: {TIME_DIFFERENCE}')
 
-    # retrieve latest prices
-    get_price()
+    if session_struct['price_timedelta'] < current_time_minutes - float(TIME_DIFFERENCE):
+
+       print(f'GET PRICE TRIGGERED !!!!! PRICE_TIMEDELTA: {price_timedelta_value} - TIME_DIFFERENCE: {TIME_DIFFERENCE}')
+       # retrieve latest prices
+       get_price()
+       session_struct['price_timedelta'] = current_time_minutes
+
     externals = external_signals()
 
     # calculate the difference in prices
