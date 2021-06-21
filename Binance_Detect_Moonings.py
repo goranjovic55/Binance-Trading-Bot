@@ -98,6 +98,7 @@ session_struct = {
      'INVESTMENT_GAIN': 0,
      'STARTUP': True,
      'LIST_AUTOCREATE': False,
+     'symbol_info': {},
 }
 
 # print with timestamps
@@ -133,6 +134,14 @@ def is_fiat():
     else:
         return False
 
+    
+def get_symbol_info(url='https://api.binance.com/api/v3/exchangeInfo'):
+    response = requests.get(url)
+    json_message = json.loads(response.content)
+
+    for symbol_info in json_message['symbols']:
+        session_struct['symbol_info'][symbol_info['symbol']] = symbol_info['filters'][2]['stepSize']    
+    
 
 def decimals():
     # set number of decimals for reporting fractions
@@ -381,15 +390,18 @@ def convert_volume():
         # max accuracy for BTC for example is 6 decimal points
         # while XRP is only 1
         try:
-            info = client.get_symbol_info(coin)
-            step_size = info['filters'][2]['stepSize']
+            step_size = session_struct['symbol_info'][coin]
             lot_size[coin] = step_size.index('1') - 1
-
-            if lot_size[coin] < 0:
-                lot_size[coin] = 0
-
-        except:
-            pass
+        except KeyError:
+            # not retrieved at startup, try again
+            try:
+                coin_info = client.get_symbol_info(coin)
+                print(f'API call for volatile {coin}')
+                step_size = coin_info['filters'][2]['stepSize']
+                lot_size[coin] = step_size.index('1') - 1
+            except:
+                pass
+        lot_size[coin] = max(lot_size[coin], 0)
 
         # calculate the volume in coin from QUANTITY in USDT (default)
         volume[coin] = float(QUANTITY / float(last_price[coin]['price']))
@@ -1055,7 +1067,10 @@ if __name__ == '__main__':
 
     # try to load all the coins bought by the bot if the file exists and is not empty
     coins_bought = {}
-
+    
+    # get decimal places for each coin as used by Binance
+    get_symbol_info()
+    
     # path to the saved coins_bought file
     coins_bought_file_path = 'coins_bought.json'
 
