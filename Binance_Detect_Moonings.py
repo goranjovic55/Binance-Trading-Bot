@@ -247,9 +247,9 @@ def wait_for_price(type):
                #signals = glob.glob("signals/*.exs")
 
                for excoin in externals:
-                   print(f'EXCOIN: {excoin}')
+                   #print(f'EXCOIN: {excoin}')
                    if excoin == coin:
-                      print(f'EXCOIN: {excoin} == COIN: {coin}')
+                     # print(f'EXCOIN: {excoin} == COIN: {coin}')
                       if coin not in volatility_cooloff:
                          volatility_cooloff[coin] = datetime.now() - timedelta(minutes=TIME_DIFFERENCE)
                       # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
