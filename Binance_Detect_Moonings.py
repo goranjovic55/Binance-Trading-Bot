@@ -136,12 +136,24 @@ def is_fiat():
 
     
 def get_symbol_info(url='https://api.binance.com/api/v3/exchangeInfo'):
+    global session_struct
     response = requests.get(url)
     json_message = json.loads(response.content)
 
     for symbol_info in json_message['symbols']:
-        session_struct['symbol_info'][symbol_info['symbol']] = symbol_info['filters'][2]['stepSize']    
-    
+        session_struct['symbol_info'][symbol_info['symbol']] = symbol_info['filters'][2]['stepSize']
+
+
+def get_historical_price():
+    global session_struct
+    if is_fiat():
+        session_struct['market_price'] = 1
+        session_struct['exchange_symbol'] = PAIR_WITH
+    else:
+        session_struct['exchange_symbol'] = PAIR_WITH + 'USDT'
+        market_historic = client.get_historical_trades(symbol=session_struct['exchange_symbol'])
+        session_struct['market_price'] = market_historic[0].get('price')
+
 
 def decimals():
     # set number of decimals for reporting fractions
@@ -174,16 +186,6 @@ def get_price(add_to_historical=True):
             hsp_head = 0
 
         historical_prices[hsp_head] = initial_price
-
-    if is_fiat():
-
-        session_struct['market_price'] = 1
-        session_struct['exchange_symbol'] = PAIR_WITH
-
-    else:
-        session_struct['exchange_symbol'] = PAIR_WITH + 'USDT'
-        market_historic = client.get_historical_trades(symbol=session_struct['exchange_symbol'])
-        session_struct['market_price'] = market_historic[0].get('price')
 
     return initial_price
 
@@ -1077,6 +1079,9 @@ if __name__ == '__main__':
     # rolling window of prices; cyclical queue
     historical_prices = [None] * (TIME_DIFFERENCE * RECHECK_INTERVAL)
     hsp_head = -1
+    
+    # load historical price for PAIR_WITH
+    get_historical_price()
 
     # prevent including a coin in volatile_coins if it has already appeared there less than TIME_DIFFERENCE minutes ago
     volatility_cooloff = {}
