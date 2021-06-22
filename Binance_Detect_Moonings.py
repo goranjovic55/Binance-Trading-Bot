@@ -99,6 +99,7 @@ session_struct = {
      'STARTUP': True,
      'LIST_AUTOCREATE': False,
      'symbol_info': {},
+     'price_timedelta': 0,
 }
 
 # print with timestamps
@@ -182,7 +183,7 @@ def get_price(add_to_historical=True):
     if add_to_historical:
         hsp_head += 1
 
-        if hsp_head == RECHECK_INTERVAL:
+        if hsp_head == 2:
             hsp_head = 0
 
         historical_prices[hsp_head] = initial_price
@@ -206,15 +207,28 @@ def wait_for_price(type):
     coins_down = 0
     coins_unchanged = 0
 
+    current_time_minutes = float(round(time.time()))/60
+
     pause_bot()
 
-    if historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'] > datetime.now() - timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)):
+    #first time we just skip untill we find a way for historic fata to be grabbed here
+    if session_struct['price_timedelta'] == 0: session_struct['price_timedelta'] = current_time_minutes
+    #we give local variable value of time that we use for checking to grab prices again
+    price_timedelta_value = session_struct['price_timedelta']
+
+    #if historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'] > datetime.now() - timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)):
 
         # sleep for exactly the amount of time required
-        time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
+        #time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
+    #print(f'PRICE_TIMEDELTA: {price_timedelta_value} - CURRENT_TIME: {current_time_minutes} - TIME_DIFFERENCE: {TIME_DIFFERENCE}')
 
-    # retrieve latest prices
-    get_price()
+    if session_struct['price_timedelta'] < current_time_minutes - float(TIME_DIFFERENCE):
+
+       #print(f'GET PRICE TRIGGERED !!!!! PRICE_TIMEDELTA: {price_timedelta_value} - TIME_DIFFERENCE: {TIME_DIFFERENCE}')
+       # retrieve latest prices
+       get_price()
+       session_struct['price_timedelta'] = current_time_minutes
+
     externals = external_signals()
 
     # calculate the difference in prices
@@ -244,9 +258,9 @@ def wait_for_price(type):
                #signals = glob.glob("signals/*.exs")
 
                for excoin in externals:
-                   print(f'EXCOIN: {excoin}')
+                   #print(f'EXCOIN: {excoin}')
                    if excoin == coin:
-                      print(f'EXCOIN: {excoin} == COIN: {coin}')
+                     # print(f'EXCOIN: {excoin} == COIN: {coin}')
                       if coin not in volatility_cooloff:
                          volatility_cooloff[coin] = datetime.now() - timedelta(minutes=TIME_DIFFERENCE)
                       # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
@@ -255,8 +269,8 @@ def wait_for_price(type):
                          if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
                             volatile_coins[coin] = round(threshold_check, 3)
                             print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes, and coin {excoin} recived a signal... calculating {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
-                         else:
-                            print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes, , and coin {excoin} recived a signal... but you are using all available trade slots!{txcolors.DEFAULT}")
+                         #else:
+                            #print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes, , and coin {excoin} recived a signal... but you are using all available trade slots!{txcolors.DEFAULT}")
 
 
         if type == 'percent_and_signal':
@@ -276,8 +290,8 @@ def wait_for_price(type):
                     volatile_coins[coin] = round(threshold_check, 3)
                     print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
 
-                else:
-                   print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes but you are using all available trade slots!{txcolors.DEFAULT}")
+                #else:
+                   #print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes but you are using all available trade slots!{txcolors.DEFAULT}")
 
             externals = external_signals()
             exnumber = 0
@@ -1162,3 +1176,4 @@ if __name__ == '__main__':
         STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT = dynamic_settings(session_struct['dynamic'], DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS, TAKE_PROFIT, TRAILING_STOP_LOSS, CHANGE_IN_PRICE_MAX, CHANGE_IN_PRICE_MIN, HOLDING_TIME_LIMIT)
         #session calculations like unrealised potential etc
         session('calc')
+        time.sleep(RECHECK_INTERVAL)
