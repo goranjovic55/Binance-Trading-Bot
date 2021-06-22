@@ -40,11 +40,11 @@ trading_options:
   # - Using USDT?   Recommended 13+ per TRADE_SLOT (min trade value: 10)
   # - Using ETH?    Recommended 0.0065+ per TRADE_SLOT (Min trade value: 0.005)
   # - Using BTC?    Recommended 0.000175+ per TRADE_SLOT (min trade value: 0.0001)
-  INVESTMENT: 0.213
+  INVESTMENT: 0.0065
 
   # TRADE_SLOTS = Maximum number of tradable 'slots' at any time.
   # (your PAIR_WITH balance must be at least TRADE_SLOTS * QUANTITY)
-  TRADE_SLOTS: 2
+  TRADE_SLOTS: 1
 
   # Use more than one TRADE_SLOTS of the same coin? Set to False
   # allows buying the same coin again if a future buy signal is received
