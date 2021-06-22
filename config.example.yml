@@ -19,7 +19,7 @@ script_options:
   # Bot id for BOT_MESSAGE_REPORTS
   BOT_ID: '@>>'
 
-  # Bot update tickers on CLI. False = minimal, True = multi-line analysis. 
+  # Bot update tickers on CLI. False = minimal, True = multi-line analysis.
   DETAILED_REPORTS: False
 
   # show/hide additional data on bot screen. False = silent, True = spam (debug mode).
@@ -35,7 +35,7 @@ trading_options:
   # INVESTMENT = total amount you're trading across all TRADE_SLOTS
   # Binance uses specifies a min value per trade, add a bit extra above their 'min trade value'
   # ..to enable selling if the price drops.
-  # 
+  #
   # TIPS (per TRADE_SLOT)
   # - Using USDT?   Recommended 13+ per TRADE_SLOT (min trade value: 10)
   # - Using ETH?    Recommended 0.0065+ per TRADE_SLOT (Min trade value: 0.005)
@@ -48,7 +48,7 @@ trading_options:
 
   # Use more than one TRADE_SLOTS of the same coin? Set to False
   # allows buying the same coin again if a future buy signal is received
-  UNIQUE_BUYS: False
+  UNIQUE_BUYS: True
 
   # List of trading pairs to exclude
   # by default we're excluding the most popular fiat pairs
