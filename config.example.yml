@@ -78,14 +78,14 @@ trading_options:
 
   # Number of times to check for TP/SL during each TIME_DIFFERENCE (minimum: 1).
   # Don't spam the Binance API, you will be banned (max 1200 requests per minute per IP).
-  RECHECK_INTERVAL: 6
+  RECHECK_INTERVAL: 2
 
   # the difference in % between the first and second checks for the price.
   CHANGE_IN_PRICE_MIN: -1.97
   CHANGE_IN_PRICE_MAX: -0.93
 
   # define in % when to sell a coin that's not making a profit.
-  STOP_LOSS: 4.7
+  STOP_LOSS: 0.4
 
   # define in % when to take profit on a profitable coin.
   TAKE_PROFIT: 0.01
@@ -116,8 +116,7 @@ trading_options:
 
   # multiplier for HOLDING_TIME_LIMIT wich gives actual TIME_DIFFERENCE * HOLDING_TIME_LIMIT_MULTIPLIER when to start lowering STOP_LOSS
   # holding take profit is % at wich we sell if holding time limit is passed defualt is 1 and after one timeperiod we will sell on holding take profit
-  HOLDING_INTERVAL_LIMIT: 5
-  HOLDING_TAKE_PROFIT: 3
+  HOLDING_INTERVAL_LIMIT: 120
 
   # sort list by volume or price_change
   LIST_AUTOCREATE: True
@@ -127,8 +126,8 @@ trading_options:
   SIGNALLING_MODULES:
     - pausebotmod
     # - custsignalmod
-    - custsignalmod_speed
-    - signalsamplemod
+    # - custsignalmod_speed
+    # - signalsamplemod
     - rsi_signalmod_nigec
     - rsi_stoch_signalmod_djcommie
     - ta_indicator_signalmod_firewatch
