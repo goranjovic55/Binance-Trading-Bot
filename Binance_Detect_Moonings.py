@@ -485,7 +485,12 @@ def buy():
                 else:
                     # Log, announce, and report trade
                     print('Order returned, saving order to file')
+
+                    if not TEST_MODE:
+                       orders[coin] = extract_order_data(order_details)
+                       REPORT = str(f"BUY: bought {orders[coin]['volume']} {coin} - average price: {orders[coin]['avgPrice']} {PAIR_WITH}")
                     report('log',REPORT)
+
 
 
         else:
