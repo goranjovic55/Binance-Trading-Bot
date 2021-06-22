@@ -4,8 +4,10 @@ test_coins_bought.json
 coins_bought.json
 trades.txt
 signals/*
+tickers/*
 .venv
 __pycache__
 config.yml
 dockerfile
 docker-compose.yml
+tickers*
