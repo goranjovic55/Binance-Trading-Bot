@@ -607,6 +607,51 @@ def sell_coins():
     return coins_sold
 
 
+def extract_order_data(order_details):
+    global TRADING_FEE, STOP_LOSS, TAKE_PROFIT
+    transactionInfo = {}
+    # adding order fill extractions here
+    #
+    # just to explain what I am doing here:
+    # Market orders are not always filled at one price, we need to find the averages of all 'parts' (fills) of this order.
+    #
+    # reset other variables to 0 before use
+    FILLS_TOTAL = 0
+    FILLS_QTY = 0
+    FILLS_FEE = 0
+    BNB_WARNING = 0
+    # loop through each 'fill':
+    for fills in order_details['fills']:
+        FILL_PRICE = float(fills['price'])
+        FILL_QTY = float(fills['qty'])
+        FILLS_FEE += float(fills['commission'])
+        # check if the fee was in BNB. If not, log a nice warning:
+        if (fills['commissionAsset'] != 'BNB') and (TRADING_FEE == 0.75) and (BNB_WARNING == 0):
+            print(f"WARNING: BNB not used for trading fee, please ")
+            BNB_WARNING += 1
+        # quantity of fills * price
+        FILLS_TOTAL += (FILL_PRICE * FILL_QTY)
+        # add to running total of fills quantity
+        FILLS_QTY += FILL_QTY
+        # increase fills array index by 1
+
+    # calculate average fill price:
+    FILL_AVG = (FILLS_TOTAL / FILLS_QTY)
+
+    tradeFeeApprox = (float(FILLS_QTY) * float(FILL_AVG)) * (TRADING_FEE/100)
+    # create object with received data from Binance
+    transactionInfo = {
+        'symbol': order_details['symbol'],
+        'orderid': order_details['orderId'],
+        'timestamp': order_details['transactTime'],
+        'avgPrice': float(FILL_AVG),
+        'volume': float(FILLS_QTY),
+        'tradeFeeBNB': float(FILLS_FEE),
+        'tradeFee': tradeFeeApprox,
+    }
+    return transactionInfo
+
+
 def update_portfolio(orders, last_price, volume):
 
     '''add every coin bought to our portfolio for tracking/selling later'''
