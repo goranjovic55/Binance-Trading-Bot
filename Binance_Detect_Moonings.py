@@ -460,7 +460,7 @@ def buy():
 
             # try to create a real order if the test orders did not raise an exception
             try:
-                buy_limit = client.create_order(
+                order_details = client.create_order(
                     symbol = coin,
                     side = 'BUY',
                     type = 'MARKET',
@@ -518,7 +518,6 @@ def sell_coins():
         coinStopLoss = BUY_PRICE + ((BUY_PRICE * coins_bought[coin]['stop_loss']) / 100)
         # coinHoldingTimeLimit is the time limit for holding onto a coin
         coinHoldingTimeLimit = float(coins_bought[coin]['timestamp']) + HOLDING_TIME_LIMIT
-
         lastPrice = float(last_price[coin]['price'])
         LAST_PRICE = "{:.8f}".format(lastPrice)
         sellFee = (coins_bought[coin]['volume'] * lastPrice) * (TRADING_FEE/100)
@@ -559,7 +558,7 @@ def sell_coins():
             try:
 
                 if not TEST_MODE:
-                    sell_coins_limit = client.create_order(
+                    order_details = client.create_order(
                         symbol = coin,
                         side = 'SELL',
                         type = 'MARKET',
@@ -572,7 +571,17 @@ def sell_coins():
 
             # run the else block if coin has been sold and create a dict for each coin sold
             else:
-                coins_sold[coin] = coins_bought[coin]
+                if not TEST_MODE:
+
+                   coins_sold[coin] = extract_order_data(order_details)
+                   lastPrice = coins_sold[coin]['avgPrice']
+                   sellFee = coins_sold[coin]['tradeFee']
+                   coins_sold[coin]['orderid'] = coins_bought[coin]['orderid']
+                   priceChange = float((lastPrice - buyPrice) / buyPrice * 100)
+
+                else:
+                   coins_sold[coin] = coins_bought[coin]
+
 
                 # prevent system from buying this coin for the next TIME_DIFFERENCE minutes
                 volatility_cooloff[coin] = datetime.now()
@@ -596,8 +605,8 @@ def sell_coins():
                 session_struct['session_profit'] = session_struct['session_profit'] + profit
                 session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
 
-                report('message',f"{REPORT}")
-                report('log',f"{REPORT}")
+                report('message',REPORT)
+                report('log',REPORT)
                 tickers_list(SORT_LIST_TYPE)
 
             continue
@@ -647,7 +656,7 @@ def extract_order_data(order_details):
     # create object with received data from Binance
     transactionInfo = {
         'symbol': order_details['symbol'],
-        'orderid': order_details['orderId'],
+        'orderId': order_details['orderId'],
         'timestamp': order_details['transactTime'],
         'avgPrice': float(FILL_AVG),
         'volume': float(FILLS_QTY),
@@ -663,22 +672,35 @@ def update_portfolio(orders, last_price, volume):
     if DEBUG: print(orders)
     for coin in orders:
 
-        coins_bought[coin] = {
-            'symbol': orders[coin][0]['symbol'],
-            'orderid': orders[coin][0]['orderId'],
-            'timestamp': orders[coin][0]['time'],
-            'bought_at': last_price[coin]['price'],
-            'volume': volume[coin],
-            'stop_loss': -STOP_LOSS,
-            'take_profit': TAKE_PROFIT,
-            }
+        if not TEST_MODE:
+           coins_bought[coin] = {
+               'symbol': orders[coin]['symbol'],
+               'orderid': orders[coin]['orderId'],
+               'timestamp': orders[coin]['timestamp'],
+               'bought_at': orders[coin]['avgPrice'],
+               'volume': orders[coin]['volume'],
+               'buyFeeBNB': orders[coin]['tradeFeeBNB'],
+               'buyFee': orders[coin]['tradeFee'],
+               'stop_loss': -STOP_LOSS,
+               'take_profit': TAKE_PROFIT,
+               }
+        else:
+           coins_bought[coin] = {
+               'symbol': orders[coin][0]['symbol'],
+               'orderid': orders[coin][0]['orderId'],
+               'timestamp': orders[coin][0]['time'],
+               'bought_at': last_price[coin]['price'],
+               'volume': volume[coin],
+               'stop_loss': -STOP_LOSS,
+               'take_profit': TAKE_PROFIT,
+               }
 
         # save the coins in a json file in the same directory
         with open(coins_bought_file_path, 'w') as file:
             json.dump(coins_bought, file, indent=4)
 
-        print(f'Order for {orders[coin][0]["symbol"]} with ID {orders[coin][0]["orderId"]} placed and saved to file.')
-
+        if TEST_MODE: print(f'Order for {orders[coin][0]["symbol"]} with ID {orders[coin][0]["orderId"]} placed and saved to file.')
+        if not TEST_MODE: print(f'Order for {orders[coin]["symbol"]} with ID {orders[coin]["orderId"]} placed and saved to file.')
         session('save')
 
 
