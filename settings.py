@@ -26,6 +26,8 @@ class txcolors:
     DEFAULT = '\033[39m'
     NOTICE = '\033[96m'
 
+global historical_prices
+global hsp_head
 global session_struct
 
 session_struct = {
