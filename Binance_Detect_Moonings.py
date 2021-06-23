@@ -189,9 +189,9 @@ def wait_for_price(type):
        #print(f'GET PRICE TRIGGERED !!!!! PRICE_TIMEDELTA: {price_timedelta_value} - TIME_DIFFERENCE: {TIME_DIFFERENCE}')
        # retrieve latest prices
        get_price()
+       externals = external_signals()
        session_struct['price_timedelta'] = current_time_minutes
 
-    externals = external_signals()
 
     # calculate the difference in prices
     for coin in historical_prices[hsp_head]:
