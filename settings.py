@@ -1,0 +1,131 @@
+import os
+# use if needed to pass args to external modules
+import sys
+# used for directory handling
+import glob
+import time
+import threading
+
+from helpers.parameters import (
+    parse_args, load_config
+)
+
+# Load creds modules
+from helpers.handle_creds import (
+    load_correct_creds, test_api_key,
+    load_telegram_creds
+)
+
+# for colourful logging to the console
+class txcolors:
+    BUY = '\033[92m'
+    WARNING = '\033[93m'
+    SELL_LOSS = '\033[91m'
+    SELL_PROFIT = '\033[32m'
+    DIM = '\033[2m\033[35m'
+    DEFAULT = '\033[39m'
+    NOTICE = '\033[96m'
+
+global session_struct
+
+session_struct = {
+     'session_profit': 0,
+     'unrealised_percent': 0,
+     'market_price': 0,
+     'investment_value': 0,
+     'investment_value_gain': 0,
+     'session_uptime': 0,
+     'session_start_time': 0,
+     'closed_trades_percent': 0,
+     'win_trade_count': 0,
+     'loss_trade_count': 0,
+     'market_support': 0,
+     'market_resistance': 0,
+     'dynamic': 'none',
+     'sell_all_coins': False,
+     'tickers_list_changed': False,
+     'exchange_symbol': 'USDT',
+     'price_list_counter': 0,
+     'CURRENT_EXPOSURE': 0,
+     'TOTAL_GAINS': 0,
+     'NEW_BALANCE': 0,
+     'INVESTMENT_GAIN': 0,
+     'STARTUP': True,
+     'LIST_AUTOCREATE': False,
+     'symbol_info': {},
+     'price_timedelta': 0,
+}
+
+args = parse_args()
+
+DEFAULT_CONFIG_FILE = 'config.yml'
+DEFAULT_CREDS_FILE = 'creds.yml'
+
+config_file = args.config if args.config else DEFAULT_CONFIG_FILE
+creds_file = args.creds if args.creds else DEFAULT_CREDS_FILE
+parsed_config = load_config(config_file)
+parsed_creds = load_config(creds_file)
+
+# Load system vars
+TEST_MODE = parsed_config['script_options']['TEST_MODE']
+# LOG_TRADES = parsed_config['script_options'].get('LOG_TRADES')
+LOG_FILE = parsed_config['script_options'].get('LOG_FILE')
+DETAILED_REPORTS = parsed_config['script_options']['DETAILED_REPORTS']
+DEBUG_SETTING = parsed_config['script_options'].get('VERBOSE_MODE')
+AMERICAN_USER = parsed_config['script_options'].get('AMERICAN_USER')
+BOT_MESSAGE_REPORTS =  parsed_config['script_options'].get('BOT_MESSAGE_REPORTS')
+BOT_ID = parsed_config['script_options'].get('BOT_ID')
+UNIQUE_BUYS = parsed_config['script_options'].get('UNIQUE_BUYS')
+
+# Load trading vars
+PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
+INVESTMENT = parsed_config['trading_options']['INVESTMENT']
+TRADE_SLOTS = parsed_config['trading_options']['TRADE_SLOTS']
+EXCLUDED_PAIRS = parsed_config['trading_options']['EXCLUDED_PAIRS']
+TIME_DIFFERENCE = parsed_config['trading_options']['TIME_DIFFERENCE']
+RECHECK_INTERVAL = parsed_config['trading_options']['RECHECK_INTERVAL']
+CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN']
+CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX']
+STOP_LOSS = parsed_config['trading_options']['STOP_LOSS']
+TAKE_PROFIT = parsed_config['trading_options']['TAKE_PROFIT']
+CUSTOM_LIST = parsed_config['trading_options']['CUSTOM_LIST']
+TICKERS_LIST = parsed_config['trading_options']['TICKERS_LIST']
+USE_TRAILING_STOP_LOSS = parsed_config['trading_options']['USE_TRAILING_STOP_LOSS']
+TRAILING_STOP_LOSS = parsed_config['trading_options']['TRAILING_STOP_LOSS']
+TRAILING_TAKE_PROFIT = parsed_config['trading_options']['TRAILING_TAKE_PROFIT']
+TRADING_FEE = parsed_config['trading_options']['TRADING_FEE']
+SIGNALLING_MODULES = parsed_config['trading_options']['SIGNALLING_MODULES']
+DYNAMIC_WIN_LOSS_UP = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_UP']
+DYNAMIC_WIN_LOSS_DOWN = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_DOWN']
+DYNAMIC_SETTINGS = parsed_config['trading_options']['DYNAMIC_SETTINGS']
+STOP_LOSS_ON_PAUSE = parsed_config['trading_options']['STOP_LOSS_ON_PAUSE']
+PERCENT_SIGNAL_BUY = parsed_config['trading_options']['PERCENT_SIGNAL_BUY']
+SORT_LIST_TYPE = parsed_config['trading_options']['SORT_LIST_TYPE']
+LIST_AUTOCREATE = parsed_config['trading_options']['LIST_AUTOCREATE']
+LIST_CREATE_TYPE = parsed_config['trading_options']['LIST_CREATE_TYPE']
+IGNORE_LIST = parsed_config['trading_options']['IGNORE_LIST']
+
+DETAILED_REPORTS = parsed_config['script_options']['DETAILED_REPORTS']
+HOLDING_INTERVAL_LIMIT = parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
+QUANTITY = INVESTMENT/TRADE_SLOTS
+
+# Default no debugging
+DEBUG = False
+
+if not TEST_MODE: HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60 * 1000) * HOLDING_INTERVAL_LIMIT
+if TEST_MODE: HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60) * HOLDING_INTERVAL_LIMIT
+
+if DEBUG_SETTING or args.debug:
+    DEBUG = True
+# Load creds for correct environment
+access_key, secret_key = load_correct_creds(parsed_creds)
+
+# Telegram_Bot enabled? # **added by*Coding60plus
+
+if BOT_MESSAGE_REPORTS:
+    TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
+
+# Telegram_Bot enabled? # **added by*Coding60plus
+if DEBUG:
+    print(f'Loaded config below\n{json.dumps(parsed_config, indent=4)}')
+    print(f'Your credentials have been loaded from {creds_file}')
