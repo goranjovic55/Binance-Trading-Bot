@@ -135,7 +135,7 @@ def is_fiat():
     else:
         return False
 
-    
+
 def get_symbol_info(url='https://api.binance.com/api/v3/exchangeInfo'):
     global session_struct
     response = requests.get(url)
@@ -311,7 +311,7 @@ def wait_for_price(type):
     if coins_up != 0: session_struct['market_resistance'] = session_struct['market_resistance'] / coins_up
     if coins_down != 0: session_struct['market_support'] = session_struct['market_support'] / coins_down
 
-    if DETAILED_REPORTS == True and hsp_head == 1:
+    if DETAILED_REPORTS == True and hsp_head:
         report('detailed',f"Market Resistance:      {txcolors.DEFAULT}{session_struct['market_resistance']:.4f}\n Market Support:         {txcolors.DEFAULT}{session_struct['market_support']:.4f}")
     else:
         report('console', f" MR:{session_struct['market_resistance']:.4f}/MS:{session_struct['market_support']:.4f} ")
@@ -366,10 +366,10 @@ def pause_bot():
         # pausing here
 
         #gogo MOD todo more verbose having all the report things in it!!!!!
-        if hsp_head == 1:
+        if hsp_head:
            report('console', '.')
 
-        time.sleep((TIME_DIFFERENCE * 60) / RECHECK_INTERVAL)
+        time.sleep(RECHECK_INTERVAL)
 
     else:
         # stop counting the pause time
@@ -1156,17 +1156,17 @@ if __name__ == '__main__':
 
     # try to load all the coins bought by the bot if the file exists and is not empty
     coins_bought = {}
-    
+
     # get decimal places for each coin as used by Binance
     get_symbol_info()
-    
+
     # path to the saved coins_bought file
     coins_bought_file_path = 'coins_bought.json'
 
     # rolling window of prices; cyclical queue
     historical_prices = [None] * (TIME_DIFFERENCE * RECHECK_INTERVAL)
     hsp_head = -1
-    
+
     # load historical price for PAIR_WITH
     get_historical_price()
 
