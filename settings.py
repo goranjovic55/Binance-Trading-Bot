@@ -56,6 +56,7 @@ session_struct = {
      'LIST_AUTOCREATE': False,
      'symbol_info': {},
      'price_timedelta': 0,
+     'trade_slots': 0,
 }
 
 args = parse_args()
