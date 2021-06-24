@@ -65,6 +65,7 @@ from settings import *
 from dynamics import *
 from report import *
 from session import *
+from tickers_list import *
 
 # print with timestamps
 old_out = sys.stdout
@@ -695,86 +696,6 @@ def remove_from_portfolio(coins_sold):
         session('save')
 
 
-def tickers_list(type):
-
-    global historical_prices, hsp_head
-    global LIST_AUTOCREATE
-
-    tickers_list_volume = {}
-    tickers_list_price_change = {}
-
-    # get all info on tickers from binance
-    tickers_binance = client.get_ticker()
-    tickers_pairwith = {}
-    tickers_new = {}
-
-    if LIST_AUTOCREATE:
-    # pull coins from trading view and create a list
-        if type == 'create_ta':
-            response = requests.get('https://scanner.tradingview.com/crypto/scan')
-            ta_data = response.json()
-            signals_file = open(TICKERS_LIST,'w')
-            with open (TICKERS_LIST, 'w') as f:
-                for i in ta_data['data']:
-                    if i['s'][:7]=='BINANCE' and i['s'][-len(PAIR_WITH):] == PAIR_WITH and i['s'][8:-len(PAIR_WITH)] not in ignorelist:
-                        f.writelines(str(i['s'][8:-len(PAIR_WITH)])+'\n')
-            session_struct['tickers_list_changed'] = True
-            print(f'>> Tickers CREATED from TradingView tickers!!!{TICKERS_LIST} <<')
-
-        if type == 'volume' or type == 'price_change':
-        #  create list with volume and change in price on our pairs
-                for coin in tickers_binance:
-                    if CUSTOM_LIST:
-                        if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-                            tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
-                            tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
-
-                    else:
-                        if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-                            tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
-                            tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
-
-                # sort tickers by descending order volume and price
-                list_tickers_volume = list(sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True))
-                list_tickers_price_change = list(sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True))
-
-        # pull coins from binance and create list
-        if type == 'create_b':
-            for coin in tickers_binance:
-                if PAIR_WITH in coin['symbol']:
-                    tickers_pairwith[coin['symbol']] = coin['symbol']
-                    if tickers_pairwith[coin['symbol']].endswith(PAIR_WITH):
-                        tickers_new[coin['symbol']] = tickers_pairwith[coin['symbol']]
-
-            list_tickers_new = list(tickers_new)
-
-
-            with open (TICKERS_LIST, 'w') as f:
-                for ele in list_tickers_new:
-                    f.writelines(str(ele.replace(PAIR_WITH,''))+'\n')
-            session_struct['tickers_list_changed'] = True
-            print(f'>> Tickers CREATED from binance tickers!!!{TICKERS_LIST} <<')
-
-            session_struct['tickers_list_changed'] = True
-            print(f'>> Tickers CREATED from Binance tickers!!!{TICKERS_LIST} <<')
-
-        if type == 'volume' and CUSTOM_LIST:
-        # write sorted lists to files
-            with open (TICKERS_LIST, 'w') as f:
-                    for sublist in list_tickers_volume:
-                        f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
-            session_struct['tickers_list_changed'] = True
-            print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
-
-        if type == 'price_change':
-        # write sorted list to files
-            with open (TICKERS_LIST, 'w') as f:
-                    for sublist in list_tickers_price_change:
-                        f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
-            session_struct['tickers_list_changed'] = True
-            print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
-
-
 def bot_launch():
     # Bot relays session start to Discord channel
     bot_message = "Bot initiated"
@@ -785,36 +706,6 @@ if __name__ == '__main__':
 
     mymodule = {}
 
-    # set to false at Start
-    global bot_paused
-    bot_paused = False
-
-    # Authenticate with the client, Ensure API key is good before continuing
-    if AMERICAN_USER:
-        client = Client(access_key, secret_key, tld='us')
-    else:
-        client = Client(access_key, secret_key)
-
-    # If the users has a bad / incorrect API key.
-    # this will stop the script from starting, and display a helpful error.
-    api_ready, msg = test_api_key(client, BinanceAPIException)
-    if api_ready is not True:
-        exit(f'{txcolors.SELL_LOSS}{msg}{txcolors.DEFAULT}')
-    # Load coins to be ignored from file
-    ignorelist=[line.strip() for line in open(IGNORE_LIST)]
-
-    #sort tickers list by volume
-    if LIST_AUTOCREATE:
-        if LIST_CREATE_TYPE == 'binance':
-            tickers_list('create_b')
-            tickers=[line.strip() for line in open(TICKERS_LIST)]
-
-        if LIST_CREATE_TYPE == 'tradingview':
-            tickers_list('create_ta')
-            tickers=[line.strip() for line in open(TICKERS_LIST)]
-
-    # Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
-    if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]
 
     # try to load all the coins bought by the bot if the file exists and is not empty
     coins_bought = {}
@@ -880,6 +771,17 @@ if __name__ == '__main__':
             print(f'No modules to load {SIGNALLING_MODULES}')
     except Exception as e:
         print(e)
+
+
+    #sort tickers list by volume
+    if LIST_AUTOCREATE:
+        if LIST_CREATE_TYPE == 'binance':
+            tickers_list('create_b')
+            tickers=[line.strip() for line in open(TICKERS_LIST)]
+
+        if LIST_CREATE_TYPE == 'tradingview':
+            tickers_list('create_ta')
+            tickers=[line.strip() for line in open(TICKERS_LIST)]
 
     # seed initial prices
     get_price()
