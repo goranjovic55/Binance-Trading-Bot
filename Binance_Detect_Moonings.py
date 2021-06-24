@@ -558,7 +558,7 @@ def sell_coins():
                 profit = ((lastPrice - buyPrice) * coins_sold[coin]['volume']) - (buyFee + sellFee)
 
                 #gogo MOD to trigger trade lost or won and to count lost or won trades
-                if profit > 0:
+                if priceChange > 0:
                    session_struct['win_trade_count'] = session_struct['win_trade_count'] + 1
                    session_struct['dynamic'] = 'performance_adjust_up'
                 else:
@@ -579,10 +579,8 @@ def sell_coins():
 
             continue
 
-        # no action; print once every TIME_DIFFERENCE
-        if hsp_head == 1:
-            if len(coins_bought) > 0:
-                print(f"TP:{coinTakeProfit:.{decimals()}f}:{coins_bought[coin]['take_profit']:.2f} or SL:{coinStopLoss:.{decimals()}f}:{coins_bought[coin]['stop_loss']:.2f} not yet reached, not selling {coin} for now >> Bought at: {BUY_PRICE} - Now: {LAST_PRICE} : {txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}{priceChange:.2f}% Est: {(QUANTITY*(priceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
+    if len(coins_bought) > 0:
+       print(f"TP:{coinTakeProfit:.{decimals()}f}:{coins_bought[coin]['take_profit']:.2f} or SL:{coinStopLoss:.{decimals()}f}:{coins_bought[coin]['stop_loss']:.2f} not yet reached, not selling {coin} for now >> Bought at: {BUY_PRICE} - Now: {LAST_PRICE} : {txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}{priceChange:.2f}% Est: {(QUANTITY*(priceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
     if FULL_LOG:
         if hsp_head == 1 and len(coins_bought) == 0: print(f"No trade slots are currently in use")
 
