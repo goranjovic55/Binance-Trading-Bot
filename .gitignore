@@ -10,5 +10,5 @@ __pycache__
 config.yml
 dockerfile
 docker-compose.yml
-tickers*
+tickers.*
 session_struct.py
