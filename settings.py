@@ -16,6 +16,11 @@ from helpers.handle_creds import (
     load_telegram_creds
 )
 
+# needed for the binance API / websockets / Exception handling
+from binance.client import Client
+from binance.exceptions import BinanceAPIException
+from requests.exceptions import ReadTimeout, ConnectionError
+
 # for colourful logging to the console
 class txcolors:
     BUY = '\033[92m'
@@ -127,6 +132,22 @@ access_key, secret_key = load_correct_creds(parsed_creds)
 
 if BOT_MESSAGE_REPORTS:
     TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
+
+# set to false at Start
+global bot_paused
+bot_paused = False
+
+# Authenticate with the client, Ensure API key is good before continuing
+if AMERICAN_USER:
+    client = Client(access_key, secret_key, tld='us')
+else:
+    client = Client(access_key, secret_key)
+
+# If the users has a bad / incorrect API key.
+# this will stop the script from starting, and display a helpful error.
+api_ready, msg = test_api_key(client, BinanceAPIException)
+if api_ready is not True:
+    exit(f'{txcolors.SELL_LOSS}{msg}{txcolors.DEFAULT}')
 
 # Telegram_Bot enabled? # **added by*Coding60plus
 if DEBUG:
