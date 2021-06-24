@@ -706,6 +706,9 @@ if __name__ == '__main__':
 
     mymodule = {}
 
+    # set to false at Start
+    global bot_paused
+    bot_paused = False
 
     # try to load all the coins bought by the bot if the file exists and is not empty
     coins_bought = {}
