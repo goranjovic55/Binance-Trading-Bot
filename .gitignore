@@ -11,3 +11,4 @@ config.yml
 dockerfile
 docker-compose.yml
 tickers*
+session_struct.py
