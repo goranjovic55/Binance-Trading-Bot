@@ -63,6 +63,8 @@ session_struct = {
      'symbol_info': {},
      'price_timedelta': 0,
      'trade_slots': 0,
+     'dynamics_state': 'up',
+     'last_trade_won': 2
 }
 
 args = parse_args()
@@ -118,6 +120,9 @@ DETAILED_REPORTS = parsed_config['script_options']['DETAILED_REPORTS']
 HOLDING_INTERVAL_LIMIT = parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
 QUANTITY = INVESTMENT/TRADE_SLOTS
 
+if not TEST_MODE: HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60 * 1000) * HOLDING_INTERVAL_LIMIT
+if TEST_MODE: HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60) * HOLDING_INTERVAL_LIMIT
+
 settings_struct = {
       'TIME_DIFFERENCE': TIME_DIFFERENCE,
       'RECHECK_INTERVAL': RECHECK_INTERVAL,
@@ -127,13 +132,11 @@ settings_struct = {
       'TAKE_PROFIT': TAKE_PROFIT,
       'TRAILING_STOP_LOSS': TRAILING_STOP_LOSS,
       'TRAILING_TAKE_PROFIT': TRAILING_TAKE_PROFIT,
+      'HOLDING_TIME_LIMIT': HOLDING_TIME_LIMIT,
 }
 
 # Default no debugging
 DEBUG = False
-
-if not TEST_MODE: HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60 * 1000) * HOLDING_INTERVAL_LIMIT
-if TEST_MODE: HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60) * HOLDING_INTERVAL_LIMIT
 
 if DEBUG_SETTING or args.debug:
     DEBUG = True
