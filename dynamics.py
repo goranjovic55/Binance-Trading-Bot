@@ -24,6 +24,19 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
 
     if DYNAMIC_SETTINGS:
 
+        if session_struct['last_trade_won'] == True and session_struct['dynamics_state'] == 'up':
+           type = 'performance_adjust_up'
+
+        if session_struct['last_trade_won'] == True and session_struct['dynamics_state'] == 'down':
+           type = 'performance_adjust_down'
+
+        if session_struct['last_trade_won'] == False and session_struct['dynamics_state'] == 'up':
+           type = 'performance_adjust_down'
+
+        if session_struct['last_trade_won'] == False and session_struct['dynamics_state'] == 'down':
+           type = 'performance_adjust_up'
+
+
         if type == 'performance_adjust_up':
             STOP_LOSS = STOP_LOSS + (STOP_LOSS * DYNAMIC_WIN_LOSS_UP) / 100
             TAKE_PROFIT = TAKE_PROFIT + (TAKE_PROFIT * DYNAMIC_WIN_LOSS_UP) / 100
@@ -34,6 +47,8 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
             TIME_DIFFERENCE = TIME_DIFFERENCE * 2
             RECHECK_INTERVAL = RECHECK_INTERVAL * 2
             session_struct['dynamic'] = 'none'
+            session_struct['dynamics_state'] = 'up'
+            session_struct['last_trade_won'] = 'none'
             print(f'{txcolors.NOTICE}>> Last Trade WON Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f}  - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} CIP:{CHANGE_IN_PRICE_MIN:.4f}/{CHANGE_IN_PRICE_MAX:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} HTL: {HOLDING_TIME_LIMIT:.2f} TD: {TIME_DIFFERENCE} RI: {RECHECK_INTERVAL} <<{txcolors.DEFAULT}')
 
         if type == 'performance_adjust_down':
@@ -46,6 +61,8 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
             if TIME_DIFFERENCE != 1: TIME_DIFFERENCE = TIME_DIFFERENCE/2
             if RECHECK_INTERVAL != 1: RECHECK_INTERVAL = RECHECK_INTERVAL/2
             session_struct['dynamic'] = 'none'
+            session_struct['dynamics_state'] = 'down'
+            session_struct['last_trade_won'] = 'none'
             print(f'{txcolors.NOTICE}>> Last Trade LOST Changing STOP_LOSS: {STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {TAKE_PROFIT:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f}  - TRAILING_STOP_LOSS: {TRAILING_STOP_LOSS:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} CIP:{CHANGE_IN_PRICE_MIN:.4f}/{CHANGE_IN_PRICE_MAX:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} HTL:{HOLDING_TIME_LIMIT:.2f}  TD: {TIME_DIFFERENCE} RI: {RECHECK_INTERVAL} <<{txcolors.DEFAULT}')
 
         if type == 'reset':
