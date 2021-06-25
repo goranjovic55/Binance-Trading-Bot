@@ -106,6 +106,15 @@ def session(type):
             settings_struct['TRAILING_TAKE_PROFIT'] = TRAILING_TAKE_PROFIT
             settings_struct['HOLDING_TIME_LIMIT'] = HOLDING_TIME_LIMIT
 
+            settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE
+            settings_struct['RECHECK_INTERVAL'] = RECHECK_INTERVAL
+            settings_struct['CHANGE_IN_PRICE_MIN'] = CHANGE_IN_PRICE_MIN
+            settings_struct['CHANGE_IN_PRICE_MAX'] = CHANGE_IN_PRICE_MAX
+            settings_struct['STOP_LOSS'] = STOP_LOSS
+            settings_struct['TAKE_PROFIT'] = TAKE_PROFIT
+            settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS
+            settings_struct['TRAILING_TAKE_PROFIT'] = TRAILING_TAKE_PROFIT
+
         session_struct['TOTAL_GAINS'] = ((QUANTITY * session_struct['session_profit']) / 100)
         session_struct['NEW_BALANCE'] = (INVESTMENT + session_struct['TOTAL_GAINS'])
         session_struct['INVESTMENT_GAIN'] = (session_struct['TOTAL_GAINS'] / INVESTMENT) * 100
