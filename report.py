@@ -83,7 +83,7 @@ def report(type, reportline):
     SESSION_PROFIT_TRIM = format(session_struct['session_profit'], '.8f')
     # SESSION_PROFIT_TRIM = "%g" % round(session_profit, DECIMALS)
 
-    SETTINGS_STRING = 'Time: '+str(round(TIME_DIFFERENCE, 2))+' | Interval: '+str(round(RECHECK_INTERVAL, 2))+' | Price change min/max: '+str(round(CHANGE_IN_PRICE_MIN, 2))+'/'+str(round(CHANGE_IN_PRICE_MAX, 2))+'% | Stop loss: '+str(round(STOP_LOSS, 2))+' | Take profit: '+str(round(TAKE_PROFIT, 2))+' | Trailing stop loss: '+str(round(TRAILING_STOP_LOSS, 2))+' | Trailing take profit: '+str(round(TRAILING_TAKE_PROFIT, 2))
+    SETTINGS_STRING = 'Time: '+str(round(settings_struct['TIME_DIFFERENCE'], 2))+' | Interval: '+str(round(settings_struct['RECHECK_INTERVAL'], 2))+' | Price change min/max: '+str(round(settings_struct['CHANGE_IN_PRICE_MIN'], 2))+'/'+str(round(settings_struct['CHANGE_IN_PRICE_MAX'], 2))+'% | Stop loss: '+str(round(settings_struct['STOP_LOSS'], 2))+' | Take profit: '+str(round(settings_struct['TAKE_PROFIT'], 2))+' | Trailing stop loss: '+str(round(settings_struct['TRAILING_STOP_LOSS'], 2))+' | Trailing take profit: '+str(round(settings_struct['TRAILING_TAKE_PROFIT'], 2))
 
     if session_struct['trade_slots'] > 0:
         UNREALISED_PERCENT = round(session_struct['unrealised_percent']/session_struct['trade_slots'], 2)
