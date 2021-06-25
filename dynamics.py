@@ -45,8 +45,8 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
             CHANGE_IN_PRICE_MAX = CHANGE_IN_PRICE_MAX + (CHANGE_IN_PRICE_MAX * DYNAMIC_WIN_LOSS_UP) /100
             CHANGE_IN_PRICE_MIN = CHANGE_IN_PRICE_MIN - (CHANGE_IN_PRICE_MIN * DYNAMIC_WIN_LOSS_UP) /100
             HOLDING_TIME_LIMIT = HOLDING_TIME_LIMIT + (HOLDING_TIME_LIMIT * DYNAMIC_WIN_LOSS_UP) / 100
-            TIME_DIFFERENCE = TIME_DIFFERENCE + parsed_config['trading_options']['TIME_DIFFERENCE']
-            RECHECK_INTERVAL = RECHECK_INTERVAL + parsed_config['trading_options']['RECHECK_INTERVAL']
+            TIME_DIFFERENCE = TIME_DIFFERENCE + 1
+            RECHECK_INTERVAL = RECHECK_INTERVAL + 1
             session_struct['dynamic'] = 'none'
             session_struct['dynamics_state'] = 'up'
             session_struct['last_trade_won'] = 'none'
@@ -59,8 +59,8 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
             CHANGE_IN_PRICE_MAX = CHANGE_IN_PRICE_MAX - (CHANGE_IN_PRICE_MAX * DYNAMIC_WIN_LOSS_DOWN) /100
             CHANGE_IN_PRICE_MIN = CHANGE_IN_PRICE_MIN + (CHANGE_IN_PRICE_MIN * DYNAMIC_WIN_LOSS_DOWN) /100
             HOLDING_TIME_LIMIT = HOLDING_TIME_LIMIT - (HOLDING_TIME_LIMIT * DYNAMIC_WIN_LOSS_DOWN) / 100
-            if TIME_DIFFERENCE != 1: TIME_DIFFERENCE = TIME_DIFFERENCE - parsed_config['trading_options']['TIME_DIFFERENCE']
-            if RECHECK_INTERVAL != 1: RECHECK_INTERVAL = RECHECK_INTERVAL - parsed_config['trading_options']['RECHECK_INTERVAL']
+            if TIME_DIFFERENCE != 1: TIME_DIFFERENCE = TIME_DIFFERENCE - 1
+            if RECHECK_INTERVAL != 1: RECHECK_INTERVAL = RECHECK_INTERVAL - 1
             session_struct['dynamic'] = 'none'
             session_struct['dynamics_state'] = 'down'
             session_struct['last_trade_won'] = 'none'
