@@ -471,7 +471,7 @@ def buy():
 
 def sell_coins():
     '''sell coins that have reached the STOP LOSS or TAKE PROFIT threshold'''
-    global session_struct
+    global session_struct, settings_struct
 
     global hsp_head
     global FULL_LOG
@@ -487,7 +487,7 @@ def sell_coins():
         # coinStopLoss is the price at which to 'stop losses' based on config % markdown
         coinStopLoss = BUY_PRICE + ((BUY_PRICE * coins_bought[coin]['stop_loss']) / 100)
         # coinHoldingTimeLimit is the time limit for holding onto a coin
-        coinHoldingTimeLimit = float(coins_bought[coin]['timestamp']) + HOLDING_TIME_LIMIT
+        coinHoldingTimeLimit = float(coins_bought[coin]['timestamp']) + settings_struct['HOLDING_TIME_LIMIT']
         lastPrice = float(last_price[coin]['price'])
         LAST_PRICE = "{:.8f}".format(lastPrice)
         sellFee = (coins_bought[coin]['volume'] * lastPrice) * (TRADING_FEE/100)
@@ -508,8 +508,8 @@ def sell_coins():
         # check that the price is above the take profit and readjust coinStopLoss and coinTakeProfit accordingly if trialing stop loss used
         if lastPrice > coinTakeProfit and USE_TRAILING_STOP_LOSS:
             # increasing coinTakeProfit by TRAILING_TAKE_PROFIT (essentially next time to readjust coinStopLoss)
-            coins_bought[coin]['take_profit'] = priceChange + TRAILING_TAKE_PROFIT
-            coins_bought[coin]['stop_loss'] = coins_bought[coin]['take_profit'] - TRAILING_STOP_LOSS
+            coins_bought[coin]['take_profit'] = priceChange + settings_struct['TRAILING_TAKE_PROFIT']
+            coins_bought[coin]['stop_loss'] = coins_bought[coin]['take_profit'] - settings_struct['TRAILING_STOP_LOSS']
             if DEBUG: print(f"{coin} TP reached, adjusting TP {coins_bought[coin]['take_profit']:.{decimals()}f} and SL {coins_bought[coin]['stop_loss']:.{decimals()}f} accordingly to lock-in profit")
             continue
 
