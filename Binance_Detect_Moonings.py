@@ -297,7 +297,7 @@ def external_signals():
 
 def pause_bot():
     '''Pause the script when external indicators detect a bearish trend in the market'''
-    global bot_paused, hsp_head
+    global bot_paused, hsp_head, settings_struct
     global LIST_AUTOCREATE
     # start counting for how long the bot has been paused
     start_time = time.perf_counter()
@@ -326,7 +326,7 @@ def pause_bot():
         if hsp_head:
            report('console', '.')
 
-        time.sleep(RECHECK_INTERVAL)
+        time.sleep(settings_struct['RECHECK_INTERVAL'])
 
     else:
         # stop counting the pause time
