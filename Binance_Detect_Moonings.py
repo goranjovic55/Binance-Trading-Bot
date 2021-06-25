@@ -276,6 +276,7 @@ def wait_for_price(type):
             report('console', f" MR:{session_struct['market_resistance']:.4f}/MS:{session_struct['market_support']:.4f} ")
         session_struct['last_report_time'] = time.time()
 
+    return volatile_coins, len(volatile_coins), historical_prices[hsp_head]
 
 def external_signals():
     external_list = {}
