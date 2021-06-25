@@ -58,6 +58,7 @@ def session(type):
             'session_start_time': session_struct['session_start_time'],
             'session_uptime': session_struct['session_uptime'],
             'closed_trades_percent': session_struct['closed_trades_percent'],
+            'last_trade_won': session_struct['last_trade_won'],
             'TIME_DIFFERENCE': settings_struct['TIME_DIFFERENCE'],
             'RECHECK_INTERVAL': settings_struct['RECHECK_INTERVAL'],
             'CHANGE_IN_PRICE_MIN': settings_struct['CHANGE_IN_PRICE_MIN'],
@@ -94,7 +95,7 @@ def session(type):
             session_struct['session_start_time'] = session_info['session_start_time']
             session_struct['closed_trades_percent'] = session_info['closed_trades_percent']
             session_struct['session_uptime'] = session_info['session_uptime']
-
+            session_struct['last_trade_won'] = session_info['last_trade_won'] 
             settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE
             settings_struct['RECHECK_INTERVAL'] = RECHECK_INTERVAL
             settings_struct['CHANGE_IN_PRICE_MIN'] = CHANGE_IN_PRICE_MIN
