@@ -34,6 +34,7 @@ class txcolors:
 global historical_prices
 global hsp_head
 global session_struct
+global settings_struct
 
 session_struct = {
      'session_profit': 0,
@@ -116,6 +117,17 @@ IGNORE_LIST = parsed_config['trading_options']['IGNORE_LIST']
 DETAILED_REPORTS = parsed_config['script_options']['DETAILED_REPORTS']
 HOLDING_INTERVAL_LIMIT = parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
 QUANTITY = INVESTMENT/TRADE_SLOTS
+
+settings_struct = {
+      'TIME_DIFFERENCE': TIME_DIFFERENCE,
+      'RECHECK_INTERVAL': RECHECK_INTERVAL,
+      'CHANGE_IN_PRICE_MIN': CHANGE_IN_PRICE_MIN,
+      'CHANGE_IN_PRICE_MAX': CHANGE_IN_PRICE_MAX,
+      'STOP_LOSS': STOP_LOSS,
+      'TAKE_PROFIT': TAKE_PROFIT,
+      'TRAILING_STOP_LOSS': TRAILING_STOP_LOSS,
+      'TRAILING_TAKE_PROFIT': TRAILING_TAKE_PROFIT,
+}
 
 # Default no debugging
 DEBUG = False
