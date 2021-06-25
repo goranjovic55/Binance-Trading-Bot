@@ -36,6 +36,7 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
         if session_struct['last_trade_won'] == False and session_struct['dynamics_state'] == 'down':
            type = 'performance_adjust_up'
 
+        print(f'{txcolors.NOTICE}>> TRADE_WON: {session_struct['last_trade_won']} and DYNAMICS_STATE: {session_struct['dynamics_state']} <<<{txcolors.DEFAULT}')
 
         if type == 'performance_adjust_up':
             STOP_LOSS = STOP_LOSS + (STOP_LOSS * DYNAMIC_WIN_LOSS_UP) / 100
@@ -44,8 +45,8 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
             CHANGE_IN_PRICE_MAX = CHANGE_IN_PRICE_MAX + (CHANGE_IN_PRICE_MAX * DYNAMIC_WIN_LOSS_UP) /100
             CHANGE_IN_PRICE_MIN = CHANGE_IN_PRICE_MIN - (CHANGE_IN_PRICE_MIN * DYNAMIC_WIN_LOSS_UP) /100
             HOLDING_TIME_LIMIT = HOLDING_TIME_LIMIT + (HOLDING_TIME_LIMIT * DYNAMIC_WIN_LOSS_UP) / 100
-            TIME_DIFFERENCE = TIME_DIFFERENCE * 2
-            RECHECK_INTERVAL = RECHECK_INTERVAL * 2
+            TIME_DIFFERENCE = TIME_DIFFERENCE + parsed_config['trading_options']['TIME_DIFFERENCE']
+            RECHECK_INTERVAL = RECHECK_INTERVAL + parsed_config['trading_options']['RECHECK_INTERVAL']
             session_struct['dynamic'] = 'none'
             session_struct['dynamics_state'] = 'up'
             session_struct['last_trade_won'] = 'none'
@@ -58,8 +59,8 @@ def dynamic_settings(type, DYNAMIC_WIN_LOSS_UP, DYNAMIC_WIN_LOSS_DOWN, STOP_LOSS
             CHANGE_IN_PRICE_MAX = CHANGE_IN_PRICE_MAX - (CHANGE_IN_PRICE_MAX * DYNAMIC_WIN_LOSS_DOWN) /100
             CHANGE_IN_PRICE_MIN = CHANGE_IN_PRICE_MIN + (CHANGE_IN_PRICE_MIN * DYNAMIC_WIN_LOSS_DOWN) /100
             HOLDING_TIME_LIMIT = HOLDING_TIME_LIMIT - (HOLDING_TIME_LIMIT * DYNAMIC_WIN_LOSS_DOWN) / 100
-            if TIME_DIFFERENCE != 1: TIME_DIFFERENCE = TIME_DIFFERENCE/2
-            if RECHECK_INTERVAL != 1: RECHECK_INTERVAL = RECHECK_INTERVAL/2
+            if TIME_DIFFERENCE != 1: TIME_DIFFERENCE = TIME_DIFFERENCE - parsed_config['trading_options']['TIME_DIFFERENCE']
+            if RECHECK_INTERVAL != 1: RECHECK_INTERVAL = RECHECK_INTERVAL - parsed_config['trading_options']['RECHECK_INTERVAL']
             session_struct['dynamic'] = 'none'
             session_struct['dynamics_state'] = 'down'
             session_struct['last_trade_won'] = 'none'
