@@ -58,7 +58,7 @@ def discord_avatar():
 
 def report(type, reportline):
 
-    global session_struct
+    global session_struct, settings_struct
 
     try: # does it exist?
         session_struct['investment_value_gain']
