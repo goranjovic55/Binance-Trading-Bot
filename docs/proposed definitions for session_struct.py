@@ -32,6 +32,7 @@ session_struct = {
      'price_timedelta': 0,  # Time in minutes when prices were last compared
      'session_start_time': 0,  # When did bot start?
      'session_uptime': 0,  # How long is bot running (time since session_start_time)
+     'last_report_time': 0
 }
 
 """ Proposed new session_struct terms and definitions"""
@@ -78,4 +79,5 @@ session_struct = {
      'price_timedelta': 0,  # Time in minutes when prices were last compared
      'session_start_time': 0,  # When did bot start?
      'session_uptime': 0,  # How long is bot running (time since session_start_time)
+     'last_report_time': 0
 }
