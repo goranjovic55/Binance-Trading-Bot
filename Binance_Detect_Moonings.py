@@ -652,8 +652,8 @@ def update_portfolio(orders, last_price, volume):
                'volume': orders[coin]['volume'],
                'buyFeeBNB': orders[coin]['tradeFeeBNB'],
                'buyFee': orders[coin]['tradeFee'],
-               'stop_loss': -STOP_LOSS,
-               'take_profit': TAKE_PROFIT,
+               'stop_loss': -settings_struct['STOP_LOSS'],
+               'take_profit': settings_struct['TAKE_PROFIT'],
                }
         else:
            coins_bought[coin] = {
@@ -662,8 +662,8 @@ def update_portfolio(orders, last_price, volume):
                'timestamp': orders[coin][0]['time'],
                'bought_at': last_price[coin]['price'],
                'volume': volume[coin],
-               'stop_loss': -STOP_LOSS,
-               'take_profit': TAKE_PROFIT,
+               'stop_loss': -settings_struct['STOP_LOSS'],
+               'take_profit': settings_struct['TAKE_PROFIT'],
                }
 
         # save the coins in a json file in the same directory
