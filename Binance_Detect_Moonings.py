@@ -152,7 +152,7 @@ def wait_for_price(type):
     '''calls the initial price and ensures the correct amount of time has passed
     before reading the current price again'''
 
-    global historical_prices, prehistorical_prices, hsp_head, volatility_cooloff, session_struct
+    global historical_prices, hsp_head, volatility_cooloff, session_struct, settings_struct
 
     session_struct['market_resistance'] = 0
     session_struct['market_support'] = 0
@@ -179,7 +179,7 @@ def wait_for_price(type):
         #time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
     #print(f'PRICE_TIMEDELTA: {price_timedelta_value} - CURRENT_TIME: {current_time_minutes} - TIME_DIFFERENCE: {TIME_DIFFERENCE}')
 
-    if session_struct['price_timedelta'] < current_time_minutes - float(TIME_DIFFERENCE):
+    if session_struct['price_timedelta'] < current_time_minutes - float(settings_struct['TIME_DIFFERENCE']):
 
        #print(f'GET PRICE TRIGGERED !!!!! PRICE_TIMEDELTA: {price_timedelta_value} - TIME_DIFFERENCE: {TIME_DIFFERENCE}')
        # retrieve latest prices
@@ -207,7 +207,7 @@ def wait_for_price(type):
         if type == 'percent_mix_signal':
 
            # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
-           if threshold_check > CHANGE_IN_PRICE_MIN and threshold_check < CHANGE_IN_PRICE_MAX:
+           if threshold_check > settings_struct['CHANGE_IN_PRICE_MIN'] and threshold_check < settings_struct['CHANGE_IN_PRICE_MAX']:
                coins_up +=1
 
 
@@ -219,13 +219,13 @@ def wait_for_price(type):
                    if excoin == coin:
                      # print(f'EXCOIN: {excoin} == COIN: {coin}')
                       if coin not in volatility_cooloff:
-                         volatility_cooloff[coin] = datetime.now() - timedelta(minutes=TIME_DIFFERENCE)
+                         volatility_cooloff[coin] = datetime.now() - timedelta(minutes=settings_struct['TIME_DIFFERENCE'])
                       # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
-                      if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=TIME_DIFFERENCE):
+                      if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=settings_struct['TIME_DIFFERENCE']):
                          volatility_cooloff[coin] = datetime.now()
                          if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
                             volatile_coins[coin] = round(threshold_check, 3)
-                            print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes, and coin {excoin} recived a signal... calculating {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
+                            print(f"{coin} has gained {volatile_coins[coin]}% within the last {settings_struct['TIME_DIFFERENCE']} minutes, and coin {excoin} recived a signal... calculating {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
                          #else:
                             #print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes, , and coin {excoin} recived a signal... but you are using all available trade slots!{txcolors.DEFAULT}")
 
@@ -233,19 +233,19 @@ def wait_for_price(type):
         if type == 'percent_and_signal':
 
             # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
-            if threshold_check > CHANGE_IN_PRICE_MIN and threshold_check < CHANGE_IN_PRICE_MAX:
+            if threshold_check > settings_struct['CHANGE_IN_PRICE_MIN'] and threshold_check < settings_struct['CHANGE_IN_PRICE_MAX']:
                 coins_up +1
 
                 if coin not in volatility_cooloff:
-                    volatility_cooloff[coin] = datetime.now() - timedelta(minutes=TIME_DIFFERENCE)
+                    volatility_cooloff[coin] = datetime.now() - timedelta(minutes=settings_struct['TIME_DIFFERENCE'])
 
                 # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
-                if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=TIME_DIFFERENCE):
+                if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=settings_struct['TIME_DIFFERENCE']):
                     volatility_cooloff[coin] = datetime.now()
 
                 if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
                     volatile_coins[coin] = round(threshold_check, 3)
-                    print(f"{coin} has gained {volatile_coins[coin]}% within the last {TIME_DIFFERENCE} minutes {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
+                    print(f"{coin} has gained {volatile_coins[coin]}% within the last {settings_struct['TIME_DIFFERENCE']} minutes {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
 
                 #else:
                    #print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes but you are using all available trade slots!{txcolors.DEFAULT}")
@@ -259,7 +259,7 @@ def wait_for_price(type):
                     exnumber +=1
                     print(f"External signal received on {excoin}, calculating {QUANTITY} {PAIR_WITH} value of {excoin} for purchase!")
 
-        if threshold_check < CHANGE_IN_PRICE_MIN and threshold_check > CHANGE_IN_PRICE_MAX:
+        if threshold_check < settings_struct['CHANGE_IN_PRICE_MIN'] and threshold_check > settings_struct['CHANGE_IN_PRICE_MAX']:
              coins_down +=1
 
         else:
