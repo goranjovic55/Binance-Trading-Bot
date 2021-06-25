@@ -37,7 +37,9 @@ def is_fiat():
     global hsp_head
     PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
     #list below is in the order that Binance displays them, apologies for not using ASC order but this is easier to update later
-    fiats = ['USDT', 'BUSD', 'AUD', 'BRL', 'EUR', 'GBP', 'RUB', 'TRY', 'TUSD', 'USDC', 'PAX', 'BIDR', 'DAI', 'IDRT', 'UAH', 'NGN', 'VAI', 'BVND']
+    fiats = ['USDT', 'BUSD', 'AUD', 'BRL', 'EUR', 'GBP', 'RUB', \
+             'TRY', 'TUSD', 'USDC', 'PAX', 'BIDR', 'DAI', 'IDRT', \
+             'UAH', 'NGN', 'VAI', 'BVND']
 
     if PAIR_WITH in fiats:
         return True
@@ -83,7 +85,14 @@ def report(type, reportline):
     SESSION_PROFIT_TRIM = format(session_struct['session_profit'], '.8f')
     # SESSION_PROFIT_TRIM = "%g" % round(session_profit, DECIMALS)
 
-    SETTINGS_STRING = 'Time: '+str(round(settings_struct['TIME_DIFFERENCE'], 2))+' | Interval: '+str(round(settings_struct['RECHECK_INTERVAL'], 2))+' | Price change min/max: '+str(round(settings_struct['CHANGE_IN_PRICE_MIN'], 2))+'/'+str(round(settings_struct['CHANGE_IN_PRICE_MAX'], 2))+'% | Stop loss: '+str(round(settings_struct['STOP_LOSS'], 2))+' | Take profit: '+str(round(settings_struct['TAKE_PROFIT'], 2))+' | Trailing stop loss: '+str(round(settings_struct['TRAILING_STOP_LOSS'], 2))+' | Trailing take profit: '+str(round(settings_struct['TRAILING_TAKE_PROFIT'], 2))
+    SETTINGS_STRING = 'Time: '+str(round(settings_struct['TIME_DIFFERENCE'], 2))+' | Interval: '\
+                      +str(round(settings_struct['RECHECK_INTERVAL'], 2))+' | Price change min/max: '\
+                      +str(round(settings_struct['CHANGE_IN_PRICE_MIN'], 2))+'/'\
+                      +str(round(settings_struct['CHANGE_IN_PRICE_MAX'], 2))+'% | Stop loss: '\
+                      +str(round(settings_struct['STOP_LOSS'], 2))+' | Take profit: '\
+                      +str(round(settings_struct['TAKE_PROFIT'], 2))+' | Trailing stop loss: '\
+                      +str(round(settings_struct['TRAILING_STOP_LOSS'], 2))+' | Trailing take profit: '\
+                      +str(round(settings_struct['TRAILING_TAKE_PROFIT'], 2))
 
     if session_struct['trade_slots'] > 0:
         UNREALISED_PERCENT = round(session_struct['unrealised_percent']/session_struct['trade_slots'], 2)
@@ -95,7 +104,15 @@ def report(type, reportline):
         WIN_LOSS_PERCENT = 100
 
     # adding all the stats together:
-    report_string= 'Trade slots: '+str(session_struct['trade_slots'])+'/'+str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_TRIM)+'/'+str(INVESTMENT_TOTAL_TRIM)+' '+PAIR_WITH+') | Session: '+str(SESSION_PROFIT_TRIM)+' '+PAIR_WITH+' ('+str(CLOSED_TRADES_PERCENT_TRIM)+'%) | Win/Loss: '+str(WON)+'/'+str(LOST)+' ('+str(WIN_LOSS_PERCENT)+'%) | Gains: '+str(round(session_struct['INVESTMENT_GAIN'], 4))+'%'+' | Balance: '+str(NEW_BALANCE_TRIM)+' | Value: '+str(INVESTMENT_VALUE_TRIM)+' USD | Value gain: '+str(INVESTMENT_VALUE_GAIN_TRIM)+' | Uptime: '+str(timedelta(seconds=(int(session_struct['session_uptime']/1000))))
+    report_string= 'Trade slots: '+str(session_struct['trade_slots'])+'/'\
+                   +str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_TRIM)+'/'\
+                   +str(INVESTMENT_TOTAL_TRIM)+' '+PAIR_WITH+') | Session: '\
+                   +str(SESSION_PROFIT_TRIM)+' '+PAIR_WITH+' ('+str(CLOSED_TRADES_PERCENT_TRIM)+'%) | Win/Loss: '\
+                   +str(WON)+'/'+str(LOST)+' ('+str(WIN_LOSS_PERCENT)+'%) | Gains: '\
+                   +str(round(session_struct['INVESTMENT_GAIN'], 4))+'%'+' | Balance: '\
+                   +str(NEW_BALANCE_TRIM)+' | Value: '+str(INVESTMENT_VALUE_TRIM)+' USD | Value gain: '\
+                   +str(INVESTMENT_VALUE_GAIN_TRIM)+' | Uptime: '\
+                   +str(timedelta(seconds=(int(session_struct['session_uptime']/1000))))
 
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
