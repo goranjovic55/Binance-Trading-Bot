@@ -63,7 +63,7 @@ session_struct = {
      'symbol_info': {},
      'price_timedelta': 0,
      'trade_slots': 0,
-     'dynamics_state': 'none',
+     'dynamics_state': 'up',
      'last_trade_won': True
 }
 
