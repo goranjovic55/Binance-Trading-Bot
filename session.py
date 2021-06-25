@@ -66,6 +66,7 @@ def session(type):
             'TAKE_PROFIT': settings_struct['TAKE_PROFIT'],
             'TRAILING_STOP_LOSS': settings_struct['TRAILING_STOP_LOSS'],
             'TRAILING_TAKE_PROFIT': settings_struct['TRAILING_TAKE_PROFIT'],
+            'HOLDING_TIME_LIMIT': settings_struct['HOLDING_TIME_LIMIT'],
             }
 
         # save the coins in a json file in the same directory
@@ -102,6 +103,7 @@ def session(type):
             settings_struct['TAKE_PROFIT'] = TAKE_PROFIT
             settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS
             settings_struct['TRAILING_TAKE_PROFIT'] = TRAILING_TAKE_PROFIT
+            settings_struct['HOLDING_TIME_LIMIT'] = HOLDING_TIME_LIMIT
 
         session_struct['TOTAL_GAINS'] = ((QUANTITY * session_struct['session_profit']) / 100)
         session_struct['NEW_BALANCE'] = (INVESTMENT + session_struct['TOTAL_GAINS'])
