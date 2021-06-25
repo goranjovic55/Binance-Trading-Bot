@@ -44,7 +44,7 @@ trading_options:
 
   # TRADE_SLOTS = Maximum number of tradable 'slots' at any time.
   # (your PAIR_WITH balance must be at least TRADE_SLOTS * QUANTITY)
-  TRADE_SLOTS: 1
+  TRADE_SLOTS: 3
 
   # Use more than one TRADE_SLOTS of the same coin? Set to False
   # allows buying the same coin again if a future buy signal is received
@@ -74,21 +74,21 @@ trading_options:
   IGNORE_LIST: 'ignorelist.txt'
 
   # the amount of time in MINUTES to calculate the difference from the current price (minimum: 1).
-  TIME_DIFFERENCE: 1
+  TIME_DIFFERENCE: 5
 
   # Number of times to check for TP/SL during each TIME_DIFFERENCE (minimum: 1).
   # Don't spam the Binance API, you will be banned (max 1200 requests per minute per IP).
-  RECHECK_INTERVAL: 2
+  RECHECK_INTERVAL: 3
 
   # the difference in % between the first and second checks for the price.
-  CHANGE_IN_PRICE_MIN: -1.97
-  CHANGE_IN_PRICE_MAX: -0.93
+  CHANGE_IN_PRICE_MIN: -1.5
+  CHANGE_IN_PRICE_MAX: -0.5
 
   # define in % when to sell a coin that's not making a profit.
-  STOP_LOSS: 0.4
+  STOP_LOSS: 1.5
 
   # define in % when to take profit on a profitable coin.
-  TAKE_PROFIT: 0.01
+  TAKE_PROFIT: 0.5
 
   # whether to use trailing stop loss or not; default is True
   USE_TRAILING_STOP_LOSS: True
@@ -116,7 +116,7 @@ trading_options:
 
   # multiplier for HOLDING_TIME_LIMIT wich gives actual TIME_DIFFERENCE * HOLDING_TIME_LIMIT_MULTIPLIER when to start lowering STOP_LOSS
   # holding take profit is % at wich we sell if holding time limit is passed defualt is 1 and after one timeperiod we will sell on holding take profit
-  HOLDING_INTERVAL_LIMIT: 120
+  HOLDING_INTERVAL_LIMIT: 10
 
   # sort list by volume or price_change
   LIST_AUTOCREATE: True
