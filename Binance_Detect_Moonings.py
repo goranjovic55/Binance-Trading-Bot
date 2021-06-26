@@ -217,7 +217,7 @@ def wait_for_price(type):
         if type == 'percent_mix_signal':
 
            # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
-           if threshold_check > settings_struct['CHANGE_IN_PRICE_MIN'] and threshold_check < settings_struct['CHANGE_IN_PRICE_MAX'] and threshold_check > session_struct['market_support']:
+           if threshold_check > settings_struct['CHANGE_IN_PRICE_MIN'] and threshold_check < settings_struct['CHANGE_IN_PRICE_MAX'] and threshold_check < session_struct['market_support']:
 
                #if os.path.exists('signals/nigec_custsignalmod.exs') or os.path.exists('signals/djcommie_custsignalmod.exs') or os.path.exists('signals/firewatch_signalsample.exs'):
                #signals = glob.glob("signals/*.exs")
