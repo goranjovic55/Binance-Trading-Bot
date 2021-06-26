@@ -267,14 +267,16 @@ def wait_for_price(type):
 
     if coins_up != 0: session_struct['market_resistance'] = session_struct['market_resistance'] / coins_up
     if coins_down != 0: session_struct['market_support'] = session_struct['market_support'] / coins_down
-
-    if DETAILED_REPORTS == True and hsp_head:
-        report('detailed',f"Market Resistance:      {txcolors.DEFAULT}{session_struct['market_resistance']:.4f}\n Market Support:         {txcolors.DEFAULT}{session_struct['market_support']:.4f}")
-    else:
-        report('console', f" MR:{session_struct['market_resistance']:.4f}/MS:{session_struct['market_support']:.4f} ")
+    
+    # Report session status every minute. TODO: make report interval configurable
+    if time.time() - session_struct['last_report_time'] > 60:
+        if DETAILED_REPORTS:
+            report('detailed',f"Market Resistance:      {txcolors.DEFAULT}{session_struct['market_resistance']:.4f}\n Market Support:         {txcolors.DEFAULT}{session_struct['market_support']:.4f}")
+        else:
+            report('console', f" MR:{session_struct['market_resistance']:.4f}/MS:{session_struct['market_support']:.4f} ")
+        session_struct['last_report_time'] = time.time()
 
     return volatile_coins, len(volatile_coins), historical_prices[hsp_head]
-
 
 def external_signals():
     external_list = {}
