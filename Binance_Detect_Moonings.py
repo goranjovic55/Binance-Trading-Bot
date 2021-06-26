@@ -154,15 +154,8 @@ def wait_for_price(type):
 
     global historical_prices, hsp_head, volatility_cooloff, session_struct, settings_struct
 
-    session_struct['market_resistance'] = 0
-    session_struct['market_support'] = 0
-
     volatile_coins = {}
     externals = {}
-
-    coins_up = 0
-    coins_down = 0
-    coins_unchanged = 0
 
     current_time_minutes = float(round(time.time()))/60
 
@@ -186,6 +179,30 @@ def wait_for_price(type):
        get_price()
        externals = external_signals()
        session_struct['price_timedelta'] = current_time_minutes
+       session_struct['market_resistance'] = 0
+       session_struct['market_support'] = 0
+       coins_up = 0
+       coins_down = 0
+
+       # calculate the difference in prices
+       for coin in historical_prices[hsp_head]:
+
+           # minimum and maximum prices over time period
+           min_price = min(historical_prices, key = lambda x: float("inf") if x is None else float(x[coin]['price']))
+           max_price = max(historical_prices, key = lambda x: -1 if x is None else float(x[coin]['price']))
+
+           threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (float(max_price[coin]['price']) - float(min_price[coin]['price'])) / float(min_price[coin]['price']) * 100
+
+           if threshold_check > 0:
+              session_struct['market_resistance'] = session_struct['market_resistance'] + threshold_check
+              coins_up = coins_up +1
+
+           if threshold_check < 0:
+              session_struct['market_support'] = session_struct['market_support'] - threshold_check
+              coins_down = coins_down +1
+
+       if coins_up != 0: session_struct['market_resistance'] = session_struct['market_resistance'] / coins_up
+       if coins_down != 0: session_struct['market_support'] = -session_struct['market_support'] / coins_down
 
 
     # calculate the difference in prices
@@ -197,19 +214,10 @@ def wait_for_price(type):
 
         threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (float(max_price[coin]['price']) - float(min_price[coin]['price'])) / float(min_price[coin]['price']) * 100
 
-        if threshold_check > 0:
-            session_struct['market_resistance'] = session_struct['market_resistance'] + threshold_check
-            coins_up = coins_up +1
-        else:
-            session_struct['market_support'] = session_struct['market_support'] - threshold_check
-            coins_down = coins_down +1
-
         if type == 'percent_mix_signal':
 
            # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
            if threshold_check > settings_struct['CHANGE_IN_PRICE_MIN'] and threshold_check < settings_struct['CHANGE_IN_PRICE_MAX']:
-               coins_up +=1
-
 
                #if os.path.exists('signals/nigec_custsignalmod.exs') or os.path.exists('signals/djcommie_custsignalmod.exs') or os.path.exists('signals/firewatch_signalsample.exs'):
                #signals = glob.glob("signals/*.exs")
@@ -234,7 +242,6 @@ def wait_for_price(type):
 
             # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
             if threshold_check > settings_struct['CHANGE_IN_PRICE_MIN'] and threshold_check < settings_struct['CHANGE_IN_PRICE_MAX']:
-                coins_up +1
 
                 if coin not in volatility_cooloff:
                     volatility_cooloff[coin] = datetime.now() - timedelta(minutes=settings_struct['TIME_DIFFERENCE'])
@@ -259,17 +266,9 @@ def wait_for_price(type):
                     exnumber +=1
                     print(f"External signal received on {excoin}, calculating {QUANTITY} {PAIR_WITH} value of {excoin} for purchase!")
 
-        if threshold_check < settings_struct['CHANGE_IN_PRICE_MIN'] and threshold_check > settings_struct['CHANGE_IN_PRICE_MAX']:
-             coins_down +=1
 
-        else:
-            coins_unchanged +=1
-
-    if coins_up != 0: session_struct['market_resistance'] = session_struct['market_resistance'] / coins_up
-    if coins_down != 0: session_struct['market_support'] = session_struct['market_support'] / coins_down
-    
     # Report session status every minute. TODO: make report interval configurable
-    if time.time() - session_struct['last_report_time'] > 60:
+    if time.time() - session_struct['last_report_time'] > 1:
         if DETAILED_REPORTS:
             report('detailed',f"Market Resistance:      {txcolors.DEFAULT}{session_struct['market_resistance']:.4f}\n Market Support:         {txcolors.DEFAULT}{session_struct['market_support']:.4f}")
         else:
