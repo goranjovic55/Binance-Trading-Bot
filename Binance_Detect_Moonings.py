@@ -217,7 +217,7 @@ def wait_for_price(type):
         if type == 'percent_mix_signal':
 
            # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
-           if threshold_check > settings_struct['CHANGE_IN_PRICE_MIN'] and threshold_check < settings_struct['CHANGE_IN_PRICE_MAX']:
+           if threshold_check > settings_struct['CHANGE_IN_PRICE_MIN'] and threshold_check < settings_struct['CHANGE_IN_PRICE_MAX'] and threshold_check > session_struct['market_support']:
 
                #if os.path.exists('signals/nigec_custsignalmod.exs') or os.path.exists('signals/djcommie_custsignalmod.exs') or os.path.exists('signals/firewatch_signalsample.exs'):
                #signals = glob.glob("signals/*.exs")
@@ -523,7 +523,7 @@ def sell_coins():
 #           print(f'TL:{coinHoldingTimeLimit}, time: {current_time} HOLDING_TIME_LIMIT: {HOLDING_TIME_LIMIT}, TimeLeft: {(coinHoldingTimeLimit - current_time)/60} ')
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
-        if session_struct['sell_all_coins'] == True or lastPrice < coinStopLoss or lastPrice > coinTakeProfit and not USE_TRAILING_STOP_LOSS or coinHoldingTimeLimit < current_time:
+        if session_struct['sell_all_coins'] == True or lastPrice < coinStopLoss or lastPrice > coinTakeProfit and not USE_TRAILING_STOP_LOSS or coinHoldingTimeLimit < current_time or lastPrice > session_struct['market_resistance']:
             print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChange:.2f}% - Est: {(QUANTITY * priceChange) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
             # try to create a real order
             try:
@@ -572,6 +572,7 @@ def sell_coins():
                 if session_struct['sell_all_coins'] == True: REPORT =  f"PAUSE_SELL - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if lastPrice < coinStopLoss: REPORT =  f"STOP_LOSS - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if lastPrice > coinTakeProfit: REPORT =  f"TAKE_PROFIT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
+                if lastPrice > session_struct['market_resistance'] = f"MARKET_RESISTANCE - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if coinHoldingTimeLimit < current_time: REPORT =  f"HOLDING_TIMEOUT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
 
                 session_struct['session_profit'] = session_struct['session_profit'] + profit
