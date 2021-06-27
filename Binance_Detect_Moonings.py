@@ -66,6 +66,7 @@ from bot.dynamics import *
 from bot.report import *
 from bot.session import *
 from bot.tickers_list import *
+from bot.grab import *
 
 # print with timestamps
 old_out = sys.stdout
@@ -100,202 +101,6 @@ def is_fiat():
         return True
     else:
         return False
-
-
-def get_symbol_info(url='https://api.binance.com/api/v3/exchangeInfo'):
-    global session_struct
-    response = requests.get(url)
-    json_message = json.loads(response.content)
-
-    for symbol_info in json_message['symbols']:
-        session_struct['symbol_info'][symbol_info['symbol']] = symbol_info['filters'][2]['stepSize']
-
-
-def get_historical_price():
-    global session_struct
-    if is_fiat():
-        session_struct['market_price'] = 1
-        session_struct['exchange_symbol'] = PAIR_WITH
-    else:
-        session_struct['exchange_symbol'] = PAIR_WITH + 'USDT'
-        market_historic = client.get_historical_trades(symbol=session_struct['exchange_symbol'])
-        session_struct['market_price'] = market_historic[0].get('price')
-
-
-def get_price(add_to_historical=True):
-    '''Return the current price for all coins on binance'''
-
-    global historical_prices, hsp_head, session_struct
-
-    initial_price = {}
-    prices = client.get_all_tickers()
-
-    for coin in prices:
-        if CUSTOM_LIST:
-            if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-                initial_price[coin['symbol']] = { 'price': coin['price'], 'time': datetime.now()}
-        else:
-            if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-                initial_price[coin['symbol']] = { 'price': coin['price'], 'time': datetime.now()}
-
-    if add_to_historical:
-        hsp_head += 1
-
-        if hsp_head == 2:
-            hsp_head = 0
-
-        historical_prices[hsp_head] = initial_price
-
-    return initial_price
-
-
-def wait_for_price(type):
-    '''calls the initial price and ensures the correct amount of time has passed
-    before reading the current price again'''
-
-    global historical_prices, hsp_head, volatility_cooloff, session_struct, settings_struct
-
-    volatile_coins = {}
-    externals = {}
-
-    current_time_minutes = float(round(time.time()))/60
-
-    pause_bot()
-
-    #first time we just skip untill we find a way for historic fata to be grabbed here
-    if session_struct['price_timedelta'] == 0: session_struct['price_timedelta'] = current_time_minutes
-    #we give local variable value of time that we use for checking to grab prices again
-    price_timedelta_value = session_struct['price_timedelta']
-
-    #if historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'] > datetime.now() - timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)):
-
-        # sleep for exactly the amount of time required
-        #time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
-    #print(f'PRICE_TIMEDELTA: {price_timedelta_value} - CURRENT_TIME: {current_time_minutes} - TIME_DIFFERENCE: {TIME_DIFFERENCE}')
-
-    if session_struct['price_timedelta'] < current_time_minutes - float(settings_struct['TIME_DIFFERENCE']):
-
-       #print(f'GET PRICE TRIGGERED !!!!! PRICE_TIMEDELTA: {price_timedelta_value} - TIME_DIFFERENCE: {TIME_DIFFERENCE}')
-       # retrieve latest prices
-       get_price()
-       externals = external_signals()
-       session_struct['price_timedelta'] = current_time_minutes
-       session_struct['market_resistance'] = 0
-       session_struct['market_support'] = 0
-       coins_up = 0
-       coins_down = 0
-
-       # calculate the difference in prices
-       for coin in historical_prices[hsp_head]:
-
-           # minimum and maximum prices over time period
-           min_price = min(historical_prices, key = lambda x: float("inf") if x is None else float(x[coin]['price']))
-           max_price = max(historical_prices, key = lambda x: -1 if x is None else float(x[coin]['price']))
-
-           threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (float(max_price[coin]['price']) - float(min_price[coin]['price'])) / float(min_price[coin]['price']) * 100
-
-           if threshold_check > 0:
-              session_struct['market_resistance'] = session_struct['market_resistance'] + threshold_check
-              coins_up = coins_up +1
-
-           if threshold_check < 0:
-              session_struct['market_support'] = session_struct['market_support'] - threshold_check
-              coins_down = coins_down +1
-
-       if coins_up != 0: session_struct['market_resistance'] = session_struct['market_resistance'] / coins_up
-       if coins_down != 0: session_struct['market_support'] = -session_struct['market_support'] / coins_down
-
-       dynamic_settings('mrs_settings', TIME_DIFFERENCE, RECHECK_INTERVAL)
-
-    # calculate the difference in prices
-    for coin in historical_prices[hsp_head]:
-
-        # minimum and maximum prices over time period
-        min_price = min(historical_prices, key = lambda x: float("inf") if x is None else float(x[coin]['price']))
-        max_price = max(historical_prices, key = lambda x: -1 if x is None else float(x[coin]['price']))
-
-        threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (float(max_price[coin]['price']) - float(min_price[coin]['price'])) / float(min_price[coin]['price']) * 100
-
-        if type == 'percent_mix_signal':
-
-           # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
-           if threshold_check > settings_struct['CHANGE_IN_PRICE_MIN'] and threshold_check < settings_struct['CHANGE_IN_PRICE_MAX']:
-
-               #if os.path.exists('signals/nigec_custsignalmod.exs') or os.path.exists('signals/djcommie_custsignalmod.exs') or os.path.exists('signals/firewatch_signalsample.exs'):
-               #signals = glob.glob("signals/*.exs")
-
-               for excoin in externals:
-                   #print(f'EXCOIN: {excoin}')
-                   if excoin == coin:
-                     # print(f'EXCOIN: {excoin} == COIN: {coin}')
-                      if coin not in volatility_cooloff:
-                         volatility_cooloff[coin] = datetime.now() - timedelta(minutes=settings_struct['TIME_DIFFERENCE'])
-                      # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
-                      if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=settings_struct['TIME_DIFFERENCE']):
-                         volatility_cooloff[coin] = datetime.now()
-                         if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
-                            volatile_coins[coin] = round(threshold_check, 3)
-                            print(f"{coin} has gained {volatile_coins[coin]}% within the last {settings_struct['TIME_DIFFERENCE']} minutes, and coin {excoin} recived a signal... calculating {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
-                         #else:
-                            #print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes, , and coin {excoin} recived a signal... but you are using all available trade slots!{txcolors.DEFAULT}")
-
-
-        if type == 'percent_and_signal':
-
-            # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
-            if threshold_check > settings_struct['CHANGE_IN_PRICE_MIN'] and threshold_check < settings_struct['CHANGE_IN_PRICE_MAX']:
-
-                if coin not in volatility_cooloff:
-                    volatility_cooloff[coin] = datetime.now() - timedelta(minutes=settings_struct['TIME_DIFFERENCE'])
-
-                # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
-                if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=settings_struct['TIME_DIFFERENCE']):
-                    volatility_cooloff[coin] = datetime.now()
-
-                if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
-                    volatile_coins[coin] = round(threshold_check, 3)
-                    print(f"{coin} has gained {volatile_coins[coin]}% within the last {settings_struct['TIME_DIFFERENCE']} minutes {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
-
-                #else:
-                   #print(f"{txcolors.WARNING}{coin} has gained {round(threshold_check, 3)}% within the last {TIME_DIFFERENCE} minutes but you are using all available trade slots!{txcolors.DEFAULT}")
-
-            externals = external_signals()
-            exnumber = 0
-
-            for excoin in externals:
-                if excoin not in volatile_coins and excoin not in coins_bought and (len(coins_bought) + exnumber) < TRADE_SLOTS:
-                    volatile_coins[excoin] = 1
-                    exnumber +=1
-                    print(f"External signal received on {excoin}, calculating {QUANTITY} {PAIR_WITH} value of {excoin} for purchase!")
-
-
-    # Report session status every minute. TODO: make report interval configurable
-    if time.time() - session_struct['last_report_time'] > 1:
-        if DETAILED_REPORTS:
-            report('detailed',f"Market Resistance:      {txcolors.DEFAULT}{session_struct['market_resistance']:.4f}\n Market Support:         {txcolors.DEFAULT}{session_struct['market_support']:.4f}")
-        else:
-            report('console', f" MR:{session_struct['market_resistance']:.4f}/MS:{session_struct['market_support']:.4f} ")
-        session_struct['last_report_time'] = time.time()
-
-    return volatile_coins, len(volatile_coins), historical_prices[hsp_head]
-
-def external_signals():
-    external_list = {}
-    signals = {}
-
-    # check directory and load pairs from files into external_list
-    signals = glob.glob("signals/*.exs")
-    for filename in signals:
-        for line in open(filename):
-            symbol = line.strip()
-            external_list[symbol] = symbol
-            print(f'>>> SIGNAL DETECTED ON: {symbol} - SIGNALMOD: {filename} <<<<')
-        try:
-            os.remove(filename)
-        except:
-            if DEBUG: print(f"{txcolors.WARNING}Could not remove external signalling file{txcolors.DEFAULT}")
-
-    return external_list
 
 
 def pause_bot():
@@ -700,12 +505,6 @@ def remove_from_portfolio(coins_sold):
         session('save')
 
 
-def bot_launch():
-    # Bot relays session start to Discord channel
-    bot_message = "Bot initiated"
-    report('message', bot_message)
-
-
 if __name__ == '__main__':
 
     mymodule = {}
@@ -714,28 +513,11 @@ if __name__ == '__main__':
     global bot_paused
     bot_paused = False
 
-    # try to load all the coins bought by the bot if the file exists and is not empty
-    coins_bought = {}
-
     # get decimal places for each coin as used by Binance
     get_symbol_info()
 
-    # path to the saved coins_bought file
-    coins_bought_file_path = 'coins_bought.json'
-
-    # rolling window of prices; cyclical queue
-    historical_prices = [None] * 4
-    hsp_head = -1
-
     # load historical price for PAIR_WITH
     get_historical_price()
-
-    # prevent including a coin in volatile_coins if it has already appeared there less than TIME_DIFFERENCE minutes ago
-    volatility_cooloff = {}
-
-    # use separate files for testing and live trading
-    if TEST_MODE:
-        coins_bought_file_path = 'test_' + coins_bought_file_path
 
     # if saved coins_bought json file exists and it's not empty then load it
     if os.path.isfile(coins_bought_file_path) and os.stat(coins_bought_file_path).st_size!= 0:
@@ -797,7 +579,8 @@ if __name__ == '__main__':
     CONNECTION_ERROR_COUNT = 0
     #load previous session stuff
     session('load')
-    bot_launch()
+
+    report('message', 'Bot initiated')
 
     while True:
 
@@ -807,6 +590,7 @@ if __name__ == '__main__':
             tickers_list_changed = False
         # print(f'Tickers list changed and loaded: {tickers}')
         try:
+            pause_bot()
             orders, last_price, volume = buy()
             update_portfolio(orders, last_price, volume)
             coins_sold = sell_coins()
@@ -817,8 +601,12 @@ if __name__ == '__main__':
         except ConnectionError as ce:
             CONNECTION_ERROR_COUNT +=1
             print(f'{txcolors.WARNING}We got a timeout error from from binance. Going to re-loop. Current Count: {CONNECTION_ERROR_COUNT}\n{ce}{txcolors.DEFAULT}')
+
+        dynamic_settings('mrs_settings', TIME_DIFFERENCE, RECHECK_INTERVAL)
+
         #gogos MOD to adjust dynamically stoploss trailingstop loss and take profit based on wins
         dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL)
         #session calculations like unrealised potential etc
         session('calc')
+        report('console','')
         time.sleep(settings_struct['RECHECK_INTERVAL'])

@@ -66,7 +66,8 @@ session_struct = {
      'dynamics_state': 'up',
      'last_trade_won': 2,
      'last_report_time': 0,
-     'session_start': False
+     'session_start': False,
+     'prices_grabbed': False
 }
 
 args = parse_args()
@@ -170,3 +171,22 @@ if api_ready is not True:
 if DEBUG:
     print(f'Loaded config below\n{json.dumps(parsed_config, indent=4)}')
     print(f'Your credentials have been loaded from {creds_file}')
+
+# Load coins to be ignored from file
+ignorelist=[line.strip() for line in open(IGNORE_LIST)]
+
+# Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
+if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]
+
+# prevent including a coin in volatile_coins if it has already appeared there less than TIME_DIFFERENCE minutes ago
+volatility_cooloff = {}
+
+# try to load all the coins bought by the bot if the file exists and is not empty
+coins_bought = {}
+
+# path to the saved coins_bought file
+coins_bought_file_path = 'coins_bought.json'
+
+# use separate files for testing and live trading
+if TEST_MODE:
+   coins_bought_file_path = 'test_' + coins_bought_file_path
