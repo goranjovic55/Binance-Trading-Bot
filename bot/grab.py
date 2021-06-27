@@ -106,7 +106,6 @@ def get_price(add_to_historical=True):
 
     if add_to_historical:
         hsp_head += 1
-        print(f"SEED: historical_prices: {historical_prices}")
 
         if hsp_head == 2:
             hsp_head = 0
