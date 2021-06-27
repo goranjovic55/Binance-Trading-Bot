@@ -48,7 +48,7 @@ trading_options:
 
   # Use more than one TRADE_SLOTS of the same coin? Set to False
   # allows buying the same coin again if a future buy signal is received
-  UNIQUE_BUYS: True
+  UNIQUE_BUYS: False
 
   # List of trading pairs to exclude
   # by default we're excluding the most popular fiat pairs
@@ -74,15 +74,15 @@ trading_options:
   IGNORE_LIST: 'ignorelist.txt'
 
   # the amount of time in MINUTES to calculate the difference from the current price (minimum: 1).
-  TIME_DIFFERENCE: 5
+  TIME_DIFFERENCE: 1
 
   # Number of times to check for TP/SL during each TIME_DIFFERENCE (minimum: 1).
   # Don't spam the Binance API, you will be banned (max 1200 requests per minute per IP).
-  RECHECK_INTERVAL: 3
+  RECHECK_INTERVAL: 2
 
   # the difference in % between the first and second checks for the price.
   CHANGE_IN_PRICE_MIN: -1.5
-  CHANGE_IN_PRICE_MAX: -0.5
+  CHANGE_IN_PRICE_MAX: 1.5
 
   # define in % when to sell a coin that's not making a profit.
   STOP_LOSS: 1.5
@@ -95,7 +95,7 @@ trading_options:
 
   # when hit TAKE_PROFIT, move STOP_LOSS to TRAILING_STOP_LOSS percentage points below TAKE_PROFIT hence locking in profit
   # when hit TAKE_PROFIT, move TAKE_PROFIT up by TRAILING_TAKE_PROFIT percentage points
-  TRAILING_STOP_LOSS: 0.35
+  TRAILING_STOP_LOSS: 0.20
   TRAILING_TAKE_PROFIT: .01
 
   # gogo MOD Dynamic perecent applied to SL and TP upon WIN or LOSS trade
@@ -107,7 +107,7 @@ trading_options:
   STOP_LOSS_ON_PAUSE: False
 
   # mix % and signals for Buying
-  PERCENT_SIGNAL_BUY: True
+  PERCENT_SIGNAL_BUY: False
 
   # MODS SETTINGS_STRING
   PAUSEBOTMOD_THRESHOLD: 14
@@ -120,14 +120,14 @@ trading_options:
 
   # sort list by volume or price_change
   LIST_AUTOCREATE: True
-  LIST_CREATE_TYPE: tradingview
+  LIST_CREATE_TYPE: binance_b
   SORT_LIST_TYPE: volume
 
   SIGNALLING_MODULES:
-    - pausebotmod
-    # - custsignalmod
-    # - custsignalmod_speed
-    # - signalsamplemod
-    - rsi_signalmod_nigec
-    - rsi_stoch_signalmod_djcommie
-    - ta_indicator_signalmod_firewatch
+    #- modules.pausebotmod
+    #- modules.custsignalmod
+    #- modules.custsignalmod_speed
+    #- modules.signalsamplemod
+    #- modules.rsi_signalmod_nigec
+    #- modules.rsi_stoch_signalmod_djcommie
+    #- modules.ta_indicator_signalmod_firewatch
