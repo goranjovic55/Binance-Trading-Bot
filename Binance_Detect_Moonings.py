@@ -16,7 +16,7 @@ or others connected with the program.
 # use for environment variables
 from genericpath import exists
 import os
-from rsi_signalmod_nigec import FULL_LOG
+from modules.rsi_signalmod_nigec import FULL_LOG
 
 # use if needed to pass args to external modules
 import sys
