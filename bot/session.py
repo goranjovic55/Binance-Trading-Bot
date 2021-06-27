@@ -69,7 +69,8 @@ def session(type):
             'TRAILING_TAKE_PROFIT': settings_struct['TRAILING_TAKE_PROFIT'],
             'HOLDING_TIME_LIMIT': settings_struct['HOLDING_TIME_LIMIT'],
             'market_resistance': session_struct['market_resistance'],
-            'market_support': session_struct['market_support']
+            'market_support': session_struct['market_support'],
+            'trade_slots': session_struct['trade_slots']
             }
 
         # save the coins in a json file in the same directory
@@ -100,6 +101,7 @@ def session(type):
             session_struct['last_trade_won'] = session_info['last_trade_won']
             session_struct['market_resistance'] = session_info['market_resistance']
             session_struct['market_support'] = session_info['market_support']
+            session_struct['trade_slots'] = session_info['trade_slots']
 
             settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE
             settings_struct['RECHECK_INTERVAL'] = RECHECK_INTERVAL

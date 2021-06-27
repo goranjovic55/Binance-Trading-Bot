@@ -183,3 +183,10 @@ volatility_cooloff = {}
 
 # try to load all the coins bought by the bot if the file exists and is not empty
 coins_bought = {}
+
+# path to the saved coins_bought file
+coins_bought_file_path = 'coins_bought.json'
+
+# use separate files for testing and live trading
+if TEST_MODE:
+   coins_bought_file_path = 'test_' + coins_bought_file_path

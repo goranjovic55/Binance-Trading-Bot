@@ -505,12 +505,6 @@ def remove_from_portfolio(coins_sold):
         session('save')
 
 
-def bot_launch():
-    # Bot relays session start to Discord channel
-    bot_message = "Bot initiated"
-    report('message', bot_message)
-
-
 if __name__ == '__main__':
 
     mymodule = {}
@@ -519,24 +513,11 @@ if __name__ == '__main__':
     global bot_paused
     bot_paused = False
 
-    # try to load all the coins bought by the bot if the file exists and is not empty
-    coins_bought = {}
-
     # get decimal places for each coin as used by Binance
     get_symbol_info()
 
-    # path to the saved coins_bought file
-    coins_bought_file_path = 'coins_bought.json'
-
     # load historical price for PAIR_WITH
     get_historical_price()
-
-    # prevent including a coin in volatile_coins if it has already appeared there less than TIME_DIFFERENCE minutes ago
-    volatility_cooloff = {}
-
-    # use separate files for testing and live trading
-    if TEST_MODE:
-        coins_bought_file_path = 'test_' + coins_bought_file_path
 
     # if saved coins_bought json file exists and it's not empty then load it
     if os.path.isfile(coins_bought_file_path) and os.stat(coins_bought_file_path).st_size!= 0:
@@ -598,7 +579,8 @@ if __name__ == '__main__':
     CONNECTION_ERROR_COUNT = 0
     #load previous session stuff
     session('load')
-    bot_launch()
+
+    report('message', 'Bot initiated')
 
     while True:
 
