@@ -162,8 +162,6 @@ def wait_for_price(type):
           if coins_up != 0: session_struct['market_resistance'] = session_struct['market_resistance'] / coins_up
           if coins_down != 0: session_struct['market_support'] = -session_struct['market_support'] / coins_down
 
-          dynamic_settings('mrs_settings', TIME_DIFFERENCE, RECHECK_INTERVAL)
-
        # calculate the difference in prices
        for coin in historical_prices[hsp_head]:
 
@@ -771,6 +769,9 @@ if __name__ == '__main__':
         except ConnectionError as ce:
             CONNECTION_ERROR_COUNT +=1
             print(f'{txcolors.WARNING}We got a timeout error from from binance. Going to re-loop. Current Count: {CONNECTION_ERROR_COUNT}\n{ce}{txcolors.DEFAULT}')
+
+        dynamic_settings('mrs_settings', TIME_DIFFERENCE, RECHECK_INTERVAL)
+
         #gogos MOD to adjust dynamically stoploss trailingstop loss and take profit based on wins
         dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL)
         #session calculations like unrealised potential etc
