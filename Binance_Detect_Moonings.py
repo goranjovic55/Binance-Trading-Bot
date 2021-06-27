@@ -61,11 +61,11 @@ from helpers.handle_creds import (
     load_telegram_creds
 )
 
-from settings import *
-from dynamics import *
-from report import *
-from session import *
-from tickers_list import *
+from bot.settings import *
+from bot.dynamics import *
+from bot.report import *
+from bot.session import *
+from bot.tickers_list import *
 
 # print with timestamps
 old_out = sys.stdout
