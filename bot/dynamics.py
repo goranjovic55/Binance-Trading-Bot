@@ -45,6 +45,7 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
             settings_struct['CHANGE_IN_PRICE_MAX'] = settings_struct['CHANGE_IN_PRICE_MAX'] - (settings_struct['CHANGE_IN_PRICE_MAX'] * DYNAMIC_WIN_LOSS_UP) /100
             settings_struct['CHANGE_IN_PRICE_MIN'] = settings_struct['CHANGE_IN_PRICE_MIN'] + (settings_struct['CHANGE_IN_PRICE_MIN'] * DYNAMIC_WIN_LOSS_UP) /100
             settings_struct['HOLDING_TIME_LIMIT'] = settings_struct['HOLDING_TIME_LIMIT'] + (settings_struct['HOLDING_TIME_LIMIT'] * DYNAMIC_WIN_LOSS_UP) / 100
+            settings_struct['DYNAMIC_CHANGE_IN_PRICE'] = settings_struct['DYNAMIC_CHANGE_IN_PRICE'] + (settings_struct['DYNAMIC_CHANGE_IN_PRICE'] * DYNAMIC_WIN_LOSS_UP) / 100
             settings_struct['TIME_DIFFERENCE'] = settings_struct['TIME_DIFFERENCE'] + TIME_DIFFERENCE
             settings_struct['RECHECK_INTERVAL'] = settings_struct['RECHECK_INTERVAL'] + RECHECK_INTERVAL
             session_struct['dynamic'] = 'none'
@@ -59,6 +60,7 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
             settings_struct['CHANGE_IN_PRICE_MAX'] = settings_struct['CHANGE_IN_PRICE_MAX'] + (settings_struct['CHANGE_IN_PRICE_MAX'] * DYNAMIC_WIN_LOSS_UP) /100
             settings_struct['CHANGE_IN_PRICE_MIN'] = settings_struct['CHANGE_IN_PRICE_MIN'] - (settings_struct['CHANGE_IN_PRICE_MIN'] * DYNAMIC_WIN_LOSS_UP) /100
             settings_struct['HOLDING_TIME_LIMIT'] = settings_struct['HOLDING_TIME_LIMIT'] - (settings_struct['HOLDING_TIME_LIMIT'] * DYNAMIC_WIN_LOSS_UP) / 100
+            settings_struct['DYNAMIC_CHANGE_IN_PRICE'] = settings_struct['DYNAMIC_CHANGE_IN_PRICE'] - (settings_struct['DYNAMIC_CHANGE_IN_PRICE'] * DYNAMIC_WIN_LOSS_UP) / 100
             if settings_struct['TIME_DIFFERENCE'] > TIME_DIFFERENCE: settings_struct['TIME_DIFFERENCE'] = settings_struct['TIME_DIFFERENCE'] - TIME_DIFFERENCE
             if settings_struct['RECHECK_INTERVAL'] > RECHECK_INTERVAL: settings_struct['RECHECK_INTERVAL'] = settings_struct['RECHECK_INTERVAL'] - RECHECK_INTERVAL
             session_struct['dynamic'] = 'none'
@@ -82,6 +84,6 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
 
         if type == 'mrs_settings':
 
-           settings_struct['CHANGE_IN_PRICE_MIN'] = session_struct['market_support'] + (session_struct['market_support'] * DYNAMIC_WIN_LOSS_UP) / 100
-           settings_struct['CHANGE_IN_PRICE_MAX'] = session_struct['market_support'] - (session_struct['market_support'] * DYNAMIC_WIN_LOSS_UP) / 100
-           settings_struct['TAKE_PROFIT'] = session_struct['market_resistance'] + (session_struct['market_resistance'] * DYNAMIC_WIN_LOSS_UP) / 100
+           settings_struct['CHANGE_IN_PRICE_MIN'] = session_struct['market_support'] + (session_struct['market_support'] * settings_struct['DYNAMIC_CHANGE_IN_PRICE']) / 100
+           settings_struct['CHANGE_IN_PRICE_MAX'] = session_struct['market_support'] - (session_struct['market_support'] * settings_struct['DYNAMIC_CHANGE_IN_PRICE']) / 100
+           settings_struct['TAKE_PROFIT'] = session_struct['market_resistance'] + (session_struct['market_resistance'] * settings_struct['DYNAMIC_CHANGE_IN_PRICE']) / 100

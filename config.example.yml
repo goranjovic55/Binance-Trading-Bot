@@ -102,6 +102,7 @@ trading_options:
   DYNAMIC_SETTINGS: True
   DYNAMIC_WIN_LOSS_UP: 10
   DYNAMIC_WIN_LOSS_DOWN : 10
+  DYNAMIC_CHANGE_IN_PRICE: 10
 
   # activate all stop losses on pausebot mod trigger
   STOP_LOSS_ON_PAUSE: False

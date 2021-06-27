@@ -111,6 +111,7 @@ TRADING_FEE = parsed_config['trading_options']['TRADING_FEE']
 SIGNALLING_MODULES = parsed_config['trading_options']['SIGNALLING_MODULES']
 DYNAMIC_WIN_LOSS_UP = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_UP']
 DYNAMIC_WIN_LOSS_DOWN = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_DOWN']
+DYNAMIC_CHANGE_IN_PRICE = parsed_config['trading_options']['DYNAMIC_CHANGE_IN_PRICE']
 DYNAMIC_SETTINGS = parsed_config['trading_options']['DYNAMIC_SETTINGS']
 STOP_LOSS_ON_PAUSE = parsed_config['trading_options']['STOP_LOSS_ON_PAUSE']
 PERCENT_SIGNAL_BUY = parsed_config['trading_options']['PERCENT_SIGNAL_BUY']
@@ -136,6 +137,7 @@ settings_struct = {
       'TRAILING_STOP_LOSS': TRAILING_STOP_LOSS,
       'TRAILING_TAKE_PROFIT': TRAILING_TAKE_PROFIT,
       'HOLDING_TIME_LIMIT': HOLDING_TIME_LIMIT,
+      'DYNAMIC_CHANGE_IN_PRICE': DYNAMIC_CHANGE_IN_PRICE
 }
 
 # Default no debugging
