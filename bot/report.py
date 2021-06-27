@@ -114,6 +114,7 @@ def report(type, reportline):
                    +str(INVESTMENT_VALUE_GAIN_TRIM)+' | Uptime: '\
                    +str(timedelta(seconds=(int(session_struct['session_uptime']/1000))))
 
+
     #gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
         # print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol}> {reportline} <<{txcolors.DEFAULT}")
@@ -133,7 +134,8 @@ def report(type, reportline):
         ,f"Initial investment:      {txcolors.SELL_PROFIT if session_struct['investment_value'] >= INVESTMENT else txcolors.SELL_LOSS}{session_struct['investment_value']:.2f} USD\n"
         ,f"Investment gain:         {txcolors.SELL_PROFIT if session_struct['INVESTMENT_GAIN'] >= 0 else txcolors.SELL_LOSS}{session_struct['INVESTMENT_GAIN']:.2f}%\n"
         ,f"Investment value vain:   {txcolors.SELL_PROFIT if session_struct['investment_value_gain'] >= 0 else txcolors.SELL_LOSS}{str(INVESTMENT_VALUE_GAIN)} USD\n"
-        ,f"{reportline} {txcolors.DEFAULT}")
+        ,f"Market Resistance:       {session_struct['market_resistance']}\n"
+        ,f"Market Support:          {session_struct['market_support']}\n")
 
     if type == 'message':
         TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
