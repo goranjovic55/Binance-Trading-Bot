@@ -197,7 +197,7 @@ def wait_for_price(type):
                          # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
                          if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=settings_struct['TIME_DIFFERENCE']):
                             volatility_cooloff[coin] = datetime.now()
-                            if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
+                            if session_struct['trade_slots'] + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
                                volatile_coins[coin] = round(threshold_check, 3)
                                print(f"{coin} has gained {volatile_coins[coin]}% within the last {settings_struct['TIME_DIFFERENCE']} minutes, and coin {excoin} recived a signal... calculating {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
                             #else:
@@ -216,7 +216,7 @@ def wait_for_price(type):
                    if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=settings_struct['TIME_DIFFERENCE']):
                        volatility_cooloff[coin] = datetime.now()
 
-                   if len(coins_bought) + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
+                   if session_struct['trade_slots'] + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
                        volatile_coins[coin] = round(threshold_check, 3)
                        print(f"{coin} has gained {volatile_coins[coin]}% within the last {settings_struct['TIME_DIFFERENCE']} minutes {QUANTITY} {PAIR_WITH} value of {coin} for purchase!")
 
