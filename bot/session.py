@@ -23,7 +23,7 @@ import time
 # used to store trades and sell assets
 import json
 
-from settings import *
+from bot.settings import *
 
 def session(type):
     #various session calculations like uptime 24H gain profit risk to reward ratio unrealised profit etc

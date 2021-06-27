@@ -16,7 +16,7 @@ from helpers.handle_creds import (
     load_telegram_creds
 )
 
-from settings import *
+from bot.settings import *
 
 def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
 

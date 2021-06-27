@@ -23,7 +23,7 @@ from helpers.handle_creds import (
     load_telegram_creds
 )
 
-from settings import *
+from bot.settings import *
 
 def decimals():
     # set number of decimals for reporting fractions

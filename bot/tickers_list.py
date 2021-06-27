@@ -27,7 +27,7 @@ from helpers.handle_creds import (
     load_telegram_creds
 )
 
-from settings import *
+from bot.settings import *
 
 # Authenticate with the client, Ensure API key is good before continuing
 if AMERICAN_USER:
