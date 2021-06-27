@@ -177,3 +177,9 @@ ignorelist=[line.strip() for line in open(IGNORE_LIST)]
 
 # Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
 if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]
+
+# prevent including a coin in volatile_coins if it has already appeared there less than TIME_DIFFERENCE minutes ago
+volatility_cooloff = {}
+
+# try to load all the coins bought by the bot if the file exists and is not empty
+coins_bought = {}
