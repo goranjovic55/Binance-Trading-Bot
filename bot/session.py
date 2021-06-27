@@ -30,7 +30,7 @@ def session(type):
     global session_struct, settings_struct
 
     if type == 'calc':
-        session_struct['TOTAL_GAINS'] = ((QUANTITY * session_struct['session_profit']) / 100)
+        session_struct['TOTAL_GAINS'] = session_struct['session_profit']
         session_struct['NEW_BALANCE'] = (INVESTMENT + session_struct['TOTAL_GAINS'])
         session_struct['INVESTMENT_GAIN'] = (session_struct['TOTAL_GAINS'] / INVESTMENT) * 100
         session_struct['CURRENT_EXPOSURE'] = (QUANTITY * session_struct['trade_slots'])
