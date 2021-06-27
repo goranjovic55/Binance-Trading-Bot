@@ -204,6 +204,7 @@ def wait_for_price(type):
        if coins_up != 0: session_struct['market_resistance'] = session_struct['market_resistance'] / coins_up
        if coins_down != 0: session_struct['market_support'] = -session_struct['market_support'] / coins_down
 
+       dynamic_settings('mrs_settings', TIME_DIFFERENCE, RECHECK_INTERVAL)
 
     # calculate the difference in prices
     for coin in historical_prices[hsp_head]:
@@ -584,7 +585,7 @@ def sell_coins():
             continue
 
     if len(coins_bought) > 0:
-       print(f"TP:{coinTakeProfit:.{decimals()}f}:{coins_bought[coin]['take_profit']:.2f} or SL:{coinStopLoss:.{decimals()}f}:{coins_bought[coin]['stop_loss']:.2f} not yet reached, not selling {coin} for now >> Bought at: {BUY_PRICE} - Now: {LAST_PRICE} : {txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}{priceChange:.2f}% Est: {(QUANTITY*(priceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
+       print(f"TP:{coinTakeProfit:.{decimals()}f}:{coins_bought[coin]['take_profit']:.2f} or SL:{coinStopLoss:.{decimals()}f}:{coins_bought[coin]['stop_loss']:.2f} not yet reached, not selling {coin} for now >> Bought at: {BUY_PRICE} - Now: {LAST_PRICE} : {txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}{priceChange:.2f}% Est: {(QUANTITY*(priceChange-(buyFee+sellFee)))/100:.{decimals()}f} {PAIR_WITH} - CIP: {settings_struct['CHANGE_IN_PRICE_MIN']:.2f}/{settings_struct['CHANGE_IN_PRICE_MAX']:.2f} - TAKE_PROFIT: {settings_struct['TAKE_PROFIT']:.2f}{txcolors.DEFAULT}")
     if FULL_LOG:
         if hsp_head == 1 and len(coins_bought) == 0: print(f"No trade slots are currently in use")
 
@@ -722,7 +723,7 @@ if __name__ == '__main__':
     coins_bought_file_path = 'coins_bought.json'
 
     # rolling window of prices; cyclical queue
-    historical_prices = [None] * (TIME_DIFFERENCE * RECHECK_INTERVAL)
+    historical_prices = [None] * 4
     hsp_head = -1
 
     # load historical price for PAIR_WITH

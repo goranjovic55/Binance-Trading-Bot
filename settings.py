@@ -65,7 +65,8 @@ session_struct = {
      'trade_slots': 0,
      'dynamics_state': 'up',
      'last_trade_won': 2,
-     'last_report_time': 0
+     'last_report_time': 0,
+     'session_start': False
 }
 
 args = parse_args()
