@@ -123,7 +123,7 @@ def reload_tickers():
     #reload tickers list by volume if triggered recreation
     if session_struct['tickers_list_changed'] == True :
         tickers=[line.strip() for line in open(TICKERS_LIST)]
-        tickers_list_changed = False
+        session_struct['tickers_list_changed'] = False
     # print(f'Tickers list changed and loaded: {tickers}')
 
 #sort tickers list by volume
