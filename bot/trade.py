@@ -29,7 +29,6 @@ from helpers.handle_creds import (
 
 from bot.settings import *
 from bot.report import *
-from bot.tickers_list import *
 from bot.grab import *
 
 def is_fiat():
@@ -272,10 +271,10 @@ def sell_coins():
 
                 session_struct['session_profit'] = session_struct['session_profit'] + profit
                 session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
+                session_struct['reload_tickers_list'] = True
 
                 report('message',REPORT)
                 report('log',REPORT)
-                tickers_list(SORT_LIST_TYPE)
 
             continue
 
@@ -370,7 +369,6 @@ def update_portfolio(orders, last_price, volume):
         session_struct['trade_slots'] = len(coins_bought)
 
 
-
 def remove_from_portfolio(coins_sold):
 
     global session_struct
@@ -388,6 +386,7 @@ def remove_from_portfolio(coins_sold):
                     json.dump(coins_bought, file, indent=4)
                 break
         session_struct['trade_slots'] = len(coins_bought)
+        session_struct['reload_tickers_list'] = True
 
 
 READ_TIMEOUT_COUNT=0

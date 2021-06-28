@@ -67,7 +67,8 @@ session_struct = {
      'last_trade_won': 2,
      'last_report_time': 0,
      'session_start': False,
-     'prices_grabbed': False
+     'prices_grabbed': False,
+     'reload_tickers_list': True
 }
 
 args = parse_args()
