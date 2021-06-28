@@ -223,8 +223,7 @@ if __name__ == '__main__':
 
         #write report to console
         if time.time() - session_struct['last_report_time'] > REPORT_FREQUENCY:
-            if DETAILED_REPORTS: report('detailed','')
-            if not DETAILED_REPORTS: report('console','')
+            report(settings_struct['SESSION_REPORT_STYLE'],'')
             session_struct['last_report_time'] = time.time()
 
         #sleep for RECHECK_INTERVAL time
