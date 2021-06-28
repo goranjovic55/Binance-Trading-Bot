@@ -88,7 +88,6 @@ parsed_creds = load_config(creds_file)
 TEST_MODE = parsed_config['script_options']['TEST_MODE']
 # LOG_TRADES = parsed_config['script_options'].get('LOG_TRADES')
 LOG_FILE = parsed_config['script_options'].get('LOG_FILE')
-DETAILED_REPORTS = parsed_config['script_options']['DETAILED_REPORTS']
 SESSION_REPORT_STYLE = parsed_config['script_options']['SESSION_REPORT_STYLE']
 DEBUG_SETTING = parsed_config['script_options'].get('VERBOSE_MODE')
 AMERICAN_USER = parsed_config['script_options'].get('AMERICAN_USER')
@@ -125,7 +124,6 @@ LIST_AUTOCREATE = parsed_config['trading_options']['LIST_AUTOCREATE']
 LIST_CREATE_TYPE = parsed_config['trading_options']['LIST_CREATE_TYPE']
 IGNORE_LIST = parsed_config['trading_options']['IGNORE_LIST']
 
-DETAILED_REPORTS = parsed_config['script_options']['DETAILED_REPORTS']
 REPORT_FREQUENCY = parsed_config['script_options']['REPORT_FREQUENCY']
 HOLDING_INTERVAL_LIMIT = parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
 QUANTITY = INVESTMENT/TRADE_SLOTS
