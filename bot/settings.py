@@ -89,6 +89,7 @@ TEST_MODE = parsed_config['script_options']['TEST_MODE']
 # LOG_TRADES = parsed_config['script_options'].get('LOG_TRADES')
 LOG_FILE = parsed_config['script_options'].get('LOG_FILE')
 DETAILED_REPORTS = parsed_config['script_options']['DETAILED_REPORTS']
+SESSION_REPORT_STYLE = parsed_config['script_options']['SESSION_REPORT_STYLE']
 DEBUG_SETTING = parsed_config['script_options'].get('VERBOSE_MODE')
 AMERICAN_USER = parsed_config['script_options'].get('AMERICAN_USER')
 BOT_MESSAGE_REPORTS =  parsed_config['script_options'].get('BOT_MESSAGE_REPORTS')
@@ -142,7 +143,8 @@ settings_struct = {
       'TRAILING_STOP_LOSS': TRAILING_STOP_LOSS,
       'TRAILING_TAKE_PROFIT': TRAILING_TAKE_PROFIT,
       'HOLDING_TIME_LIMIT': HOLDING_TIME_LIMIT,
-      'DYNAMIC_CHANGE_IN_PRICE': DYNAMIC_CHANGE_IN_PRICE
+      'DYNAMIC_CHANGE_IN_PRICE': DYNAMIC_CHANGE_IN_PRICE,
+      'SESSION_REPORT_STYLE': SESSION_REPORT_STYLE
 }
 
 # Default no debugging
