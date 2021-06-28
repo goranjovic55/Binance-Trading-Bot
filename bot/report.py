@@ -46,6 +46,15 @@ def is_fiat():
     else:
         return False
 
+
+def txcolor(input):
+    if input > 0:
+        return txcolors.SELL_PROFIT
+    elif input < 0:
+        return txcolors.SELL_LOSS
+    else:
+        return txcolors.DEFAULT
+
 def discord_avatar():
     # Custom coin avatar dependant on PAIR_WITH
     # Fallback image is a nice Binance logo, yay!
@@ -99,7 +108,7 @@ def report(type, reportline):
     else:
         UNREALISED_PERCENT = 0
     if (session_struct['win_trade_count'] > 0) and (session_struct['loss_trade_count'] > 0):
-        WIN_LOSS_PERCENT = round((session_struct['win_trade_count']  / (session_struct['win_trade_count']  + session_struct['loss_trade_count'])) * 100, 2)
+        WIN_LOSS_PERCENT = round((session_struct['win_trade_count'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])) * 100, 2)
     else:
         WIN_LOSS_PERCENT = 100
 
@@ -122,20 +131,36 @@ def report(type, reportline):
 
     #More detailed/verbose report style
     if type == 'detailed':
-        print(f"{txcolors.NOTICE}>> Using {session_struct['trade_slots']}/{TRADE_SLOTS} trade slots. << \n"
-        ,f"Profit on unsold coins:  {txcolors.SELL_PROFIT if UNREALISED_PERCENT >= 0 else txcolors.SELL_LOSS}{UNREALISED_PERCENT:.2f}%\n"
-        ,f"Closed trades:           {txcolors.SELL_PROFIT if session_struct['closed_trades_percent'] >= 0 else txcolors.SELL_LOSS}{str(CLOSED_TRADES_PERCENT_TRIM)}%\n"
-        ,f"Session profit:          {txcolors.SELL_PROFIT if session_struct['session_profit'] >= 0 else txcolors.SELL_LOSS}{str(SESSION_PROFIT_TRIM)} {PAIR_WITH}\n"
-        ,f"Est. total gains:        {txcolors.SELL_PROFIT if session_struct['TOTAL_GAINS'] >= 0 else txcolors.SELL_LOSS}{session_struct['TOTAL_GAINS']:g} {PAIR_WITH}\n"
-        ,f"Trades won/lost:         {txcolors.SELL_PROFIT if session_struct['win_trade_count'] >= session_struct['loss_trade_count'] else txcolors.SELL_LOSS}{session_struct['win_trade_count']} / {txcolors.SELL_PROFIT if session_struct['win_trade_count'] >= session_struct['loss_trade_count'] else txcolors.SELL_LOSS}{session_struct['loss_trade_count']}\n"
-        ,f"Investment:              {txcolors.DEFAULT}{INVESTMENT_TOTAL:g} {PAIR_WITH}\n"
-        ,f"Current exposure:        {txcolors.DEFAULT}{session_struct['CURRENT_EXPOSURE']:g} {PAIR_WITH}\n"
-        ,f"New balance:             {txcolors.SELL_PROFIT if session_struct['NEW_BALANCE'] >= INVESTMENT_TOTAL else txcolors.SELL_LOSS}{session_struct['NEW_BALANCE']:g} {PAIR_WITH}\n"
-        ,f"Initial investment:      {txcolors.SELL_PROFIT if session_struct['investment_value'] >= INVESTMENT else txcolors.SELL_LOSS}{session_struct['investment_value']:.2f} USD\n"
-        ,f"Investment gain:         {txcolors.SELL_PROFIT if session_struct['INVESTMENT_GAIN'] >= 0 else txcolors.SELL_LOSS}{session_struct['INVESTMENT_GAIN']:.2f}%\n"
-        ,f"Investment value vain:   {txcolors.SELL_PROFIT if session_struct['investment_value_gain'] >= 0 else txcolors.SELL_LOSS}{str(INVESTMENT_VALUE_GAIN)} USD\n"
-        ,f"Market Resistance:       {session_struct['market_resistance']}\n"
-        ,f"Market Support:          {session_struct['market_support']}\n")
+        print(
+            f"{txcolors.NOTICE}>> Using {session_struct['trade_slots']}/{TRADE_SLOTS} trade slots. << \n"
+            , f"Profit on unsold coins: {txcolor(UNREALISED_PERCENT)}"
+              f"{UNREALISED_PERCENT:.2f}%\n"
+            , f"Closed trades:          {txcolor(session_struct['closed_trades_percent'])}"
+              f"{str(CLOSED_TRADES_PERCENT_TRIM)}%\n"
+            , f"Session profit:         {txcolor(session_struct['session_profit'])}"
+              f"{str(SESSION_PROFIT_TRIM)} {PAIR_WITH}\n"
+            , f"Trades won/lost:        {txcolor(session_struct['win_trade_count']-session_struct['loss_trade_count'])}"
+              f"{session_struct['win_trade_count']} / {session_struct['loss_trade_count']}\n"
+            , f"Investment:             {txcolors.DEFAULT}"
+              f"{INVESTMENT_TOTAL:g} {PAIR_WITH}\n"
+            , f"Current exposure:       {txcolors.DEFAULT}"
+              f"{session_struct['CURRENT_EXPOSURE']:g} {PAIR_WITH}\n"
+            , f"New balance:            {txcolor(session_struct['NEW_BALANCE']-INVESTMENT_TOTAL)}"
+              f"{session_struct['NEW_BALANCE']:g} {PAIR_WITH}\n"
+            , f"Initial investment:     {txcolor(session_struct['investment_value']-INVESTMENT)}"
+              f"{session_struct['investment_value']:.2f} USD\n"
+            , f"Investment gain:        {txcolor(session_struct['INVESTMENT_GAIN'])}"
+              f"{session_struct['INVESTMENT_GAIN']:.2f}%\n"
+            , f"Investment value vain:  {txcolor(session_struct['investment_value_gain'])}"
+              f"{str(INVESTMENT_VALUE_GAIN)} USD\n"
+            , f"Market Resistance:      {txcolors.DEFAULT}"
+              f"{session_struct['market_resistance']:.2f}\n"
+            , f"Market Support:         {txcolors.DEFAULT}"
+              f"{session_struct['market_support']:.2f}\n"
+            , f"Session uptime:         {txcolors.DEFAULT}"
+              f"{str(timedelta(seconds=(int(session_struct['session_uptime']/1000))))}"
+            )
+
 
     if type == 'message':
         TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
