@@ -21,6 +21,9 @@ script_options:
 
   # Bot update tickers on CLI. False = minimal, True = multi-line analysis.
   DETAILED_REPORTS: False
+  
+  # 
+  REPORT_FREQUENCY: 5
 
   # show/hide additional data on bot screen. False = silent, True = spam (debug mode).
   VERBOSE_MODE: False
