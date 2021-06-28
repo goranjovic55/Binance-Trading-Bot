@@ -146,10 +146,6 @@ if __name__ == '__main__':
 
     mymodule = {}
 
-    # set to false at Start
-    global bot_paused
-    bot_paused = False
-
     print('Press Ctrl-Q to stop the script')
 
     if not TEST_MODE:
