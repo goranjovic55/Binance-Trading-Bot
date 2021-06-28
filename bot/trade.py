@@ -369,6 +369,8 @@ def update_portfolio(orders, last_price, volume):
 
         session_struct['trade_slots'] = len(coins_bought)
 
+
+
 def remove_from_portfolio(coins_sold):
 
     global session_struct
@@ -386,6 +388,10 @@ def remove_from_portfolio(coins_sold):
                     json.dump(coins_bought, file, indent=4)
                 break
         session_struct['trade_slots'] = len(coins_bought)
+
+
+READ_TIMEOUT_COUNT=0
+CONNECTION_ERROR_COUNT = 0
 
 def trade_crypto():
 

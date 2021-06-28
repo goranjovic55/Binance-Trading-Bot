@@ -211,8 +211,6 @@ if __name__ == '__main__':
     # seed initial prices
     get_price()
 
-    READ_TIMEOUT_COUNT=0
-    CONNECTION_ERROR_COUNT = 0
     #load previous session stuff
     session('load')
 
