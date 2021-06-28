@@ -610,4 +610,4 @@ if __name__ == '__main__':
         session('calc')
         if DETAILED_REPORTS: report('detailed','')
         if not DETAILED_REPORTS : report('console','')
-        time.sleep(settings_struct['RECHECK_INTERVAL'])
+        time.sleep(round(settings_struct['RECHECK_INTERVAL']))

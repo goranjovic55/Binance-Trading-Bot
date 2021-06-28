@@ -138,7 +138,7 @@ def wait_for_price(type):
 
     session_struct['prices_grabbed'] = False
 
-    if session_struct['price_timedelta'] < current_time_minutes - float(settings_struct['TIME_DIFFERENCE']):
+    if session_struct['price_timedelta'] < current_time_minutes - round(settings_struct['TIME_DIFFERENCE']):
 
        #print(f'GET PRICE TRIGGERED !!!!! PRICE_TIMEDELTA: {price_timedelta_value} - TIME_DIFFERENCE: {TIME_DIFFERENCE}')
        # retrieve latest prices
@@ -195,9 +195,9 @@ def wait_for_price(type):
                       if excoin == coin:
                         # print(f'EXCOIN: {excoin} == COIN: {coin}')
                          if coin not in volatility_cooloff:
-                            volatility_cooloff[coin] = datetime.now() - timedelta(minutes=settings_struct['TIME_DIFFERENCE'])
+                            volatility_cooloff[coin] = datetime.now() - timedelta(minutes=round(settings_struct['TIME_DIFFERENCE']))
                          # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
-                         if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=settings_struct['TIME_DIFFERENCE']):
+                         if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=round(settings_struct['TIME_DIFFERENCE'])):
                             volatility_cooloff[coin] = datetime.now()
                             if session_struct['trade_slots'] + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
                                volatile_coins[coin] = round(threshold_check, 3)
@@ -212,10 +212,10 @@ def wait_for_price(type):
                if threshold_check > settings_struct['CHANGE_IN_PRICE_MIN'] and threshold_check < settings_struct['CHANGE_IN_PRICE_MAX']:
 
                    if coin not in volatility_cooloff:
-                       volatility_cooloff[coin] = datetime.now() - timedelta(minutes=settings_struct['TIME_DIFFERENCE'])
+                       volatility_cooloff[coin] = datetime.now() - timedelta(minutes=round(settings_struct['TIME_DIFFERENCE']))
 
                    # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
-                   if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=settings_struct['TIME_DIFFERENCE']):
+                   if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=round(settings_struct['TIME_DIFFERENCE'])):
                        volatility_cooloff[coin] = datetime.now()
 
                    if session_struct['trade_slots'] + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
