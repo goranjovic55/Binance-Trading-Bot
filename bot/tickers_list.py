@@ -118,3 +118,20 @@ def tickers_list(type):
                         f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
             session_struct['tickers_list_changed'] = True
             print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
+
+def reload_tickers():
+    #reload tickers list by volume if triggered recreation
+    if session_struct['tickers_list_changed'] == True :
+        tickers=[line.strip() for line in open(TICKERS_LIST)]
+        tickers_list_changed = False
+    # print(f'Tickers list changed and loaded: {tickers}')
+
+#sort tickers list by volume
+if LIST_AUTOCREATE:
+    if LIST_CREATE_TYPE == 'binance':
+        tickers_list('create_b')
+        tickers=[line.strip() for line in open(TICKERS_LIST)]
+
+    if LIST_CREATE_TYPE == 'tradingview':
+        tickers_list('create_ta')
+        tickers=[line.strip() for line in open(TICKERS_LIST)]

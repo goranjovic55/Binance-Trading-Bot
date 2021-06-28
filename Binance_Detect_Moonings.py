@@ -61,6 +61,7 @@ from helpers.handle_creds import (
     load_telegram_creds
 )
 
+#import bot extension functions including main function for trading
 from bot.settings import *
 from bot.dynamics import *
 from bot.report import *
@@ -149,12 +150,6 @@ if __name__ == '__main__':
     global bot_paused
     bot_paused = False
 
-    # get decimal places for each coin as used by Binance
-    get_symbol_info()
-
-    # load historical price for PAIR_WITH
-    get_historical_price()
-
     # if saved coins_bought json file exists and it's not empty then load it
     if os.path.isfile(coins_bought_file_path) and os.stat(coins_bought_file_path).st_size!= 0:
         with open(coins_bought_file_path) as file:
@@ -198,43 +193,43 @@ if __name__ == '__main__':
         print(e)
 
 
-    #sort tickers list by volume
-    if LIST_AUTOCREATE:
-        if LIST_CREATE_TYPE == 'binance':
-            tickers_list('create_b')
-            tickers=[line.strip() for line in open(TICKERS_LIST)]
+    # get decimal places for each coin as used by Binance
+    get_symbol_info()
 
-        if LIST_CREATE_TYPE == 'tradingview':
-            tickers_list('create_ta')
-            tickers=[line.strip() for line in open(TICKERS_LIST)]
+    # load historical price for PAIR_WITH
+    get_historical_price()
 
     # seed initial prices
     get_price()
 
-    #load previous session stuff
+    #load previous session parameters
     session('load')
 
+    #report that bot is started to defined communication channels
     report('message', 'Bot initiated')
 
     while True:
 
-        #reload tickers list by volume if triggered recreation
-        if session_struct['tickers_list_changed'] == True :
-            tickers=[line.strip() for line in open(TICKERS_LIST)]
-            tickers_list_changed = False
-        # print(f'Tickers list changed and loaded: {tickers}')
-
         pause_bot()
 
+        #main trading function
         trade_crypto()
 
+        #use dynamic settings to adjust change in price and take profit based on market support and resistance
         dynamic_settings('mrs_settings', TIME_DIFFERENCE, RECHECK_INTERVAL)
 
         #gogos MOD to adjust dynamically stoploss trailingstop loss and take profit based on wins
         dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL)
+
         #session calculations like unrealised potential etc
         session('calc')
+
+        #save session data to session_info file
         session('save')
+
+        #write report to console
         if DETAILED_REPORTS: report('detailed','')
         if not DETAILED_REPORTS : report('console','')
+
+        #sleep for RECHECK_INTERVAL time
         time.sleep(round(settings_struct['RECHECK_INTERVAL']))
