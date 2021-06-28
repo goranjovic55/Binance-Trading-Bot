@@ -150,11 +150,6 @@ if __name__ == '__main__':
     global bot_paused
     bot_paused = False
 
-    # if saved coins_bought json file exists and it's not empty then load it
-    if os.path.isfile(coins_bought_file_path) and os.stat(coins_bought_file_path).st_size!= 0:
-        with open(coins_bought_file_path) as file:
-                coins_bought = json.load(file)
-
     print('Press Ctrl-Q to stop the script')
 
     if not TEST_MODE:

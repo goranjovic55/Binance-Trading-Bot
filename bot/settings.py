@@ -10,6 +10,9 @@ from helpers.parameters import (
     parse_args, load_config
 )
 
+# used to store trades and sell assets
+import json
+
 # Load creds modules
 from helpers.handle_creds import (
     load_correct_creds, test_api_key,
@@ -193,3 +196,8 @@ coins_bought_file_path = 'coins_bought.json'
 # use separate files for testing and live trading
 if TEST_MODE:
    coins_bought_file_path = 'test_' + coins_bought_file_path
+
+# if saved coins_bought json file exists and it's not empty then load it
+if os.path.isfile(coins_bought_file_path) and os.stat(coins_bought_file_path).st_size!= 0:
+    with open(coins_bought_file_path) as file:
+            coins_bought = json.load(file)
