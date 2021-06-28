@@ -222,8 +222,10 @@ if __name__ == '__main__':
         session('save')
 
         #write report to console
-        if DETAILED_REPORTS: report('detailed','')
-        if not DETAILED_REPORTS : report('console','')
+        if time.time() - session_struct['last_report_time'] > REPORT_FREQUENCY:
+            if DETAILED_REPORTS: report('detailed','')
+            if not DETAILED_REPORTS: report('console','')
+            session_struct['last_report_time'] = time.time()
 
         #sleep for RECHECK_INTERVAL time
         time.sleep(round(settings_struct['RECHECK_INTERVAL']))
