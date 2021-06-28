@@ -125,6 +125,7 @@ LIST_CREATE_TYPE = parsed_config['trading_options']['LIST_CREATE_TYPE']
 IGNORE_LIST = parsed_config['trading_options']['IGNORE_LIST']
 
 DETAILED_REPORTS = parsed_config['script_options']['DETAILED_REPORTS']
+REPORT_FREQUENCY = parsed_config['script_options']['REPORT_FREQUENCY']
 HOLDING_INTERVAL_LIMIT = parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
 QUANTITY = INVESTMENT/TRADE_SLOTS
 
