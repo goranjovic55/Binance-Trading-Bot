@@ -608,5 +608,6 @@ if __name__ == '__main__':
         dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL)
         #session calculations like unrealised potential etc
         session('calc')
-        report('console','')
+        if DETAILED_REPORTS: report('detailed','')
+        if not DETAILED_REPORTS : report('console','')
         time.sleep(settings_struct['RECHECK_INTERVAL'])
