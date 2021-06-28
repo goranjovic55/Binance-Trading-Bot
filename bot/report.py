@@ -147,7 +147,7 @@ def report(type, reportline):
               f"{session_struct['CURRENT_EXPOSURE']:g} {PAIR_WITH}\n"
             , f"New balance:            {txcolor(session_struct['NEW_BALANCE']-INVESTMENT_TOTAL)}"
               f"{session_struct['NEW_BALANCE']:g} {PAIR_WITH}\n"
-            , f"Initial investment:     {txcolor(session_struct['investment_value']-INVESTMENT)}"
+            , f"Initial investment:     {txcolors.DEFAULT}"
               f"{session_struct['investment_value']:.2f} USD\n"
             , f"Investment gain:        {txcolor(session_struct['INVESTMENT_GAIN'])}"
               f"{session_struct['INVESTMENT_GAIN']:.2f}%\n"
