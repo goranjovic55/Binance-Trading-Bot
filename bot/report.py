@@ -159,3 +159,5 @@ def report(type, reportline):
         # print(f'LOG_FILE: {LOG_FILE}')
         with open(LOG_FILE,'a+') as f:
             f.write(timestamp + ' ' + reportline + '\n')
+            
+    session_struct['last_report_time'] = time.time()
