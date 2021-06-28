@@ -19,8 +19,11 @@ script_options:
   # Bot id for BOT_MESSAGE_REPORTS
   BOT_ID: '@>>'
 
-  # Bot update tickers on CLI. False = minimal, True = multi-line analysis.
-  DETAILED_REPORTS: False
+  # Should session status be reported detailed or simple? Options: 'detailed' 'console'
+  SESSION_REPORT_STYLE: 'detailed'
+  
+  # How often the bot reports session status to console, in seconds.
+  REPORT_FREQUENCY: 5
 
   # show/hide additional data on bot screen. False = silent, True = spam (debug mode).
   VERBOSE_MODE: False
