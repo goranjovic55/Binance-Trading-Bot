@@ -215,6 +215,9 @@ if __name__ == '__main__':
         #main trading function
         trade_crypto()
 
+        #recreate tickers list and reload it
+        reload_tickers()
+
         #use dynamic settings to adjust change in price and take profit based on market support and resistance
         dynamic_settings('mrs_settings', TIME_DIFFERENCE, RECHECK_INTERVAL)
 
