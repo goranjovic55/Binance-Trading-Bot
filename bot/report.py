@@ -25,27 +25,6 @@ from helpers.handle_creds import (
 
 from bot.settings import *
 
-def decimals():
-    # set number of decimals for reporting fractions
-    if is_fiat():
-        return 2
-    else:
-        return 8
-
-def is_fiat():
-    # check if we are using a fiat as a base currency
-    global hsp_head
-    PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
-    #list below is in the order that Binance displays them, apologies for not using ASC order but this is easier to update later
-    fiats = ['USDT', 'BUSD', 'AUD', 'BRL', 'EUR', 'GBP', 'RUB', \
-             'TRY', 'TUSD', 'USDC', 'PAX', 'BIDR', 'DAI', 'IDRT', \
-             'UAH', 'NGN', 'VAI', 'BVND']
-
-    if PAIR_WITH in fiats:
-        return True
-    else:
-        return False
-
 
 def txcolor(input):
     if input > 0:
@@ -176,7 +155,7 @@ def report(type, reportline):
             )
 
 
-    if type == 'message':
+    if type == 'message' or report_struct['message']:
         TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
         bot_message = SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
@@ -193,10 +172,13 @@ def report(type, reportline):
             response = requests.post(mUrl, json=data)
             #   print(response.content)
 
-    if type == 'log':
+        report_struct['message'] = False
+
+    if type == 'log' or report_struct['log']:
         timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
         # print(f'LOG_FILE: {LOG_FILE}')
         with open(LOG_FILE,'a+') as f:
             f.write(timestamp + ' ' + reportline + '\n')
+        report_struct['log'] = False
 
     session_struct['last_report_time'] = time.time()
