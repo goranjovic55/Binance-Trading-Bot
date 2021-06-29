@@ -29,14 +29,14 @@ def test_api_key(client, BinanceAPIException):
 
             msg = f"Your API key is either incorrect, IP blocked, or incorrect tld/permissons...\n  most likely: {bad_key}\n  {america}\n  {ip_b}"
 
-        elif e.code == -2021:
+        elif  e.code in [-2021,-1021]:
             issue = "https://github.com/CyberPunkMetalHead/Binance-volatility-trading-bot/issues/28"
             desc = "Ensure your OS is time synced with a timeserver. See issue."
             msg = f"Timestamp for this request was 1000ms ahead of the server's time.\n  {issue}\n  {desc}"
 
         else:
             msg = "Encountered an API Error code that was not caught nicely, please open issue...\n"
-            msg += e
+           
 
         return False, msg
 
