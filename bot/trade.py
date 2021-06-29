@@ -28,21 +28,7 @@ from helpers.handle_creds import (
 )
 
 from bot.settings import *
-from bot.report import *
 from bot.grab import *
-
-def is_fiat():
-    # check if we are using a fiat as a base currency
-    global hsp_head
-    PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
-    #list below is in the order that Binance displays them, apologies for not using ASC order but this is easier to update later
-    fiats = ['USDT', 'BUSD', 'AUD', 'BRL', 'EUR', 'GBP', 'RUB', 'TRY', 'TUSD', \
-             'USDC', 'PAX', 'BIDR', 'DAI', 'IDRT', 'UAH', 'NGN', 'VAI', 'BVND']
-
-    if PAIR_WITH in fiats:
-        return True
-    else:
-        return False
 
 def convert_volume():
     '''Converts the volume given in QUANTITY from USDT to the each coin's volume'''
@@ -121,7 +107,8 @@ def buy():
                 }]
 
                 # Log trades
-                report_struct['buy_report'] = REPORT
+                report_struct['report'] = REPORT
+                report_struct['log'] = True
 
                 continue
 
@@ -156,9 +143,8 @@ def buy():
                     if not TEST_MODE:
                        orders[coin] = extract_order_data(order_details)
                        REPORT = str(f"BUY: bought {orders[coin]['volume']} {coin} - average price: {orders[coin]['avgPrice']} {PAIR_WITH}")
-                    report('log',REPORT)
-
-
+                       report_struct['report'] = REPORT
+                       report_struct['log'] = True
 
         else:
             print(f'Signal detected, but there is already an active trade on {coin}')
@@ -276,8 +262,9 @@ def sell_coins():
                 session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
                 session_struct['reload_tickers_list'] = True
 
-                report_struct['sell_report'] = REPORT
-                report('log',REPORT)
+                report_struct['report'] = REPORT
+                report_struct['message'] = True
+                report_struct['log'] = True
 
             continue
 

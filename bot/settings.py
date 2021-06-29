@@ -81,9 +81,31 @@ trading_struct = {
 }
 
 report_struct = {
-      'buy_report': 'none',
-      'sell_report': 'none'
+      'report': '',
+      'message': False,
+      'log': False
 }
+
+def decimals():
+    # set number of decimals for reporting fractions
+    if is_fiat():
+        return 2
+    else:
+        return 8
+
+def is_fiat():
+    # check if we are using a fiat as a base currency
+    global hsp_head
+    PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
+    #list below is in the order that Binance displays them, apologies for not using ASC order but this is easier to update later
+    fiats = ['USDT', 'BUSD', 'AUD', 'BRL', 'EUR', 'GBP', 'RUB', 'TRY', 'TUSD', \
+             'USDC', 'PAX', 'BIDR', 'DAI', 'IDRT', 'UAH', 'NGN', 'VAI', 'BVND']
+
+    if PAIR_WITH in fiats:
+        return True
+    else:
+        return False
+
 
 args = parse_args()
 
