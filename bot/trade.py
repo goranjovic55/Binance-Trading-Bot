@@ -389,9 +389,6 @@ def remove_from_portfolio(coins_sold):
         session_struct['reload_tickers_list'] = True
 
 
-READ_TIMEOUT_COUNT=0
-CONNECTION_ERROR_COUNT = 0
-
 def trade_crypto():
 
     try:
