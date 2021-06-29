@@ -390,7 +390,7 @@ def remove_from_portfolio(coins_sold):
 
 
 def trade_crypto():
-
+    global CONNECTION_ERROR_COUNT, READ_TIMEOUT_COUNT
     try:
 
         orders, last_price, volume = buy()
