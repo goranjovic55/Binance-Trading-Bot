@@ -80,6 +80,11 @@ trading_struct = {
       'holding_timeout_sell': 'none'
 }
 
+report_struct = {
+      'buy_report': 'none',
+      'sell_report': 'none'
+}
+
 args = parse_args()
 
 DEFAULT_CONFIG_FILE = 'config.yml'

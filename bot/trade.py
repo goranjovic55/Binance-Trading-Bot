@@ -121,7 +121,7 @@ def buy():
                 }]
 
                 # Log trades
-                report('log',REPORT)
+                report_struct['buy_report'] = REPORT
 
                 continue
 
@@ -276,7 +276,7 @@ def sell_coins():
                 session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
                 session_struct['reload_tickers_list'] = True
 
-                report('message',REPORT)
+                report_struct['sell_report'] = REPORT
                 report('log',REPORT)
 
             continue

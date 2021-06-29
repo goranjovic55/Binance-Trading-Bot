@@ -92,6 +92,11 @@ def report(type, reportline):
     INVESTMENT_TOTAL_TRIM = "%g" % INVESTMENT_TOTAL
     CLOSED_TRADES_PERCENT_TRIM = "%g" % round(session_struct['closed_trades_percent'], 2)
     SESSION_PROFIT_TRIM = format(session_struct['session_profit'], '.8f')
+
+    if session_struct['win_trade_count'] > 0 or session_struct['loss_trade_count'] > 0:
+       PROFIT_TO_TRADE_RATIO = round(session_struct['closed_trades_percent'] / (session_struct['win_trade_count']+session_struct['loss_trade_count']), 2)
+    else:
+       PROFIT_TO_TRADE_RATIO = 0
     # SESSION_PROFIT_TRIM = "%g" % round(session_profit, DECIMALS)
 
     SETTINGS_STRING = 'Time: '+str(round(settings_struct['TIME_DIFFERENCE'], 2))+' | Interval: '\
@@ -143,7 +148,7 @@ def report(type, reportline):
             , f"Trades won/lost:        {txcolor(session_struct['win_trade_count']-session_struct['loss_trade_count'])}"
               f"{session_struct['win_trade_count']} / {session_struct['loss_trade_count']}\n"
             , f"Profit To Trade:        {txcolors.DEFAULT}"
-              f"{round(session_struct['closed_trades_percent'] / (session_struct['win_trade_count']+session_struct['loss_trade_count']), 2)}\n"
+              f"{PROFIT_TO_TRADE_RATIO}\n"
             , f"Investment:             {txcolors.DEFAULT}"
               f"{INVESTMENT_TOTAL:g} {PAIR_WITH}\n"
             , f"Current exposure:       {txcolors.DEFAULT}"
