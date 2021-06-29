@@ -159,16 +159,20 @@ def report(type, reportline):
         TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
         bot_message = SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
+        if TEST_MODE: MODE = 'TEST'
+        if not TEST_MODE: MODE = 'MAIN'
+        BOT_SETTINGS_ID = BOT_ID + '_' + MODE + '_' + PAIR_WITH + '_' + str(TIME_DIFFERENCE) + 'M'
+
         if BOT_MESSAGE_REPORTS and TELEGRAM_BOT_TOKEN:
             bot_token = TELEGRAM_BOT_TOKEN
             bot_chatID = TELEGRAM_BOT_ID
-            send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + BOT_ID + bot_message
+            send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + BOT_SETTINGS_ID + bot_message
             response = requests.get(send_text)
 
         if BOT_MESSAGE_REPORTS and DISCORD_WEBHOOK:
 
             mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
-            data = {"username" : BOT_ID , "avatar_url": discord_avatar(), "content": bot_message}
+            data = {"username" : BOT_SETTINGS_ID , "avatar_url": discord_avatar(), "content": bot_message}
             response = requests.post(mUrl, json=data)
             #   print(response.content)
 
