@@ -141,6 +141,8 @@ def report(type, reportline):
               f"{str(SESSION_PROFIT_TRIM)} {PAIR_WITH}\n"
             , f"Trades won/lost:        {txcolor(session_struct['win_trade_count']-session_struct['loss_trade_count'])}"
               f"{session_struct['win_trade_count']} / {session_struct['loss_trade_count']}\n"
+            , f"Profit To Trade:        {txcolors.DEFAULT}"
+              f"{round(session_struct['closed_trades_percent'] / (session_struct['win_trade_count']+session_struct['loss_trade_count']), 2)}\n"
             , f"Investment:             {txcolors.DEFAULT}"
               f"{INVESTMENT_TOTAL:g} {PAIR_WITH}\n"
             , f"Current exposure:       {txcolors.DEFAULT}"
@@ -157,6 +159,8 @@ def report(type, reportline):
               f"{session_struct['market_resistance']:.2f}\n"
             , f"Market Support:         {txcolors.DEFAULT}"
               f"{session_struct['market_support']:.2f}\n"
+            , f"Holding Time Limit:     {txcolors.DEFAULT}"
+              f"{settings_struct['HOLDING_TIME_LIMIT']:.2f}\n"
             , f"Session uptime:         {txcolors.DEFAULT}"
               f"{str(timedelta(seconds=(int(session_struct['session_uptime']/1000))))}"
             )
@@ -184,5 +188,5 @@ def report(type, reportline):
         # print(f'LOG_FILE: {LOG_FILE}')
         with open(LOG_FILE,'a+') as f:
             f.write(timestamp + ' ' + reportline + '\n')
-            
+
     session_struct['last_report_time'] = time.time()

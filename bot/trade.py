@@ -167,7 +167,7 @@ def buy():
 
 def sell_coins():
     '''sell coins that have reached the STOP LOSS or TAKE PROFIT threshold'''
-    global session_struct, settings_struct
+    global session_struct, settings_struct, trading_struct
 
     global hsp_head
     global FULL_LOG
@@ -259,10 +259,13 @@ def sell_coins():
                 if priceChange > 0:
                    session_struct['win_trade_count'] = session_struct['win_trade_count'] + 1
                    session_struct['last_trade_won'] = True
+                   if coinHoldingTimeLimit < current_time: trading_struct['holding_timeout_sell'] = 'positive'
 
                 else:
                    session_struct['loss_trade_count'] = session_struct['loss_trade_count'] + 1
                    session_struct['last_trade_won'] = False
+                   if coinHoldingTimeLimit < current_time: trading_struct['holding_timeout_sell'] = 'negative'
+
 
                 if session_struct['sell_all_coins'] == True: REPORT =  f"PAUSE_SELL - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if lastPrice < coinStopLoss: REPORT =  f"STOP_LOSS - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"

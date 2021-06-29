@@ -38,6 +38,7 @@ global historical_prices
 global hsp_head
 global session_struct
 global settings_struct
+global trading_struct
 
 session_struct = {
      'session_profit': 0,
@@ -72,6 +73,11 @@ session_struct = {
      'session_start': False,
      'prices_grabbed': False,
      'reload_tickers_list': True
+}
+
+trading_struct = {
+      'holding_timeout_dynamic': 'up',
+      'holding_timeout_sell': 'none'
 }
 
 args = parse_args()
@@ -203,6 +209,6 @@ if os.path.isfile(coins_bought_file_path) and os.stat(coins_bought_file_path).st
     with open(coins_bought_file_path) as file:
             coins_bought = json.load(file)
 
-# Initiate the conneciton error counters            
+# Initiate the conneciton error counters
 READ_TIMEOUT_COUNT=0
 CONNECTION_ERROR_COUNT = 0

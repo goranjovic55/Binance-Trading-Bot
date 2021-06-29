@@ -44,7 +44,6 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
             settings_struct['TRAILING_STOP_LOSS'] = settings_struct['TRAILING_STOP_LOSS'] + (settings_struct['TRAILING_STOP_LOSS'] * DYNAMIC_WIN_LOSS_UP) / 100
             settings_struct['CHANGE_IN_PRICE_MAX'] = settings_struct['CHANGE_IN_PRICE_MAX'] - (settings_struct['CHANGE_IN_PRICE_MAX'] * DYNAMIC_WIN_LOSS_UP) /100
             settings_struct['CHANGE_IN_PRICE_MIN'] = settings_struct['CHANGE_IN_PRICE_MIN'] + (settings_struct['CHANGE_IN_PRICE_MIN'] * DYNAMIC_WIN_LOSS_UP) /100
-            settings_struct['HOLDING_TIME_LIMIT'] = settings_struct['HOLDING_TIME_LIMIT'] + (settings_struct['HOLDING_TIME_LIMIT'] * DYNAMIC_WIN_LOSS_UP) / 100
             settings_struct['TIME_DIFFERENCE'] = settings_struct['TIME_DIFFERENCE'] + (settings_struct['TIME_DIFFERENCE'] * DYNAMIC_WIN_LOSS_UP) /100
             settings_struct['RECHECK_INTERVAL'] = settings_struct['RECHECK_INTERVAL'] + (settings_struct['RECHECK_INTERVAL'] * DYNAMIC_WIN_LOSS_UP) /100
             settings_struct['DYNAMIC_CHANGE_IN_PRICE'] = settings_struct['DYNAMIC_CHANGE_IN_PRICE'] - (settings_struct['DYNAMIC_CHANGE_IN_PRICE'] * DYNAMIC_WIN_LOSS_UP) / 100 \
@@ -60,7 +59,6 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
             settings_struct['TRAILING_STOP_LOSS'] = settings_struct['TRAILING_STOP_LOSS'] - (settings_struct['TRAILING_STOP_LOSS'] * DYNAMIC_WIN_LOSS_DOWN) / 100
             settings_struct['CHANGE_IN_PRICE_MAX'] = settings_struct['CHANGE_IN_PRICE_MAX'] + (settings_struct['CHANGE_IN_PRICE_MAX'] * DYNAMIC_WIN_LOSS_DOWN) /100
             settings_struct['CHANGE_IN_PRICE_MIN'] = settings_struct['CHANGE_IN_PRICE_MIN'] - (settings_struct['CHANGE_IN_PRICE_MIN'] * DYNAMIC_WIN_LOSS_DOWN) /100
-            settings_struct['HOLDING_TIME_LIMIT'] = settings_struct['HOLDING_TIME_LIMIT'] - (settings_struct['HOLDING_TIME_LIMIT'] * DYNAMIC_WIN_LOSS_DOWN) / 100
             settings_struct['TIME_DIFFERENCE'] = settings_struct['TIME_DIFFERENCE'] - (settings_struct['TIME_DIFFERENCE'] * DYNAMIC_WIN_LOSS_UP) /100
             settings_struct['RECHECK_INTERVAL'] = settings_struct['RECHECK_INTERVAL'] - (settings_struct['RECHECK_INTERVAL'] * DYNAMIC_WIN_LOSS_UP) /100
             settings_struct['DYNAMIC_CHANGE_IN_PRICE'] = settings_struct['DYNAMIC_CHANGE_IN_PRICE'] + (settings_struct['DYNAMIC_CHANGE_IN_PRICE'] * DYNAMIC_WIN_LOSS_DOWN) / 100 \
@@ -89,3 +87,26 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
               settings_struct['CHANGE_IN_PRICE_MIN'] = session_struct['market_support'] + (session_struct['market_support'] * settings_struct['DYNAMIC_CHANGE_IN_PRICE']) / 100
               settings_struct['CHANGE_IN_PRICE_MAX'] = session_struct['market_support'] - (session_struct['market_support'] * settings_struct['DYNAMIC_CHANGE_IN_PRICE']) / 100
               settings_struct['TAKE_PROFIT'] = session_struct['market_resistance'] + (session_struct['market_resistance'] * settings_struct['DYNAMIC_CHANGE_IN_PRICE']) / 100
+
+        if trading_struct['holding_timeout_sell'] == 'positive':
+           if trading_struct['holding_timeout_dynamic'] == 'up':
+              settings_struct['HOLDING_TIME_LIMIT'] = settings_struct['HOLDING_TIME_LIMIT'] + (settings_struct['HOLDING_TIME_LIMIT'] * DYNAMIC_WIN_LOSS_UP) / 100
+              print(f"{txcolors.NOTICE}>> DYNAMIC HOLDING TIME UP  HTL: {settings_struct['HOLDING_TIME_LIMIT']:.2f} <<{txcolors.DEFAULT}")
+              trading_struct['holding_timeout_sell'] = 'none'
+
+           if trading_struct['holding_timeout_dynamic'] == 'down':
+              settings_struct['HOLDING_TIME_LIMIT'] = settings_struct['HOLDING_TIME_LIMIT'] - (settings_struct['HOLDING_TIME_LIMIT'] * DYNAMIC_WIN_LOSS_UP) / 100
+              print(f"{txcolors.NOTICE}>> DYNAMIC HOLDING TIME DOWN  HTL: {settings_struct['HOLDING_TIME_LIMIT']:.2f} <<{txcolors.DEFAULT}")
+              trading_struct['holding_timeout_sell'] = 'none'
+
+        if trading_struct['holding_timeout_sell'] == 'negative':
+           if trading_struct['holding_timeout_dynamic'] == 'up':
+              trading_struct['holding_timeout_dynamic'] == 'down'
+              settings_struct['HOLDING_TIME_LIMIT'] = settings_struct['HOLDING_TIME_LIMIT'] - (settings_struct['HOLDING_TIME_LIMIT'] * DYNAMIC_WIN_LOSS_UP) / 100
+              print(f'{txcolors.NOTICE}>> DYNAMIC HOLDING TIME STATE SWITCHED TO DOWN  <<{txcolors.DEFAULT}')
+              trading_struct['holding_timeout_sell'] = 'none'
+           if trading_struct['holding_timeout_dynamic'] == 'down':
+              trading_struct['holding_timeout_dynamic'] == 'up'
+              settings_struct['HOLDING_TIME_LIMIT'] = settings_struct['HOLDING_TIME_LIMIT'] + (settings_struct['HOLDING_TIME_LIMIT'] * DYNAMIC_WIN_LOSS_UP) / 100
+              print(f'{txcolors.NOTICE}>> DYNAMIC HOLDING TIME STATE SWITCHED TO UP  <<{txcolors.DEFAULT}')
+              trading_struct['holding_timeout_sell'] = 'none'

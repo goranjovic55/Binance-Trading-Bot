@@ -103,23 +103,16 @@ def session(type):
             session_struct['market_support'] = session_info['market_support']
             session_struct['trade_slots'] = session_info['trade_slots']
 
-            settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE
-            settings_struct['RECHECK_INTERVAL'] = RECHECK_INTERVAL
-            settings_struct['CHANGE_IN_PRICE_MIN'] = CHANGE_IN_PRICE_MIN
-            settings_struct['CHANGE_IN_PRICE_MAX'] = CHANGE_IN_PRICE_MAX
-            settings_struct['STOP_LOSS'] = STOP_LOSS
-            settings_struct['TAKE_PROFIT'] = TAKE_PROFIT
-            settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS
-            settings_struct['TRAILING_TAKE_PROFIT'] = TRAILING_TAKE_PROFIT
-            settings_struct['HOLDING_TIME_LIMIT'] = HOLDING_TIME_LIMIT
-            settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE
-            settings_struct['RECHECK_INTERVAL'] = RECHECK_INTERVAL
-            settings_struct['CHANGE_IN_PRICE_MIN'] = CHANGE_IN_PRICE_MIN
-            settings_struct['CHANGE_IN_PRICE_MAX'] = CHANGE_IN_PRICE_MAX
-            settings_struct['STOP_LOSS'] = STOP_LOSS
-            settings_struct['TAKE_PROFIT'] = TAKE_PROFIT
-            settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS
-            settings_struct['TRAILING_TAKE_PROFIT'] = TRAILING_TAKE_PROFIT
+            settings_struct['TIME_DIFFERENCE'] = session_info['TIME_DIFFERENCE']
+            settings_struct['RECHECK_INTERVAL'] = session_info['RECHECK_INTERVAL']
+            settings_struct['CHANGE_IN_PRICE_MIN'] = session_info['CHANGE_IN_PRICE_MIN']
+            settings_struct['CHANGE_IN_PRICE_MAX'] = session_info['CHANGE_IN_PRICE_MAX']
+            settings_struct['STOP_LOSS'] = session_info['STOP_LOSS']
+            settings_struct['TAKE_PROFIT'] = session_info['TAKE_PROFIT']
+            settings_struct['TRAILING_STOP_LOSS'] = session_info['TRAILING_STOP_LOSS']
+            settings_struct['TRAILING_TAKE_PROFIT'] = session_info['TRAILING_TAKE_PROFIT']
+            settings_struct['HOLDING_TIME_LIMIT'] = session_info['HOLDING_TIME_LIMIT']
+            
 
         session_struct['TOTAL_GAINS'] = (session_struct['session_profit'])
         session_struct['NEW_BALANCE'] = (INVESTMENT + session_struct['TOTAL_GAINS'])
