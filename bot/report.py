@@ -101,7 +101,8 @@ def report(type, reportline):
                       +str(round(settings_struct['STOP_LOSS'], 2))+' | Take profit: '\
                       +str(round(settings_struct['TAKE_PROFIT'], 2))+' | Trailing stop loss: '\
                       +str(round(settings_struct['TRAILING_STOP_LOSS'], 2))+' | Trailing take profit: '\
-                      +str(round(settings_struct['TRAILING_TAKE_PROFIT'], 2))
+                      +str(round(settings_struct['TRAILING_TAKE_PROFIT'], 2))+ ' | Holding time limit: ' \
+                      +str(round(settings_struct['HOLDING_TIME_LIMIT'], 2))
 
     if session_struct['trade_slots'] > 0:
         UNREALISED_PERCENT = round(session_struct['unrealised_percent']/session_struct['trade_slots'], 2)
