@@ -202,3 +202,7 @@ if TEST_MODE:
 if os.path.isfile(coins_bought_file_path) and os.stat(coins_bought_file_path).st_size!= 0:
     with open(coins_bought_file_path) as file:
             coins_bought = json.load(file)
+
+# Initiate the conneciton error counters            
+READ_TIMEOUT_COUNT=0
+CONNECTION_ERROR_COUNT = 0
