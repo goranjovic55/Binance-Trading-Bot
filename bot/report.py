@@ -48,7 +48,7 @@ def discord_avatar():
 
 def report(type, reportline):
 
-    global session_struct, settings_struct
+    global session_struct, settings_struct, trading_struct
 
     try: # does it exist?
         session_struct['investment_value_gain']
@@ -144,6 +144,10 @@ def report(type, reportline):
               f"{session_struct['market_resistance']:.2f}\n"
             , f"Market Support:         {txcolors.DEFAULT}"
               f"{session_struct['market_support']:.2f}\n"
+            , f"Trade Resistance:       {txcolors.DEFAULT}"
+              f"{trading_struct['trade_resistance']:.2f}\n"
+            , f"Trade Support:          {txcolors.DEFAULT}"
+              f"{trading_struct['trade_support']:.2f}\n"
             , f"Time Difference:        {txcolors.DEFAULT}"
               f"{settings_struct['TIME_DIFFERENCE']:.2f}\n"
             , f"Recheck Interval:       {txcolors.DEFAULT}"
