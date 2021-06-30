@@ -20,7 +20,7 @@ from bot.settings import *
 
 def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
 
-    global session_struct, settings_struct
+    global session_struct, settings_struct, trading_struct
 
     if DYNAMIC_SETTINGS:
 
@@ -47,6 +47,8 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
             settings_struct['TIME_DIFFERENCE'] = settings_struct['TIME_DIFFERENCE'] + (settings_struct['TIME_DIFFERENCE'] * DYNAMIC_WIN_LOSS_UP) /100
             settings_struct['DYNAMIC_CHANGE_IN_PRICE'] = settings_struct['DYNAMIC_CHANGE_IN_PRICE'] - (settings_struct['DYNAMIC_CHANGE_IN_PRICE'] * DYNAMIC_WIN_LOSS_UP) / 100 \
                                                          - (settings_struct['DYNAMIC_CHANGE_IN_PRICE'] * settings_struct['TIME_DIFFERENCE']) / 100
+            trading_struct['trade_support'] = -settings_struct['STOP_LOSS']
+            trading_struct['trade_resistance'] = settings_struct['TRAILING_STOP_LOSS']
             session_struct['dynamic'] = 'none'
             session_struct['dynamics_state'] = 'up'
             session_struct['last_trade_won'] = 'none'
@@ -61,6 +63,8 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
             settings_struct['TIME_DIFFERENCE'] = settings_struct['TIME_DIFFERENCE'] - (settings_struct['TIME_DIFFERENCE'] * DYNAMIC_WIN_LOSS_UP) /100
             settings_struct['DYNAMIC_CHANGE_IN_PRICE'] = settings_struct['DYNAMIC_CHANGE_IN_PRICE'] + (settings_struct['DYNAMIC_CHANGE_IN_PRICE'] * DYNAMIC_WIN_LOSS_DOWN) / 100 \
                                                          + (settings_struct['DYNAMIC_CHANGE_IN_PRICE'] * settings_struct['TIME_DIFFERENCE']) / 100
+            trading_struct['trade_support'] = -settings_struct['STOP_LOSS']
+            trading_struct['trade_resistance'] = settings_struct['TRAILING_STOP_LOSS']
             session_struct['dynamic'] = 'none'
             session_struct['dynamics_state'] = 'down'
             session_struct['last_trade_won'] = 'none'
@@ -85,6 +89,9 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
               settings_struct['CHANGE_IN_PRICE_MIN'] = session_struct['market_support'] + (session_struct['market_support'] * settings_struct['DYNAMIC_CHANGE_IN_PRICE']) / 100
               settings_struct['CHANGE_IN_PRICE_MAX'] = session_struct['market_support'] - (session_struct['market_support'] * settings_struct['DYNAMIC_CHANGE_IN_PRICE']) / 100
               settings_struct['TAKE_PROFIT'] = session_struct['market_resistance'] + (session_struct['market_resistance'] * settings_struct['DYNAMIC_CHANGE_IN_PRICE']) / 100
+              settings_struct['STOP_LOSS'] = -trading_struct['trade_support']
+              settings_struct['TRAILING_STOP_LOSS'] = trading_struct['trade_resistance']
+
 
         if trading_struct['holding_timeout_sell'] == 'positive':
            if trading_struct['holding_timeout_dynamic'] == 'up':

@@ -75,11 +75,6 @@ session_struct = {
      'reload_tickers_list': True
 }
 
-trading_struct = {
-      'holding_timeout_dynamic': 'up',
-      'holding_timeout_sell': 'none'
-}
-
 report_struct = {
       'report': '',
       'message': False,
@@ -176,6 +171,15 @@ settings_struct = {
       'HOLDING_TIME_LIMIT': HOLDING_TIME_LIMIT,
       'DYNAMIC_CHANGE_IN_PRICE': DYNAMIC_CHANGE_IN_PRICE,
       'SESSION_REPORT_STYLE': SESSION_REPORT_STYLE
+}
+
+trading_struct = {
+      'holding_timeout_dynamic': 'up',
+      'holding_timeout_sell': 'none',
+      'lost_trade_percent': 0,
+      'won_trade_percent': 0,
+      'trade_support': -STOP_LOSS,
+      'trade_resistance': TRAILING_STOP_LOSS
 }
 
 # Default no debugging

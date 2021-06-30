@@ -246,12 +246,15 @@ def sell_coins():
                    session_struct['win_trade_count'] = session_struct['win_trade_count'] + 1
                    session_struct['last_trade_won'] = True
                    if coinHoldingTimeLimit < current_time: trading_struct['holding_timeout_sell'] = 'positive'
+                   trading_struct['won_trade_percent'] = priceChange
+                   trading_struct['trade_resistance'] = (trading_struct['trade_resistance'] + trading_struct['won_trade_percent']) / 2
 
                 else:
                    session_struct['loss_trade_count'] = session_struct['loss_trade_count'] + 1
                    session_struct['last_trade_won'] = False
                    if coinHoldingTimeLimit < current_time: trading_struct['holding_timeout_sell'] = 'negative'
-
+                   trading_struct['lost_trade_percent'] = priceChange
+                   trading_struct['trade_support'] = (trading_struct['trade_support'] + trading_struct['lost_trade_percent']) / 2
 
                 if session_struct['sell_all_coins'] == True: REPORT =  f"PAUSE_SELL - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if lastPrice < coinStopLoss: REPORT =  f"STOP_LOSS - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
