@@ -30,6 +30,61 @@ from helpers.handle_creds import (
 from bot.settings import *
 from bot.grab import *
 
+def trade_calculations(type,priceChange, coinHoldingTimeLimit, current_time):
+
+    global session_struct, settings_struct, trading_struct
+
+    if type == 'holding':
+       if trading_struct['max_holding_price'] < priceChange :
+           trading_struct['max_holding_price'] = priceChange
+
+       trading_struct['time_max_holding_price_counter'] += 1
+
+       if trading_struct['target_max_holding_price'] < priceChange:
+           trading_struct['time_to_max_holding_price'] = trading_struct['time_max_holding_price_counter']
+           trading_struct['time_max_holding_price_counter'] = 0
+
+       if trading_struct['min_holding_price'] > priceChange :
+           trading_struct['min_holding_price'] = priceChange
+
+       trading_struct['time_min_holding_price_counter'] += 1
+
+       if trading_struct['target_min_holding_price'] > priceChange:
+           trading_struct['time_to_min_holding_price'] = trading_struct['time_min_holding_price_counter']
+           trading_struct['time_min_holding_price_counter'] = 0
+
+    if type == 'sell':
+        #gogo MOD to trigger trade lost or won and to count lost or won trades
+        if priceChange > 0:
+           session_struct['win_trade_count'] = session_struct['win_trade_count'] + 1
+           session_struct['last_trade_won'] = True
+           if coinHoldingTimeLimit < current_time:
+               trading_struct['holding_timeout_sell'] = 'positive'
+
+           trading_struct['won_trade_percent'] = priceChange
+           trading_struct['sum_won_trades'] = trading_struct['sum_won_trades'] + trading_struct['won_trade_percent']
+
+        else:
+           session_struct['loss_trade_count'] = session_struct['loss_trade_count'] + 1
+           session_struct['last_trade_won'] = False
+           if coinHoldingTimeLimit < current_time:
+               trading_struct['holding_timeout_sell'] = 'negative'
+
+           trading_struct['lost_trade_percent'] = priceChange
+           trading_struct['sum_lost_trades'] = trading_struct['sum_lost_trades'] + trading_struct['lost_trade_percent']
+
+    session_struct['session_profit'] = session_struct['session_profit'] + profit
+    session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
+    session_struct['reload_tickers_list'] = True
+
+    trading_struct['sum_max_holding_price'] = trading_struct['sum_max_holding_price'] + trading_struct['max_holding_price']
+    trading_struct['sum_min_holding_price'] = trading_struct['min_holding_price'] - trading_struct['min_holding_price']
+
+    trading_struct['target_max_holding_price'] = trading_struct['sum_max_holding_price'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])
+    trading_struct['target_min_holding_price'] = trading_struct['sum_min_holding_price'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])
+
+
+
 def convert_volume():
     '''Converts the volume given in QUANTITY from USDT to the each coin's volume'''
 
@@ -203,19 +258,7 @@ def sell_coins():
            current_time = float(round(time.time()))
 #           print(f'TL:{coinHoldingTimeLimit}, time: {current_time} HOLDING_TIME_LIMIT: {HOLDING_TIME_LIMIT}, TimeLeft: {(coinHoldingTimeLimit - current_time)/60} ')
 
-        if trading_struct['max_holding_price'] < priceChange :
-            trading_struct['max_holding_price'] = priceChange
-            trading_struct['time_to_max_holding_price'] = trading_struct['time_max_holding_price_counter']
-            trading_struct['time_max_holding_price_counter'] = 0
-
-        trading_struct['time_max_holding_price_counter'] += 1
-
-        if trading_struct['min_holding_price'] > priceChange :
-            trading_struct['min_holding_price'] = priceChange
-            trading_struct['time_to_min_holding_price_counter'] = 0
-            trading_struct['time_to_min_holding_price'] = 0
-
-        trading_struct['time_max_holding_price_counter'] += 1
+        trade_calculations('holding', priceChange, coinHoldingTimeLimit, current_time)
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
         if session_struct['sell_all_coins'] == True or lastPrice < coinStopLoss or lastPrice > coinTakeProfit and not USE_TRAILING_STOP_LOSS or coinHoldingTimeLimit < current_time:
@@ -248,6 +291,7 @@ def sell_coins():
                 else:
                    coins_sold[coin] = coins_bought[coin]
 
+                trade_calculations('holding', priceChange, coinHoldingTimeLimit, current_time)
 
                 # prevent system from buying this coin for the next TIME_DIFFERENCE minutes
                 volatility_cooloff[coin] = datetime.now()
@@ -255,39 +299,10 @@ def sell_coins():
                 # Log trade
                 profit = ((lastPrice - buyPrice) * coins_sold[coin]['volume']) - (buyFee + sellFee)
 
-                #gogo MOD to trigger trade lost or won and to count lost or won trades
-                if priceChange > 0:
-                   session_struct['win_trade_count'] = session_struct['win_trade_count'] + 1
-                   session_struct['last_trade_won'] = True
-                   if coinHoldingTimeLimit < current_time:
-                       trading_struct['holding_timeout_sell'] = 'positive'
-
-                   trading_struct['won_trade_percent'] = priceChange
-                   trading_struct['sum_won_trades'] = trading_struct['sum_won_trades'] + trading_struct['won_trade_percent']
-
-                else:
-                   session_struct['loss_trade_count'] = session_struct['loss_trade_count'] + 1
-                   session_struct['last_trade_won'] = False
-                   if coinHoldingTimeLimit < current_time:
-                       trading_struct['holding_timeout_sell'] = 'negative'
-
-                   trading_struct['lost_trade_percent'] = priceChange
-                   trading_struct['sum_lost_trades'] = trading_struct['sum_lost_trades'] + trading_struct['lost_trade_percent']
-
                 if session_struct['sell_all_coins'] == True: REPORT =  f"PAUSE_SELL - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if lastPrice < coinStopLoss: REPORT =  f"STOP_LOSS - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if lastPrice > coinTakeProfit: REPORT =  f"TAKE_PROFIT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if coinHoldingTimeLimit < current_time: REPORT =  f"HOLDING_TIMEOUT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
-
-                session_struct['session_profit'] = session_struct['session_profit'] + profit
-                session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
-                session_struct['reload_tickers_list'] = True
-
-                trading_struct['sum_max_holding_price'] = trading_struct['sum_max_holding_price'] + trading_struct['max_holding_price']
-                trading_struct['sum_min_holding_price'] = trading_struct['min_holding_price'] - trading_struct['min_holding_price']
-
-                trading_struct['target_max_holding_price'] = trading_struct['sum_max_holding_price'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])
-                trading_struct['target_min_holding_price'] = trading_struct['sum_min_holding_price'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])
 
                 report_struct['report'] = REPORT
                 report_struct['message'] = True

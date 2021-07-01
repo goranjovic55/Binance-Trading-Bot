@@ -187,7 +187,7 @@ trading_struct = {
       'sum_min_holding_price': 0,
       'target_max_holding_price': 0,
       'min_holding_price': 0,
-      'target_max_holding_price': 0,
+      'target_min_holding_price': 0,
       'time_to_max_holding_price': 0,
       'time_to_min_holding_price': 0,
       'time_max_holding_price_counter': 0,
