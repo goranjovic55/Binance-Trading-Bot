@@ -75,7 +75,9 @@ def session(type):
             'trade_support': trading_struct['trade_support'],
             'trade_resistance': trading_struct['trade_resistance'],
             'sum_won_trades': trading_struct['sum_won_trades'],
-            'sum_lost_trades': trading_struct['sum_lost_trades']
+            'sum_lost_trades': trading_struct['sum_lost_trades'],
+            'min_holding_price': trading_struct['min_holding_price'],
+            'max_holding_price': trading_struct['max_holding_price']
             }
 
         # save the coins in a json file in the same directory
@@ -122,7 +124,8 @@ def session(type):
             trading_struct['trade_resistance'] = session_info['trade_resistance']
             trading_struct['sum_won_trades'] = session_info['sum_won_trades']
             trading_struct['sum_lost_trades'] = session_info['sum_lost_trades']
-
+            trading_struct['min_holding_price'] = session_info['max_holding_price']
+            trading_struct['max_holding_price'] = session_info['max_holding_price']
 
         session_struct['TOTAL_GAINS'] = (session_struct['session_profit'])
         session_struct['NEW_BALANCE'] = (INVESTMENT + session_struct['TOTAL_GAINS'])

@@ -181,7 +181,9 @@ trading_struct = {
       'trade_support': 0,
       'trade_resistance': 0,
       'sum_won_trades': settings_struct['TRAILING_STOP_LOSS'],
-      'sum_lost_trades': -settings_struct['STOP_LOSS']
+      'sum_lost_trades': -settings_struct['STOP_LOSS'],
+      'max_holding_price': 0,
+      'min_holding_price': 0
 }
 
 # Default no debugging
