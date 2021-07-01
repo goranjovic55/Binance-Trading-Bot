@@ -191,7 +191,13 @@ trading_struct = {
       'time_to_max_holding_price': 0,
       'time_to_min_holding_price': 0,
       'time_max_holding_price_counter': 0,
-      'time_min_holding_price_counter': 0
+      'time_min_holding_price_counter': 0,
+      'time_to_target_max_holding_price': 0,
+      'time_to_target_min_holding_price': 0,
+      'sum_time_to_target_max_holding_price': 0,
+      'sum_time_to_target_min_holding_price': 0,
+      'target_time_to_target_max_holding_price': 0,
+      'target_time_to_target_min_holding_price': 0
 }
 
 # Default no debugging

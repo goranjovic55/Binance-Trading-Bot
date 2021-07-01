@@ -38,7 +38,8 @@ def trade_calculations(type,priceChange, coinHoldingTimeLimit, current_time):
        if trading_struct['max_holding_price'] < priceChange :
            trading_struct['max_holding_price'] = priceChange
 
-       trading_struct['time_max_holding_price_counter'] += 1
+       if trading_struct['target_max_holding_price'] > 0:
+          trading_struct['time_max_holding_price_counter'] += 1
 
        if trading_struct['target_max_holding_price'] < priceChange:
            trading_struct['time_to_max_holding_price'] = trading_struct['time_max_holding_price_counter']
@@ -47,7 +48,8 @@ def trade_calculations(type,priceChange, coinHoldingTimeLimit, current_time):
        if trading_struct['min_holding_price'] > priceChange :
            trading_struct['min_holding_price'] = priceChange
 
-       trading_struct['time_min_holding_price_counter'] += 1
+       if trading_struct['target_max_holding_price'] < 0:
+          trading_struct['time_min_holding_price_counter'] += 1
 
        if trading_struct['target_min_holding_price'] > priceChange:
            trading_struct['time_to_min_holding_price'] = trading_struct['time_min_holding_price_counter']
@@ -73,16 +75,22 @@ def trade_calculations(type,priceChange, coinHoldingTimeLimit, current_time):
            trading_struct['lost_trade_percent'] = priceChange
            trading_struct['sum_lost_trades'] = trading_struct['sum_lost_trades'] + trading_struct['lost_trade_percent']
 
-    session_struct['session_profit'] = session_struct['session_profit'] + profit
-    session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
-    session_struct['reload_tickers_list'] = True
+        session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
+        session_struct['reload_tickers_list'] = True
 
-    trading_struct['sum_max_holding_price'] = trading_struct['sum_max_holding_price'] + trading_struct['max_holding_price']
-    trading_struct['sum_min_holding_price'] = trading_struct['min_holding_price'] - trading_struct['min_holding_price']
+        trading_struct['sum_max_holding_price'] = trading_struct['sum_max_holding_price'] + trading_struct['max_holding_price']
+        trading_struct['sum_min_holding_price'] = -(trading_struct['sum_min_holding_price'] - trading_struct['min_holding_price'])
 
-    trading_struct['target_max_holding_price'] = trading_struct['sum_max_holding_price'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])
-    trading_struct['target_min_holding_price'] = trading_struct['sum_min_holding_price'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])
+        if (session_struct['win_trade_count'] > 1 and session_struct['loss_trade_count'] > 1 ) and (trading_struct['sum_max_holding_price'] != 0 and trading_struct['sum_min_holding_price'] != 0):
+           trading_struct['target_max_holding_price'] = trading_struct['sum_max_holding_price'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])
+           trading_struct['target_min_holding_price'] = trading_struct['sum_min_holding_price'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])
 
+        trading_struct['sum_time_to_target_max_price'] = trading_struct['sum_time_to_target_max_holding_price'] + trading_struct['time_to_target_max_holding_price']
+        trading_struct['sum_time_to_target_min_price'] = trading_struct['sum_time_to_target_min_holding_price'] + trading_struct['time_to_target_min_holding_price']
+
+        if (session_struct['win_trade_count'] > 1 and session_struct['win_trade_count'] > 1 ) and (trading_struct['target_time_to_target_max_holding_price'] != 0 and trading_struct['target_time_to_target_min_holding_price'] != 0):
+           trading_struct['target_time_to_target_max_holding_price'] = trading_struct['sum_time_to_target_max_holding_price'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])
+           trading_struct['target_time_to_target_min_holding_price'] = trading_struct['sum_time_to_target_min_holding_price'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])
 
 
 def convert_volume():
@@ -291,7 +299,7 @@ def sell_coins():
                 else:
                    coins_sold[coin] = coins_bought[coin]
 
-                trade_calculations('holding', priceChange, coinHoldingTimeLimit, current_time)
+                trade_calculations('sell', priceChange, coinHoldingTimeLimit, current_time)
 
                 # prevent system from buying this coin for the next TIME_DIFFERENCE minutes
                 volatility_cooloff[coin] = datetime.now()
@@ -303,6 +311,8 @@ def sell_coins():
                 if lastPrice < coinStopLoss: REPORT =  f"STOP_LOSS - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if lastPrice > coinTakeProfit: REPORT =  f"TAKE_PROFIT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if coinHoldingTimeLimit < current_time: REPORT =  f"HOLDING_TIMEOUT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
+
+                session_struct['session_profit'] = session_struct['session_profit'] + profit
 
                 report_struct['report'] = REPORT
                 report_struct['message'] = True
