@@ -180,8 +180,8 @@ trading_struct = {
       'won_trade_percent': 0,
       'trade_support': 0,
       'trade_resistance': 0,
-      'sum_won_trades': 0,
-      'sum_lost_trades': 0
+      'sum_won_trades': settings_struct['TRAILING_STOP_LOSS'],
+      'sum_lost_trades': -settings_struct['STOP_LOSS']
 }
 
 # Default no debugging

@@ -254,7 +254,7 @@ def sell_coins():
                    session_struct['last_trade_won'] = False
                    if coinHoldingTimeLimit < current_time: trading_struct['holding_timeout_sell'] = 'negative'
                    trading_struct['lost_trade_percent'] = priceChange
-                   trading_struct['sum_lost_trades'] = trading_struct['sum_lost_trades'] + trading_struct['loss_trade_percent']
+                   trading_struct['sum_lost_trades'] = trading_struct['sum_lost_trades'] + trading_struct['lost_trade_percent']
 
                 if session_struct['sell_all_coins'] == True: REPORT =  f"PAUSE_SELL - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if lastPrice < coinStopLoss: REPORT =  f"STOP_LOSS - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
