@@ -178,8 +178,10 @@ trading_struct = {
       'holding_timeout_sell': 'none',
       'lost_trade_percent': 0,
       'won_trade_percent': 0,
-      'trade_support': -STOP_LOSS,
-      'trade_resistance': TRAILING_STOP_LOSS
+      'trade_support': 0,
+      'trade_resistance': 0,
+      'sum_won_trades': settings_struct['TRAILING_STOP_LOSS'],
+      'sum_lost_trades': -settings_struct['STOP_LOSS']
 }
 
 # Default no debugging
