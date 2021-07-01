@@ -205,8 +205,17 @@ def sell_coins():
 
         if trading_struct['max_holding_price'] < priceChange :
             trading_struct['max_holding_price'] = priceChange
+            trading_struct['time_to_max_holding_price'] = trading_struct['time_max_holding_price_counter']
+            trading_struct['time_max_holding_price_counter'] = 0
+
+        trading_struct['time_max_holding_price_counter'] += 1
+
         if trading_struct['min_holding_price'] > priceChange :
             trading_struct['min_holding_price'] = priceChange
+            trading_struct['time_to_min_holding_price_counter'] = 0
+            trading_struct['time_to_min_holding_price'] = 0
+
+        trading_struct['time_max_holding_price_counter'] += 1
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
         if session_struct['sell_all_coins'] == True or lastPrice < coinStopLoss or lastPrice > coinTakeProfit and not USE_TRAILING_STOP_LOSS or coinHoldingTimeLimit < current_time:
@@ -273,6 +282,12 @@ def sell_coins():
                 session_struct['session_profit'] = session_struct['session_profit'] + profit
                 session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
                 session_struct['reload_tickers_list'] = True
+
+                trading_struct['sum_max_holding_price'] = trading_struct['sum_max_holding_price'] + trading_struct['max_holding_price']
+                trading_struct['sum_min_holding_price'] = trading_struct['min_holding_price'] - trading_struct['min_holding_price']
+
+                trading_struct['target_max_holding_price'] = trading_struct['sum_max_holding_price'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])
+                trading_struct['target_min_holding_price'] = trading_struct['sum_min_holding_price'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])
 
                 report_struct['report'] = REPORT
                 report_struct['message'] = True

@@ -183,7 +183,15 @@ trading_struct = {
       'sum_won_trades': settings_struct['TRAILING_STOP_LOSS'],
       'sum_lost_trades': -settings_struct['STOP_LOSS'],
       'max_holding_price': 0,
-      'min_holding_price': 0
+      'sum_max_holding_price': 0,
+      'sum_min_holding_price': 0,
+      'target_max_holding_price': 0,
+      'min_holding_price': 0,
+      'target_max_holding_price': 0,
+      'time_to_max_holding_price': 0,
+      'time_to_min_holding_price': 0,
+      'time_max_holding_price_counter': 0,
+      'time_min_holding_price_counter': 0
 }
 
 # Default no debugging
