@@ -51,7 +51,7 @@ trading_options:
 
   # Use more than one TRADE_SLOTS of the same coin? Set to False
   # allows buying the same coin again if a future buy signal is received
-  UNIQUE_BUYS: False
+  UNIQUE_BUYS: True
 
   # List of trading pairs to exclude
   # by default we're excluding the most popular fiat pairs
