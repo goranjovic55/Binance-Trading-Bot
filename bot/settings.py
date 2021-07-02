@@ -5,6 +5,7 @@ import sys
 import glob
 import time
 import threading
+import subprocess
 
 from helpers.parameters import (
     parse_args, load_config
@@ -81,6 +82,9 @@ report_struct = {
       'message': False,
       'log': False
 }
+
+def get_git_commit_number():
+    return str(subprocess.check_output(['git', 'rev-list', '--count', 'HEAD']))[:-3][2:]
 
 def decimals():
     # set number of decimals for reporting fractions
