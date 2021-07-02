@@ -90,12 +90,10 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
 
               if session_struct['loss_trade_count'] > 1:
                  trading_struct['trade_support'] = trading_struct['sum_lost_trades'] / session_struct['loss_trade_count']
-                 settings_struct['STOP_LOSS'] = -trading_struct['trade_support']
 
               if session_struct['win_trade_count'] > 1:
                  trading_struct['trade_resistance'] = trading_struct['sum_won_trades'] / session_struct['win_trade_count']
                  settings_struct['TRAILING_STOP_LOSS'] = trading_struct['trade_resistance']
-
 
         if trading_struct['holding_timeout_sell'] == 'positive':
            if trading_struct['holding_timeout_dynamic'] == 'up':

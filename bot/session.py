@@ -45,6 +45,11 @@ def session(type):
         if session_struct['session_start_time'] == 0: session_struct['session_start_time'] = current_time
         session_struct['session_uptime'] = current_time - session_struct['session_start_time']
 
+        if session_struct['win_trade_count'] > 0 or session_struct['loss_trade_count'] > 0:
+           session_struct['profit_to_trade_ratio'] = session_struct['closed_trades_percent'] / (session_struct['win_trade_count']+session_struct['loss_trade_count'])
+        else:
+           session_struct['profit_to_trade_ratio'] = 0
+
     if type == 'save':
 
         session_info = {}
