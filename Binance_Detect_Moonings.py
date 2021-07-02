@@ -198,6 +198,11 @@ if __name__ == '__main__':
 
     #report that bot is started to defined communication channels
     report('message', 'Bot initiated')
+    
+    # start logging to CSV
+    c = threading.Thread(target=csv_log, args=(60,))
+    c.daemon = True
+    c.start()
 
     while True:
 
