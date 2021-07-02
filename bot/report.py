@@ -169,7 +169,9 @@ def report(type, reportline):
 
         if TEST_MODE: MODE = 'TEST'
         if not TEST_MODE: MODE = 'MAIN'
-        BOT_SETTINGS_ID = BOT_ID + str(get_git_commit_number()) + '_' + MODE + '_' + PAIR_WITH + '_' + str(TIME_DIFFERENCE) + 'M'
+        # disabled til fixed
+        #BOT_SETTINGS_ID = BOT_ID + str(get_git_commit_number()) + '_' + MODE + '_' + PAIR_WITH + '_' + str(TIME_DIFFERENCE) + 'M'
+        BOT_SETTINGS_ID = BOT_ID + '_' + MODE + '_' + PAIR_WITH + '_' + str(TIME_DIFFERENCE) + 'M'
 
         if BOT_MESSAGE_REPORTS and TELEGRAM_BOT_TOKEN:
             bot_token = TELEGRAM_BOT_TOKEN
