@@ -270,6 +270,8 @@ def sell_coins():
                 if lastPrice > coinTakeProfit: REPORT =  f"TAKE_PROFIT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if coinHoldingTimeLimit < current_time: REPORT =  f"HOLDING_TIMEOUT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
 
+                settings_struct['STOP_LOSS'] = (settings_struct['STOP_LOSS'] + session_struct['profit_to_trade_ratio']) / 2
+
                 session_struct['session_profit'] = session_struct['session_profit'] + profit
                 session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
                 session_struct['reload_tickers_list'] = True

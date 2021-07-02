@@ -72,7 +72,8 @@ session_struct = {
      'last_report_time': 0,
      'session_start': False,
      'prices_grabbed': False,
-     'reload_tickers_list': True
+     'reload_tickers_list': True,
+     'profit_to_trade_ratio': 0
 }
 
 report_struct = {
