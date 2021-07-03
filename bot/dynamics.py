@@ -97,7 +97,7 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
 
         #disable STOP_LOSS going into negative range and if it does limit it to 0.1
         if settings_struct['STOP_LOSS'] < 0.1:
-           settings+struct['STOP_LOSS'] = 0.1
+           settings_struct['STOP_LOSS'] = 0.1
 
         if trading_struct['holding_timeout_sell'] == 'positive':
            if trading_struct['holding_timeout_dynamic'] == 'up':
