@@ -95,9 +95,20 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
                  trading_struct['trade_resistance'] = trading_struct['sum_won_trades'] / session_struct['win_trade_count']
                  settings_struct['TRAILING_STOP_LOSS'] = trading_struct['trade_resistance']
 
-        #disable STOP_LOSS going into negative range and if it does limit it to 0.1
-        if settings_struct['STOP_LOSS'] < 0.1:
-           settings_struct['STOP_LOSS'] = 0.1
+        #limiting STOP_LOSS TIME_DIFFERENCE and TRAILING_STOP_LOSS to dynamic min and max values
+        if settings_struct['STOP_LOSS'] < STOP_LOSS / DYNAMIC_MIN_MAX:
+           settings_struct['STOP_LOSS'] = STOP_LOSS / DYNAMIC_MIN_MAX
+        if settings_struct['TIME_DIFFERENCE'] < TIME_DIFFERENCE / DYNAMIC_MIN_MAX:
+           settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE / DYNAMIC_MIN_MAX
+        if settings_struct['TRAILING_STOP_LOSS'] < STOP_LOSS / DYNAMIC_MIN_MAX:
+           settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS /DYNAMIC_MIN_MAX
+
+        if settings_struct['STOP_LOSS'] > STOP_LOSS * DYNAMIC_MIN_MAX:
+           settings_struct['STOP_LOSS'] = STOP_LOSS * DYNAMIC_MIN_MAX
+        if settings_struct['TIME_DIFFERENCE'] > TIME_DIFFERENCE * DYNAMIC_MIN_MAX:
+           settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE * DYNAMIC_MIN_MAX
+        if settings_struct['TRAILING_STOP_LOSS'] > STOP_LOSS * DYNAMIC_MIN_MAX:
+           settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS * DYNAMIC_MIN_MAX
 
         if trading_struct['holding_timeout_sell'] == 'positive':
            if trading_struct['holding_timeout_dynamic'] == 'up':
