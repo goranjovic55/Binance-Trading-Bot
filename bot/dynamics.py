@@ -35,7 +35,7 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
 
         if session_struct['last_trade_won'] == True and session_struct['dynamics_state'] == 'down':
            type = 'performance_adjust_up'
-
+           
         #print(f'{txcolors.NOTICE}>> TRADE_WON: {session_struct['last_trade_won']} and DYNAMICS_STATE: {session_struct['dynamics_state']} <<<{txcolors.DEFAULT}')
 
         if type == 'performance_adjust_up':
