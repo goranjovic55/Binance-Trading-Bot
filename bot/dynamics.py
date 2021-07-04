@@ -22,6 +22,11 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
 
     global session_struct, settings_struct, trading_struct
 
+    STOP_LOSS = parsed_config['trading_options']['STOP_LOSS']
+    TRAILING_STOP_LOSS = parsed_config['trading_options']['TRAILING_STOP_LOSS']
+    TIME_DIFFERENCE = parsed_config['trading_options']['TIME_DIFFERENCE']
+    DYNAMIC_MIN_MAX = parsed_config['trading_options']['DYNAMIC_MIN_MAX']
+
     if DYNAMIC_SETTINGS:
 
         if session_struct['last_trade_won'] == False and session_struct['dynamics_state'] == 'up':
@@ -35,7 +40,14 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
 
         if session_struct['last_trade_won'] == True and session_struct['dynamics_state'] == 'down':
            type = 'performance_adjust_up'
-           
+
+        if trading_struct['consecutive_loss'] >= 2:
+           if settings_struct['TIME_DIFFERENCE'] > TIME_DIFFERENCE:
+              settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE - (settings_struct['TIME_DIFFERENCE'] / TIME_DIFFERENCE) * TIME_DIFFERENCE / DYNAMIC_MIN_MAX
+
+           if settings_struct['TIME_DIFFERENCE'] < TIME_DIFFERENCE:
+              settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE - (settings_struct['TIME_DIFFERENCE'] / TIME_DIFFERENCE) / TIME_DIFFERENCE * DYNAMIC_MIN_MAX  
+
         #print(f'{txcolors.NOTICE}>> TRADE_WON: {session_struct['last_trade_won']} and DYNAMICS_STATE: {session_struct['dynamics_state']} <<<{txcolors.DEFAULT}')
 
         if type == 'performance_adjust_up':
@@ -81,10 +93,6 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
                  trading_struct['trade_resistance'] = trading_struct['sum_won_trades'] / session_struct['win_trade_count']
                  settings_struct['TRAILING_STOP_LOSS'] = trading_struct['trade_resistance']
 
-
-        STOP_LOSS = parsed_config['trading_options']['STOP_LOSS']
-        TRAILING_STOP_LOSS = parsed_config['trading_options']['TRAILING_STOP_LOSS']
-        TIME_DIFFERENCE = parsed_config['trading_options']['TIME_DIFFERENCE']
 
         #limiting STOP_LOSS TIME_DIFFERENCE and TRAILING_STOP_LOSS to dynamic min and max values
         if settings_struct['STOP_LOSS'] < STOP_LOSS / DYNAMIC_MIN_MAX:

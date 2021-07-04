@@ -250,6 +250,8 @@ def sell_coins():
                 if priceChange > 0:
                    session_struct['win_trade_count'] = session_struct['win_trade_count'] + 1
                    session_struct['last_trade_won'] = True
+                   trading_struct['consecutive_loss'] = 0
+
                    if coinHoldingTimeLimit < current_time:
                        trading_struct['holding_timeout_sell'] = 'positive'
 
@@ -257,13 +259,16 @@ def sell_coins():
                    trading_struct['sum_won_trades'] = trading_struct['sum_won_trades'] + trading_struct['won_trade_percent']
 
                 else:
-                   session_struct['loss_trade_count'] = session_struct['loss_trade_count'] + 1
-                   session_struct['last_trade_won'] = False
-                   if coinHoldingTimeLimit < current_time:
+                    if session_struct['last_trade_won'] == False:
+                       trading_struct['consecutive_loss'] += 1
+
+                    session_struct['loss_trade_count'] = session_struct['loss_trade_count'] + 1
+                    session_struct['last_trade_won'] = False
+                    if coinHoldingTimeLimit < current_time:
                        trading_struct['holding_timeout_sell'] = 'negative'
 
-                   trading_struct['lost_trade_percent'] = priceChange
-                   trading_struct['sum_lost_trades'] = trading_struct['sum_lost_trades'] + trading_struct['lost_trade_percent']
+                    trading_struct['lost_trade_percent'] = priceChange
+                    trading_struct['sum_lost_trades'] = trading_struct['sum_lost_trades'] + trading_struct['lost_trade_percent']
 
                 if session_struct['sell_all_coins'] == True: REPORT =  f"PAUSE_SELL - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if lastPrice < coinStopLoss: REPORT =  f"STOP_LOSS - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
