@@ -41,12 +41,14 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
         if session_struct['last_trade_won'] == True and session_struct['dynamics_state'] == 'down':
            type = 'performance_adjust_up'
 
-        if trading_struct['consecutive_loss'] >= 2:
+        if trading_struct['consecutive_loss'] >= 1:
            if settings_struct['TIME_DIFFERENCE'] > TIME_DIFFERENCE:
               settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE - (settings_struct['TIME_DIFFERENCE'] / TIME_DIFFERENCE) * TIME_DIFFERENCE / DYNAMIC_MIN_MAX
+              print(f"TIMEFRAME JUMP TRIGGERED! TIME_DIFFERENCE: {settings_struct['TIME_DIFFERENCE']}")
 
            if settings_struct['TIME_DIFFERENCE'] < TIME_DIFFERENCE:
-              settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE - (settings_struct['TIME_DIFFERENCE'] / TIME_DIFFERENCE) / TIME_DIFFERENCE * DYNAMIC_MIN_MAX  
+              settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE - (settings_struct['TIME_DIFFERENCE'] / TIME_DIFFERENCE) / TIME_DIFFERENCE * DYNAMIC_MIN_MAX
+              print(f"TIMEFRAME JUMP TRIGGERED! TIME_DIFFERENCE: {settings_struct['TIME_DIFFERENCE']}")
 
         #print(f'{txcolors.NOTICE}>> TRADE_WON: {session_struct['last_trade_won']} and DYNAMICS_STATE: {session_struct['dynamics_state']} <<<{txcolors.DEFAULT}')
 
