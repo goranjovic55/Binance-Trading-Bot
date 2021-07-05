@@ -110,26 +110,3 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
            settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE * DYNAMIC_MIN_MAX
         if settings_struct['TRAILING_STOP_LOSS'] > STOP_LOSS * DYNAMIC_MIN_MAX:
            settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS * DYNAMIC_MIN_MAX
-
-        if trading_struct['holding_timeout_sell'] == 'positive':
-           if trading_struct['holding_timeout_dynamic'] == 'up':
-              settings_struct['HOLDING_TIME_LIMIT'] = settings_struct['HOLDING_TIME_LIMIT'] + (settings_struct['HOLDING_TIME_LIMIT'] * DYNAMIC_WIN_LOSS_UP) / 100
-              print(f"{txcolors.NOTICE}>> DYNAMIC HOLDING TIME UP  HTL: {settings_struct['HOLDING_TIME_LIMIT']:.2f} <<{txcolors.DEFAULT}")
-              trading_struct['holding_timeout_sell'] = 'none'
-
-           if trading_struct['holding_timeout_dynamic'] == 'down':
-              settings_struct['HOLDING_TIME_LIMIT'] = settings_struct['HOLDING_TIME_LIMIT'] - (settings_struct['HOLDING_TIME_LIMIT'] * DYNAMIC_WIN_LOSS_UP) / 100
-              print(f"{txcolors.NOTICE}>> DYNAMIC HOLDING TIME DOWN  HTL: {settings_struct['HOLDING_TIME_LIMIT']:.2f} <<{txcolors.DEFAULT}")
-              trading_struct['holding_timeout_sell'] = 'none'
-
-        if trading_struct['holding_timeout_sell'] == 'negative':
-           if trading_struct['holding_timeout_dynamic'] == 'up':
-              trading_struct['holding_timeout_dynamic'] == 'down'
-              settings_struct['HOLDING_TIME_LIMIT'] = settings_struct['HOLDING_TIME_LIMIT'] - (settings_struct['HOLDING_TIME_LIMIT'] * DYNAMIC_WIN_LOSS_UP) / 100
-              print(f'{txcolors.NOTICE}>> DYNAMIC HOLDING TIME STATE SWITCHED TO DOWN  <<{txcolors.DEFAULT}')
-              trading_struct['holding_timeout_sell'] = 'none'
-           if trading_struct['holding_timeout_dynamic'] == 'down':
-              trading_struct['holding_timeout_dynamic'] == 'up'
-              settings_struct['HOLDING_TIME_LIMIT'] = settings_struct['HOLDING_TIME_LIMIT'] + (settings_struct['HOLDING_TIME_LIMIT'] * DYNAMIC_WIN_LOSS_UP) / 100
-              print(f'{txcolors.NOTICE}>> DYNAMIC HOLDING TIME STATE SWITCHED TO UP  <<{txcolors.DEFAULT}')
-              trading_struct['holding_timeout_sell'] = 'none'
