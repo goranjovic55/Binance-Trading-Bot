@@ -47,8 +47,14 @@ def session(type):
 
         if session_struct['win_trade_count'] > 0 or session_struct['loss_trade_count'] > 0:
            session_struct['profit_to_trade_ratio'] = session_struct['closed_trades_percent'] / (session_struct['win_trade_count']+session_struct['loss_trade_count'])
+
         else:
            session_struct['profit_to_trade_ratio'] = 0
+
+        if session_struct['win_trade_count'] > 0 and session_struct['loss_trade_count'] > 0:
+           trading_struct['trade_support'] = trading_struct['sum_min_holding_price'] / session_struct['loss_trade_count']
+           trading_struct['trade_resistance'] = trading_struct['sum_max_holding_price'] / session_struct['win_trade_count']
+
 
     if type == 'save':
 
@@ -82,7 +88,9 @@ def session(type):
             'sum_won_trades': trading_struct['sum_won_trades'],
             'sum_lost_trades': trading_struct['sum_lost_trades'],
             'min_holding_price': trading_struct['min_holding_price'],
-            'max_holding_price': trading_struct['max_holding_price']
+            'max_holding_price': trading_struct['max_holding_price'],
+            'trade_resistance': trading_struct['trade_resistance'],
+            'trade_support': trading_struct['trade_support']
             }
 
         # save the coins in a json file in the same directory
@@ -131,6 +139,8 @@ def session(type):
             trading_struct['sum_lost_trades'] = session_info['sum_lost_trades']
             trading_struct['min_holding_price'] = session_info['max_holding_price']
             trading_struct['max_holding_price'] = session_info['max_holding_price']
+            trading_struct['trade_resistance'] = session_info['trade_resistance']
+            trading_struct['trade_support'] = session_info['trade_support']
 
         session_struct['TOTAL_GAINS'] = (session_struct['session_profit'])
         session_struct['NEW_BALANCE'] = (INVESTMENT + session_struct['TOTAL_GAINS'])

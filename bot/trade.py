@@ -208,8 +208,11 @@ def sell_coins():
         if trading_struct['min_holding_price'] > priceChange :
             trading_struct['min_holding_price'] = priceChange
 
+        if coinHoldingTimeLimit < current_time and priceChange > trading_struct['trade_resistance']:
+           holding_timeout_sell = True
+
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
-        if session_struct['sell_all_coins'] == True or lastPrice < coinStopLoss or lastPrice > coinTakeProfit and not USE_TRAILING_STOP_LOSS or coinHoldingTimeLimit < current_time:
+        if session_struct['sell_all_coins'] == True or lastPrice < coinStopLoss or lastPrice > coinTakeProfit and not USE_TRAILING_STOP_LOSS or holding_timeout_sell_trigger == True:
             print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChange:.2f}% - Est: {(QUANTITY * priceChange) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
             # try to create a real order
             try:
@@ -274,12 +277,19 @@ def sell_coins():
                 if lastPrice < coinStopLoss: REPORT =  f"STOP_LOSS - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if lastPrice > coinTakeProfit: REPORT =  f"TAKE_PROFIT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if coinHoldingTimeLimit < current_time: REPORT =  f"HOLDING_TIMEOUT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
+                if priceChange > trading_struct['trade_resistance']: REPORT =  f"TRADE_RESISTANCE - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
 
                 settings_struct['STOP_LOSS'] = (settings_struct['STOP_LOSS'] + session_struct['profit_to_trade_ratio']) / 2
+
+                trading_struct['sum_max_holding_price'] = trading_struct['sum_max_holding_price'] + trading_struct['max_holding_price']
+                trading_struct['max_holding_price'] = 0
+                trading_struct['sum_min_holding_price'] = trading_struct['sum_min_holding_price'] + trading_struct['min_holding_price']
+                trading_struct['min_holding_price'] = 0
 
                 session_struct['session_profit'] = session_struct['session_profit'] + profit
                 session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
                 session_struct['reload_tickers_list'] = True
+                holding_timeout_sell = False
 
                 report_struct['report'] = REPORT
                 report_struct['message'] = True
