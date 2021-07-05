@@ -210,7 +210,7 @@ def sell_coins():
             trading_struct['min_holding_price'] = priceChange
 
         if coinHoldingTimeLimit < current_time and priceChange > trading_struct['trade_resistance']:
-           holding_timeout_sell = True
+           holding_timeout_sell_trigger = True
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
         if session_struct['sell_all_coins'] == True or lastPrice < coinStopLoss or lastPrice > coinTakeProfit and not USE_TRAILING_STOP_LOSS or holding_timeout_sell_trigger == True:
@@ -289,7 +289,7 @@ def sell_coins():
                 session_struct['session_profit'] = session_struct['session_profit'] + profit
                 session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
                 session_struct['reload_tickers_list'] = True
-                holding_timeout_sell = False
+                holding_timeout_sell_trigger = False
 
                 report_struct['report'] = REPORT
                 report_struct['message'] = True
