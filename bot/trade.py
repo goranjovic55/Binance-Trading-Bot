@@ -42,6 +42,33 @@ def trade_calculations(type, priceChange):
 
     if type == 'sell':
 
+       if priceChange > 0:
+          session_struct['win_trade_count'] = session_struct['win_trade_count'] + 1
+          session_struct['last_trade_won'] = True
+          trading_struct['consecutive_loss'] = 0
+
+          trading_struct['won_trade_percent'] = priceChange
+          trading_struct['sum_won_trades'] = trading_struct['sum_won_trades'] + trading_struct['won_trade_percent']
+
+       else:
+           if session_struct['last_trade_won'] == False:
+              trading_struct['consecutive_loss'] += 1
+
+           session_struct['loss_trade_count'] = session_struct['loss_trade_count'] + 1
+           session_struct['last_trade_won'] = False
+
+           trading_struct['lost_trade_percent'] = priceChange
+           trading_struct['sum_lost_trades'] = trading_struct['sum_lost_trades'] + trading_struct['lost_trade_percent']
+
+       settings_struct['STOP_LOSS'] = (settings_struct['STOP_LOSS'] + session_struct['profit_to_trade_ratio']) / 2
+
+       trading_struct['sum_max_holding_price'] = trading_struct['sum_max_holding_price'] + trading_struct['max_holding_price']
+       trading_struct['max_holding_price'] = 0
+       trading_struct['sum_min_holding_price'] = trading_struct['sum_min_holding_price'] + trading_struct['min_holding_price']
+       trading_struct['min_holding_price'] = 0
+       session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
+       session_struct['reload_tickers_list'] = True
+
 
 def convert_volume():
     '''Converts the volume given in QUANTITY from USDT to the each coin's volume'''
@@ -260,40 +287,18 @@ def sell_coins():
                 # Log trade
                 profit = ((lastPrice - buyPrice) * coins_sold[coin]['volume']) - (buyFee + sellFee)
 
+                trade_calculations('sell', priceChange)
+
                 #gogo MOD to trigger trade lost or won and to count lost or won trades
-                if priceChange > 0:
-                   session_struct['win_trade_count'] = session_struct['win_trade_count'] + 1
-                   session_struct['last_trade_won'] = True
-                   trading_struct['consecutive_loss'] = 0
-
-                   trading_struct['won_trade_percent'] = priceChange
-                   trading_struct['sum_won_trades'] = trading_struct['sum_won_trades'] + trading_struct['won_trade_percent']
-
-                else:
-                    if session_struct['last_trade_won'] == False:
-                       trading_struct['consecutive_loss'] += 1
-
-                    session_struct['loss_trade_count'] = session_struct['loss_trade_count'] + 1
-                    session_struct['last_trade_won'] = False
-
-                    trading_struct['lost_trade_percent'] = priceChange
-                    trading_struct['sum_lost_trades'] = trading_struct['sum_lost_trades'] + trading_struct['lost_trade_percent']
 
                 if session_struct['sell_all_coins'] == True: REPORT =  f"PAUSE_SELL - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if lastPrice < coinStopLoss: REPORT =  f"STOP_LOSS - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if lastPrice > coinTakeProfit: REPORT =  f"TAKE_PROFIT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if holding_timeout_sell_trigger: REPORT =  f"HOLDING_TIMEOUT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
 
-                settings_struct['STOP_LOSS'] = (settings_struct['STOP_LOSS'] + session_struct['profit_to_trade_ratio']) / 2
-
-                trading_struct['sum_max_holding_price'] = trading_struct['sum_max_holding_price'] + trading_struct['max_holding_price']
-                trading_struct['max_holding_price'] = 0
-                trading_struct['sum_min_holding_price'] = trading_struct['sum_min_holding_price'] + trading_struct['min_holding_price']
-                trading_struct['min_holding_price'] = 0
 
                 session_struct['session_profit'] = session_struct['session_profit'] + profit
-                session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
-                session_struct['reload_tickers_list'] = True
+
                 holding_timeout_sell_trigger = False
 
                 report_struct['report'] = REPORT
