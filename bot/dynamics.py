@@ -27,6 +27,21 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
     TIME_DIFFERENCE = parsed_config['trading_options']['TIME_DIFFERENCE']
     DYNAMIC_MIN_MAX = parsed_config['trading_options']['DYNAMIC_MIN_MAX']
 
+    #limiting STOP_LOSS TIME_DIFFERENCE and TRAILING_STOP_LOSS to dynamic min and max values
+    if settings_struct['STOP_LOSS'] < STOP_LOSS / DYNAMIC_MIN_MAX:
+       settings_struct['STOP_LOSS'] = STOP_LOSS / DYNAMIC_MIN_MAX
+    if settings_struct['TIME_DIFFERENCE'] < TIME_DIFFERENCE / DYNAMIC_MIN_MAX:
+       settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE / DYNAMIC_MIN_MAX
+    if settings_struct['TRAILING_STOP_LOSS'] < STOP_LOSS / DYNAMIC_MIN_MAX:
+       settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS /DYNAMIC_MIN_MAX
+
+    if settings_struct['STOP_LOSS'] > STOP_LOSS * DYNAMIC_MIN_MAX:
+       settings_struct['STOP_LOSS'] = STOP_LOSS * DYNAMIC_MIN_MAX
+    if settings_struct['TIME_DIFFERENCE'] > TIME_DIFFERENCE * DYNAMIC_MIN_MAX:
+       settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE * DYNAMIC_MIN_MAX
+    if settings_struct['TRAILING_STOP_LOSS'] > STOP_LOSS * DYNAMIC_MIN_MAX:
+       settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS * DYNAMIC_MIN_MAX
+
     if DYNAMIC_SETTINGS:
 
         if session_struct['last_trade_won'] == True and session_struct['dynamics_state'] == 'up':
@@ -98,18 +113,3 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
 
         if not TEST_MODE: settings_struct['HOLDING_TIME_LIMIT'] = (settings_struct['TIME_DIFFERENCE'] * 60 * 1000) * HOLDING_INTERVAL_LIMIT
         if TEST_MODE: settings_struct['HOLDING_TIME_LIMIT'] = (settings_struct['TIME_DIFFERENCE'] * 60) * HOLDING_INTERVAL_LIMIT
-
-        #limiting STOP_LOSS TIME_DIFFERENCE and TRAILING_STOP_LOSS to dynamic min and max values
-        if settings_struct['STOP_LOSS'] < STOP_LOSS / DYNAMIC_MIN_MAX:
-           settings_struct['STOP_LOSS'] = STOP_LOSS / DYNAMIC_MIN_MAX
-        if settings_struct['TIME_DIFFERENCE'] < TIME_DIFFERENCE / DYNAMIC_MIN_MAX:
-           settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE / DYNAMIC_MIN_MAX
-        if settings_struct['TRAILING_STOP_LOSS'] < STOP_LOSS / DYNAMIC_MIN_MAX:
-           settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS /DYNAMIC_MIN_MAX
-
-        if settings_struct['STOP_LOSS'] > STOP_LOSS * DYNAMIC_MIN_MAX:
-           settings_struct['STOP_LOSS'] = STOP_LOSS * DYNAMIC_MIN_MAX
-        if settings_struct['TIME_DIFFERENCE'] > TIME_DIFFERENCE * DYNAMIC_MIN_MAX:
-           settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE * DYNAMIC_MIN_MAX
-        if settings_struct['TRAILING_STOP_LOSS'] > STOP_LOSS * DYNAMIC_MIN_MAX:
-           settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS * DYNAMIC_MIN_MAX
