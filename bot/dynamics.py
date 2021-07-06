@@ -95,6 +95,8 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
                  trading_struct['trade_resistance'] = trading_struct['sum_won_trades'] / session_struct['win_trade_count']
                  settings_struct['TRAILING_STOP_LOSS'] = trading_struct['trade_resistance']
 
+        if not TEST_MODE: settings_struct['HOLDING_TIME_LIMIT'] = (settings_struct['TIME_DIFFERENCE'] * 60 * 1000) * HOLDING_INTERVAL_LIMIT
+        if TEST_MODE: settings_struct['HOLDING_TIME_LIMIT'] = (settings_struct['TIME_DIFFERENCE'] * 60) * HOLDING_INTERVAL_LIMIT
 
         #limiting STOP_LOSS TIME_DIFFERENCE and TRAILING_STOP_LOSS to dynamic min and max values
         if settings_struct['STOP_LOSS'] < STOP_LOSS / DYNAMIC_MIN_MAX:
