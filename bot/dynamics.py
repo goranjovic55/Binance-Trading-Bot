@@ -50,6 +50,7 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
               settings_struct['TIME_DIFFERENCE'] = (TIME_DIFFERENCE * DYNAMIC_MIN_MAX) - (settings_struct['TIME_DIFFERENCE']/TIME_DIFFERENCE * TIME_DIFFERENCE * DYNAMIC_MIN_MAX)
               print(f"TIMEFRAME JUMP TRIGGERED! TIME_DIFFERENCE: {settings_struct['TIME_DIFFERENCE']}")
 
+
         #print(f'{txcolors.NOTICE}>> TRADE_WON: {session_struct['last_trade_won']} and DYNAMICS_STATE: {session_struct['dynamics_state']} <<<{txcolors.DEFAULT}')
 
         if type == 'performance_adjust_up':

@@ -30,6 +30,19 @@ from helpers.handle_creds import (
 from bot.settings import *
 from bot.grab import *
 
+def trade_calculations(type, priceChange):
+
+    if type == 'holding':
+
+       if trading_struct['max_holding_price'] < priceChange :
+          trading_struct['max_holding_price'] = priceChange
+
+       if trading_struct['min_holding_price'] > priceChange :
+          trading_struct['min_holding_price'] = priceChange
+
+    if type == 'sell':
+
+
 def convert_volume():
     '''Converts the volume given in QUANTITY from USDT to the each coin's volume'''
 
@@ -204,10 +217,7 @@ def sell_coins():
            current_time = float(round(time.time()))
 #           print(f'TL:{coinHoldingTimeLimit}, time: {current_time} HOLDING_TIME_LIMIT: {HOLDING_TIME_LIMIT}, TimeLeft: {(coinHoldingTimeLimit - current_time)/60} ')
 
-        if trading_struct['max_holding_price'] < priceChange :
-            trading_struct['max_holding_price'] = priceChange
-        if trading_struct['min_holding_price'] > priceChange :
-            trading_struct['min_holding_price'] = priceChange
+        trade_calculations('holding', priceChange)
 
         if coinHoldingTimeLimit < current_time and priceChange > trading_struct['trade_resistance']:
            holding_timeout_sell_trigger = True
