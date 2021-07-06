@@ -51,11 +51,12 @@ def trade_calculations(type, priceChange):
           trading_struct['sum_won_trades'] = trading_struct['sum_won_trades'] + trading_struct['won_trade_percent']
 
        else:
-           if session_struct['last_trade_won'] == False:
-              trading_struct['consecutive_loss'] += 1
 
            session_struct['loss_trade_count'] = session_struct['loss_trade_count'] + 1
            session_struct['last_trade_won'] = False
+
+           if session_struct['last_trade_won'] == False:
+              trading_struct['consecutive_loss'] += 1
 
            trading_struct['lost_trade_percent'] = priceChange
            trading_struct['sum_lost_trades'] = trading_struct['sum_lost_trades'] + trading_struct['lost_trade_percent']
