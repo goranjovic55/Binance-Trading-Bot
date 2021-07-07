@@ -151,6 +151,7 @@ DYNAMIC_WIN_LOSS_DOWN = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_DOWN'
 DYNAMIC_CHANGE_IN_PRICE = parsed_config['trading_options']['DYNAMIC_CHANGE_IN_PRICE']
 DYNAMIC_SETTINGS = parsed_config['trading_options']['DYNAMIC_SETTINGS']
 DYNAMIC_MIN_MAX = parsed_config['trading_options']['DYNAMIC_MIN_MAX']
+HOLDING_PRICE_THRESHOLD = parsed_config['trading_options']['HOLDING_PRICE_THRESHOLD']
 STOP_LOSS_ON_PAUSE = parsed_config['trading_options']['STOP_LOSS_ON_PAUSE']
 PERCENT_SIGNAL_BUY = parsed_config['trading_options']['PERCENT_SIGNAL_BUY']
 SORT_LIST_TYPE = parsed_config['trading_options']['SORT_LIST_TYPE']
@@ -176,7 +177,8 @@ settings_struct = {
       'TRAILING_TAKE_PROFIT': TRAILING_TAKE_PROFIT,
       'HOLDING_TIME_LIMIT': HOLDING_TIME_LIMIT,
       'DYNAMIC_CHANGE_IN_PRICE': DYNAMIC_CHANGE_IN_PRICE,
-      'SESSION_REPORT_STYLE': SESSION_REPORT_STYLE
+      'SESSION_REPORT_STYLE': SESSION_REPORT_STYLE,
+      'HOLDING_PRICE_THRESHOLD': HOLDING_PRICE_THRESHOLD
 }
 
 trading_struct = {
@@ -192,7 +194,7 @@ trading_struct = {
       'min_holding_price': 0,
       'sum_min_holding_price': 0,
       'sum_max_holding_price': 0,
-      'consecutive_loss': 0
+      'consecutive_loss': 0,
 }
 
 # Default no debugging

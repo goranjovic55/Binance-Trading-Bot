@@ -247,7 +247,7 @@ def sell_coins():
 
         trade_calculations('holding', priceChange)
 
-        if coinHoldingTimeLimit < current_time and priceChange > trading_struct['trade_resistance']:
+        if coinHoldingTimeLimit < current_time and priceChange > session_struct['HOLDING_PRICE_THRESHOLD']:
            holding_timeout_sell_trigger = True
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
