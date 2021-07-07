@@ -91,7 +91,7 @@ def session(type):
             'max_holding_price': trading_struct['max_holding_price'],
             'trade_resistance': trading_struct['trade_resistance'],
             'trade_support': trading_struct['trade_support'],
-            'HOLDING_PRICE_THRESHOLD': session_struct['HOLDING_PRICE_THRESHOLD']
+            'HOLDING_PRICE_THRESHOLD': settings_struct['HOLDING_PRICE_THRESHOLD']
             }
 
         # save the coins in a json file in the same directory
