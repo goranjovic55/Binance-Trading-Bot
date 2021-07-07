@@ -142,7 +142,7 @@ def session(type):
             trading_struct['max_holding_price'] = session_info['max_holding_price']
             trading_struct['trade_resistance'] = session_info['trade_resistance']
             trading_struct['trade_support'] = session_info['trade_support']
-            trading_struct['HOLDING_PRICE_THRESHOLD'] = session_info['HOLDING_PRICE_THRESHOLD']
+            settings_struct['HOLDING_PRICE_THRESHOLD'] = session_info['HOLDING_PRICE_THRESHOLD']
 
         session_struct['TOTAL_GAINS'] = (session_struct['session_profit'])
         session_struct['NEW_BALANCE'] = (INVESTMENT + session_struct['TOTAL_GAINS'])
