@@ -30,6 +30,43 @@ from helpers.handle_creds import (
 from bot.settings import *
 from bot.grab import *
 
+
+def trailing_buy(volatile_coins):
+
+    global trail_buy_historical
+    global trail_buy_coins
+
+    buy_volatile_coins = {}
+
+    trail_buy_last_price = get_price(False)
+
+    for coin in volatile_coins:
+        trail_buy_coins[coin] = volatile_coins[coin]
+
+    for coin in trail_buy_coins:
+        if float(trail_buy_historical[coin]['price']) > float(trail_buy_last_price[coin]['price']):
+
+            trail_buy_coins[coin] = trail_buy_coins[coin] + (-1.0 *(float(trail_buy_historical[coin]['price']) - float(trail_buy_last_price[coin]['price'])) / float(trail_buy_historical[coin]['price']) * 100)
+            print(f"COIN: {coin} has DROPPED from {trail_buy_historical[coin]['price']} to {trail_buy_last_price[coin]['price']}")
+            print(f"COIN: {coin} has DROPPED for {-1.0 *(float(trail_buy_historical[coin]['price']) - float(trail_buy_last_price[coin]['price'])) / float(trail_buy_historical[coin]['price']) * 100}%")
+
+        if float(trail_buy_historical[coin]['price']) < float(trail_buy_last_price[coin]['price']):
+            print(f"COIN: {coin} has GONE UP!!!! from {trail_buy_historical[coin]['price']} to {trail_buy_last_price[coin]['price']}")
+            print(f"COIN: {coin} has GONE UP!!!! for {-1.0 *(float(trail_buy_historical[coin]['price']) - float(trail_buy_last_price[coin]['price'])) / float(trail_buy_historical[coin]['price']) * 100}%")
+
+            buy_volatile_coins[coin] = trail_buy_coins[coin]
+
+    if buy_volatile_coins:
+       for coin in buy_volatile_coins:
+           del trail_buy_coins[coin]
+
+    trail_buy_historical = trail_buy_last_price
+
+    print(f"TRAIL_BUY_COINS: {trail_buy_coins}")
+    print(f"BUY_VOLATILE_COINS: {buy_volatile_coins}")
+
+    return buy_volatile_coins
+
 def trade_calculations(type, priceChange):
 
     if type == 'holding':
@@ -80,10 +117,13 @@ def convert_volume():
     else:
        volatile_coins, number_of_coins, last_price = wait_for_price('percent_and_signal')
 
+    buy_volatile_coins = {}
     lot_size = {}
     volume = {}
 
-    for coin in volatile_coins:
+    buy_volatile_coins = trailing_buy(volatile_coins)
+
+    for coin in buy_volatile_coins:
 
         # Find the correct step size for each coin
         # max accuracy for BTC for example is 6 decimal points
