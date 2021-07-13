@@ -100,6 +100,7 @@ trading_options:
   # when hit TAKE_PROFIT, move TAKE_PROFIT up by TRAILING_TAKE_PROFIT percentage points
   TRAILING_STOP_LOSS: 0.6
   TRAILING_TAKE_PROFIT: .01
+  TRAILING_BUY_THRESHOLD: 0.01
 
   # gogo MOD Dynamic perecent applied to SL and TP upon WIN or LOSS trade
   DYNAMIC_SETTINGS: True
