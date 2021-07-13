@@ -40,6 +40,11 @@ global hsp_head
 global session_struct
 global settings_struct
 global trading_struct
+global trail_buy_historical
+global trail_buy_coins
+
+trail_buy_coins = {}
+trail_buy_historical = {}
 
 session_struct = {
      'session_profit': 0,
