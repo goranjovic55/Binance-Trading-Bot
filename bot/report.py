@@ -155,7 +155,7 @@ def report(type, reportline):
 
 
     if type == 'message' or report_struct['message']:
-        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
+        TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, TEST_DISCORD_WEBHOOK, LIVE_DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
         bot_message = SETTINGS_STRING + '\n' + reportline + '\n' + report_string + '\n'
 
         if TEST_MODE: MODE = 'TEST'
@@ -169,9 +169,12 @@ def report(type, reportline):
             send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + BOT_SETTINGS_ID + bot_message
             response = requests.get(send_text)
 
-        if BOT_MESSAGE_REPORTS and DISCORD_WEBHOOK:
+        if BOT_MESSAGE_REPORTS and (TEST_DISCORD_WEBHOOK or LIVE_DISCORD_WEBHOOK):
+            if not TEST_MODE:
+               mUrl = "https://discordapp.com/api/webhooks/"+LIVE_DISCORD_WEBHOOK
+            if TEST_MODE:
+               mUrl = "https://discordapp.com/api/webhooks/"+TEST_DISCORD_WEBHOOK
 
-            mUrl = "https://discordapp.com/api/webhooks/"+DISCORD_WEBHOOK
             data = {"username" : BOT_SETTINGS_ID , "avatar_url": discord_avatar(), "content": bot_message}
             response = requests.post(mUrl, json=data)
             #   print(response.content)

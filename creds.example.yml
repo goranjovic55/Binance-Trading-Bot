@@ -16,4 +16,5 @@ telegram:
 
 #this is used to give bot performance to discord channel
 discord:
-        DISCORD_WEBHOOK: '/852094287763472385/GbKS-0n-EvNUcl6iekXIp-XJI5g0wRee1zrMg_94Jkacx9r6cuDE6L2D0BT-2Tu554MF'
+        TEST_DISCORD_WEBHOOK: '/852094287763472385/GbKS-0n-EvNUcl6iekXIp-XJI5g0wRee1zrMg_94Jkacx9r6cuDE6L2D0BT-2Tu554MF'
+        LIVE_DISCORD_WEBHOOK: '/854046894041202739/BV8-la1zj7kauMnNL25ZpGPF7kSRzJNliqXg0f8YbzQxBXeBNfO8kCCn6QJDqxLDLA6-'

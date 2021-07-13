@@ -222,7 +222,7 @@ access_key, secret_key = load_correct_creds(parsed_creds)
 # Telegram_Bot enabled? # **added by*Coding60plus
 
 if BOT_MESSAGE_REPORTS:
-    TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
+    TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, TEST_DISCORD_WEBHOOK, LIVE_DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
 
 # set to false at Start
 global bot_paused

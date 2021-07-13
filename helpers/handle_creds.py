@@ -2,7 +2,7 @@ def load_correct_creds(creds):
     return creds['prod']['access_key'], creds['prod']['secret_key']
 
 def load_telegram_creds(creds):
-    return creds['telegram']['TELEGRAM_BOT_TOKEN'], creds['telegram']['TELEGRAM_BOT_ID'], creds['discord']['DISCORD_WEBHOOK']
+    return creds['telegram']['TELEGRAM_BOT_TOKEN'], creds['telegram']['TELEGRAM_BOT_ID'], creds['discord']['TEST_DISCORD_WEBHOOK'], creds['discord']['LIVE_DISCORD_WEBHOOK']
 
 
 def test_api_key(client, BinanceAPIException):
@@ -36,7 +36,7 @@ def test_api_key(client, BinanceAPIException):
 
         else:
             msg = "Encountered an API Error code that was not caught nicely, please open issue...\n"
-           
+
 
         return False, msg
 

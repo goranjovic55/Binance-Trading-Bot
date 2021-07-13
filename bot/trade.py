@@ -79,7 +79,7 @@ def trade_calculations(type, priceChange):
        if trading_struct['min_holding_price'] > priceChange :
           trading_struct['min_holding_price'] = priceChange
 
-    session_struct['unrealised_percent'] = session_struct['unrealised_percent'] + priceChange
+       session_struct['unrealised_percent'] = session_struct['unrealised_percent'] + priceChange
 
     if type == 'sell':
 
