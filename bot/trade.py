@@ -54,7 +54,9 @@ def trailing_buy(volatile_coins):
             print(f"COIN: {coin} has GONE UP!!!! from {trail_buy_historical[coin]['price']} to {trail_buy_last_price[coin]['price']}")
             print(f"COIN: {coin} has GONE UP!!!! for {-1.0 *(float(trail_buy_historical[coin]['price']) - float(trail_buy_last_price[coin]['price'])) / float(trail_buy_historical[coin]['price']) * 100}%")
 
-            buy_volatile_coins[coin] = trail_buy_coins[coin]
+            if float(-1.0 *(float(trail_buy_historical[coin]['price']) - float(trail_buy_last_price[coin]['price'])) / float(trail_buy_historical[coin]['price']) * 100) > settings_struct['TRAILING_BUY_THRESHOLD']:
+
+               buy_volatile_coins[coin] = trail_buy_coins[coin]
 
     if buy_volatile_coins:
        for coin in buy_volatile_coins:
