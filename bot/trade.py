@@ -79,6 +79,8 @@ def trade_calculations(type, priceChange):
        if trading_struct['min_holding_price'] > priceChange :
           trading_struct['min_holding_price'] = priceChange
 
+    session_struct['unrealised_percent'] = session_struct['unrealised_percent'] + priceChange
+
     if type == 'sell':
 
        if priceChange > 0:
@@ -109,6 +111,7 @@ def trade_calculations(type, priceChange):
        session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
        session_struct['reload_tickers_list'] = True
 
+       session_struct['unrealised_percent'] = 0
 
 def convert_volume():
     '''Converts the volume given in QUANTITY from USDT to the each coin's volume'''
@@ -328,7 +331,7 @@ def sell_coins():
                 volatility_cooloff[coin] = datetime.now()
 
                 # Log trade
-                profit = ((lastPrice - buyPrice) * coins_sold[coin]['volume']) - (buyFee + sellFee)
+                profit = lastPrice - buyPrice
 
                 trade_calculations('sell', priceChange)
 

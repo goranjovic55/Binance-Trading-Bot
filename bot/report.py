@@ -85,9 +85,10 @@ def report(type, reportline):
                       +str(round(settings_struct['HOLDING_TIME_LIMIT'], 2))
 
     if session_struct['trade_slots'] > 0:
-        UNREALISED_PERCENT = round(session_struct['unrealised_percent']/session_struct['trade_slots'], 2)
+        UNREALISED_PERCENT = round(session_struct['unrealised_percent'])
     else:
         UNREALISED_PERCENT = 0
+
     if (session_struct['win_trade_count'] > 0) and (session_struct['loss_trade_count'] > 0):
         WIN_LOSS_PERCENT = round((session_struct['win_trade_count'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])) * 100, 2)
     else:
