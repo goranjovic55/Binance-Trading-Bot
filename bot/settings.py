@@ -84,7 +84,14 @@ report_struct = {
 }
 
 def get_git_commit_number():
-    return str(subprocess.check_output(['git', 'rev-list', '--count', 'HEAD']))[:-3][2:]
+
+    try:
+       git_commit_count = str(subprocess.check_output(['git', 'rev-list', '--count', 'HEAD']))[:-3][2:]
+
+    except:
+        git_commit_count = "NONE"
+
+    return git_commit_count
 
 def decimals():
     # set number of decimals for reporting fractions
