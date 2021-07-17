@@ -36,7 +36,7 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
         WIN_LOSS_PERCENT = 100
 
     if session_struct['closed_trades_percent'] > 0 and WIN_LOSS_PERCENT > 0:
-       DYNAMIC_STOP_LOSS = session_struct['closed_trades_percent'] / session_struct['trade_slots'] * session_struct['WIN_LOSS_PERCENT'] / 100
+       DYNAMIC_STOP_LOSS = session_struct['closed_trades_percent'] / session_struct['trade_slots'] * WIN_LOSS_PERCENT / 100
 
     if DYNAMIC_SETTINGS:
 
