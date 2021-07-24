@@ -50,8 +50,8 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
         if settings_struct['TRAILING_STOP_LOSS'] < STOP_LOSS / DYNAMIC_MIN_MAX:
            settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS /DYNAMIC_MIN_MAX
 
-        if settings_struct['STOP_LOSS'] > STOP_LOSS * DYNAMIC_MIN_MAX:
-           settings_struct['STOP_LOSS'] = STOP_LOSS * DYNAMIC_MIN_MAX
+        #if settings_struct['STOP_LOSS'] > STOP_LOSS * DYNAMIC_MIN_MAX:
+           #settings_struct['STOP_LOSS'] = STOP_LOSS * DYNAMIC_MIN_MAX
         if settings_struct['TIME_DIFFERENCE'] > TIME_DIFFERENCE * DYNAMIC_MIN_MAX:
            settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE * DYNAMIC_MIN_MAX
         if settings_struct['TRAILING_STOP_LOSS'] > STOP_LOSS * DYNAMIC_MIN_MAX:
