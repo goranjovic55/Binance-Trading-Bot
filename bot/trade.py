@@ -111,6 +111,7 @@ def trade_calculations(type, priceChange):
        session_struct['closed_trades_percent'] = session_struct['closed_trades_percent'] + priceChange
        session_struct['reload_tickers_list'] = True
 
+       trading_struct['stop_loss_adjust'] = True
        session_struct['unrealised_percent'] = 0
 
 def convert_volume():
