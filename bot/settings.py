@@ -93,7 +93,7 @@ def get_git_commit_number():
     try:
        git_commit_count = str(subprocess.check_output(['git', 'rev-list', '--count', 'HEAD']))[:-3][2:]
 
-    except:
+    except Exception:
         git_commit_count = "NONE"
 
     return git_commit_count
@@ -102,8 +102,8 @@ def decimals():
     # set number of decimals for reporting fractions
     if is_fiat():
         return 2
-    else:
-        return 8
+
+    return 8
 
 def is_fiat():
     # check if we are using a fiat as a base currency
@@ -113,10 +113,7 @@ def is_fiat():
     fiats = ['USDT', 'BUSD', 'AUD', 'BRL', 'EUR', 'GBP', 'RUB', 'TRY', 'TUSD', \
              'USDC', 'PAX', 'BIDR', 'DAI', 'IDRT', 'UAH', 'NGN', 'VAI', 'BVND']
 
-    if PAIR_WITH in fiats:
-        return True
-    else:
-        return False
+    return bool(PAIR_WITH in fiats)
 
 
 args = parse_args()
@@ -176,8 +173,10 @@ REPORT_FREQUENCY = parsed_config['script_options']['REPORT_FREQUENCY']
 HOLDING_INTERVAL_LIMIT = parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
 QUANTITY = INVESTMENT/TRADE_SLOTS
 
-if not TEST_MODE: HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60 * 1000) * HOLDING_INTERVAL_LIMIT
-if TEST_MODE: HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60) * HOLDING_INTERVAL_LIMIT
+if not TEST_MODE: 
+    HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60 * 1000) * HOLDING_INTERVAL_LIMIT
+else:
+    HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60) * HOLDING_INTERVAL_LIMIT
 
 settings_struct = {
       'TIME_DIFFERENCE': TIME_DIFFERENCE,
@@ -249,7 +248,9 @@ if DEBUG:
 ignorelist=[line.strip() for line in open(IGNORE_LIST)]
 
 # Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
-if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]
+if CUSTOM_LIST: 
+    tickers=[line.strip() 
+    for line in open(TICKERS_LIST)]
 
 # prevent including a coin in volatile_coins if it has already appeared there less than TIME_DIFFERENCE minutes ago
 volatility_cooloff = {}

@@ -120,12 +120,12 @@ def tickers_list(type):
             print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
 def reload_tickers():
-    if session_struct['reload_tickers_list'] == True:
+    if session_struct['reload_tickers_list'] is True:
        tickers_list(SORT_LIST_TYPE)
        session_struct['reload_tickers_list'] = False
 
     #reload tickers list by volume if triggered recreation
-    if session_struct['tickers_list_changed'] == True :
+    if session_struct['tickers_list_changed'] is True :
         tickers=[line.strip() for line in open(TICKERS_LIST)]
         print(f'>> Tickers RELOADED from tickers!!!{TICKERS_LIST} <<')
         session_struct['tickers_list_changed'] = False

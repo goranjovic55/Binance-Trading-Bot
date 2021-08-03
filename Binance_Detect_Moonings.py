@@ -62,13 +62,13 @@ from helpers.handle_creds import (
 )
 
 #import bot extension functions including main function for trading
-from bot.settings import *
-from bot.dynamics import *
-from bot.report import *
-from bot.session import *
-from bot.tickers_list import *
-from bot.grab import *
-from bot.trade import *
+import bot.settings
+import bot.dynamics
+import bot.report
+import bot.session
+import bot.tickers_list
+import bot.grab
+import bot.trade
 
 # print with timestamps
 old_out = sys.stdout
@@ -101,15 +101,15 @@ def pause_bot():
 
     while os.path.isfile("signals/paused.exc"):
 
-        if bot_paused == False:
+        if bot_paused is False:
             print(f"{txcolors.WARNING}Buying paused due to negative market conditions, stop loss and take profit will continue to work...{txcolors.DEFAULT}")
             # sell all bought coins if bot is bot_paused
-            if STOP_LOSS_ON_PAUSE == True:
+            if STOP_LOSS_ON_PAUSE is True:
                session_struct['sell_all_coins'] = True
             bot_paused = True
 
         # sell all bought coins if bot is bot_paused
-        if STOP_LOSS_ON_PAUSE == True:
+        if STOP_LOSS_ON_PAUSE is True:
            session_struct['sell_all_coins'] = True
 
         # Sell function needs to work even while paused
@@ -124,6 +124,7 @@ def pause_bot():
            report(SESSION_REPORT_STYLE, '.')
 
         time.sleep(settings_struct['RECHECK_INTERVAL'])
+        break
 
     else:
         # stop counting the pause time
@@ -131,7 +132,7 @@ def pause_bot():
         time_elapsed = timedelta(seconds=int(stop_time-start_time))
 
         # resume the bot and set pause_bot to False
-        if  bot_paused == True:
+        if bot_paused is True:
             print(f"{txcolors.WARNING}Resuming buying due to positive market conditions, total sleep time: {time_elapsed}{txcolors.DEFAULT}")
             if LIST_AUTOCREATE:
                 tickers_list(SORT_LIST_TYPE)
@@ -139,7 +140,6 @@ def pause_bot():
             session_struct['sell_all_coins'] = False
             bot_paused = False
 
-    return
 
 
 if __name__ == '__main__':
@@ -155,18 +155,13 @@ if __name__ == '__main__':
             time.sleep(10)
 
     signals = glob.glob("signals/*.exs")
+    signals.append("signals/paused.exc")
     for filename in signals:
-        for line in open(filename):
+        if os.path.isfile(filename):
             try:
                 os.remove(filename)
-            except:
+            except Exception:
                 if DEBUG: print(f'{txcolors.WARNING}Could not remove external signalling file {filename}{txcolors.DEFAULT}')
-
-    if os.path.isfile("signals/paused.exc"):
-        try:
-            os.remove("signals/paused.exc")
-        except:
-            if DEBUG: print(f'{txcolors.WARNING}Could not remove external signalling file {filename}{txcolors.DEFAULT}')
 
     # load signalling modules
     try:

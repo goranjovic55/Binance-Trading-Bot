@@ -31,7 +31,7 @@ from helpers.handle_creds import (
     load_telegram_creds
 )
 
-from bot.settings import *
+import bot.settings
 
 # rolling window of prices; cyclical queue
 historical_prices = [None] * 2
@@ -139,7 +139,7 @@ def wait_for_price(type):
        session_struct['prices_grabbed'] = True
 
 
-       if session_struct['prices_grabbed'] == True:
+       if session_struct['prices_grabbed'] is True:
           # calculate the difference in prices
           for coin in historical_prices[hsp_head]:
 
