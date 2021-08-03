@@ -38,8 +38,8 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
     if DYNAMIC_SETTINGS:
 
         #limiting STOP_LOSS TIME_DIFFERENCE and TRAILING_STOP_LOSS to dynamic min and max values
-        #if settings_struct['STOP_LOSS'] < STOP_LOSS / DYNAMIC_MIN_MAX:
-           #settings_struct['STOP_LOSS'] = STOP_LOSS / DYNAMIC_MIN_MAX
+        if settings_struct['STOP_LOSS'] < STOP_LOSS / DYNAMIC_MIN_MAX:
+           settings_struct['STOP_LOSS'] = STOP_LOSS / DYNAMIC_MIN_MAX
 
         if session_struct['closed_trades_percent'] > 0 and WIN_LOSS_PERCENT > 0 and session_struct['trade_slots'] > 0 and trading_struct['stop_loss_adjust'] == True:
            DYNAMIC_STOP_LOSS = session_struct['closed_trades_percent'] / session_struct['trade_slots'] * WIN_LOSS_PERCENT / 100
