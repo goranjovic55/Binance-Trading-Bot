@@ -46,9 +46,6 @@ def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
            settings_struct['STOP_LOSS'] = (settings_struct['STOP_LOSS'] + DYNAMIC_STOP_LOSS) / 2
            trading_struct['stop_loss_adjust'] = False
 
-        else:
-            DYNAMIC_STOP_LOSS = settings_struct['STOP_LOSS']
-#            settings_struct['STOP_LOSS'] = settings_struct['STOP_LOSS'] + DYNAMIC_STOP_LOSS / 2
 
         if settings_struct['TIME_DIFFERENCE'] < TIME_DIFFERENCE / DYNAMIC_MIN_MAX:
            settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE / DYNAMIC_MIN_MAX
