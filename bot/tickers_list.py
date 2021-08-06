@@ -71,13 +71,13 @@ def tickers_list(type):
                 for coin in tickers_binance:
                     if CUSTOM_LIST:
                         if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-                            tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
-                            tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
+                            tickers_list_volume[coin['symbol']] = { 'volume': float(coin['volume'])}
+                            tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': float(coin['priceChangePercent'])}
 
                     else:
                         if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-                            tickers_list_volume[coin['symbol']] = { 'volume': coin['volume']}
-                            tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': coin['priceChangePercent']}
+                            tickers_list_volume[coin['symbol']] = { 'volume': float(coin['volume'])}
+                            tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': float(coin['priceChangePercent'])}
 
                 # sort tickers by descending order volume and price
                 list_tickers_volume = list(sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True))
