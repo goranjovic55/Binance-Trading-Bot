@@ -16,7 +16,8 @@ script_options:
   # gogos MOD Telegram bot integration
   BOT_MESSAGE_REPORTS: True
 
-  # Bot id for BOT_MESSAGE_REPORTS
+  # Bot id for BOT_MESSAGE_REPORTS on discord
+  # Give your bot a recognizable name so everyone understands exactly what going on
   BOT_ID: '@>>'
 
   # Should session status be reported detailed or simple? Options: 'detailed' 'console'
@@ -77,6 +78,8 @@ trading_options:
   IGNORE_LIST: 'ignorelist.txt'
 
   # the amount of time in MINUTES to calculate the difference from the current price (minimum: 1).
+  # it will also affect minimum and maximum time difference multiplied or divided by DYNAMIC_MIN_MAX
+  # example: TIME_DIFFERENCE 15 with DYNAMIC_MIN_MAX 10 will let bot work from 1.5 to 150 minutes
   TIME_DIFFERENCE: 15
 
   # Number of times to check for TP/SL during each TIME_DIFFERENCE (minimum: 1).
@@ -84,6 +87,7 @@ trading_options:
   RECHECK_INTERVAL: 1
 
   # the difference in % between the first and second checks for the price.
+  # CHANGE_IN_PRICE is a range because we want more precise pickings
   CHANGE_IN_PRICE_MIN: -3
   CHANGE_IN_PRICE_MAX: 3
 
@@ -103,11 +107,22 @@ trading_options:
   TRAILING_BUY_THRESHOLD: 0.01
 
   # gogo MOD Dynamic perecent applied to SL and TP upon WIN or LOSS trade
+  # this enables all dynamic setting if its true
   DYNAMIC_SETTINGS: True
+
+  # this is % by wich we add up to all settings like stoploss takeprofit trailing take profit etc if we win
   DYNAMIC_WIN_LOSS_UP: 10
+
+  # this is % by wich we subtract all settings like stoploss takeprofit trailing take profit etc if we loose
   DYNAMIC_WIN_LOSS_DOWN : 10
+
+  # this is a fixed % for dynamic change in price calculation
   DYNAMIC_CHANGE_IN_PRICE: 10
+
+  #this is a coeficient we use to determine max an min TIME_DIFFERENCE in wich we let bot work
   DYNAMIC_MIN_MAX: 10
+
+  # this is minimum price % we want to sell above if max holding time is up (this was added to cut loses if coins are stale)
   HOLDING_PRICE_THRESHOLD: 0.3
 
   # activate all stop losses on pausebot mod trigger
@@ -126,8 +141,13 @@ trading_options:
   HOLDING_INTERVAL_LIMIT: 3
 
   # sort list by volume or price_change
+  # this enables autocreation of list and will recreate current list and overwrite it
   LIST_AUTOCREATE: True
+
+  # type of list creation either from binance or tradingview
   LIST_CREATE_TYPE: binance_b
+
+  # list sorting by volume or by price change
   SORT_LIST_TYPE: volume
 
   SIGNALLING_MODULES:
