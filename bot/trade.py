@@ -248,6 +248,7 @@ def sell_coins():
     #last_price = get_price(add_to_historical=True) # don't populate rolling window
     coins_sold = {}
     holding_timeout_sell_trigger = False
+    REPORT = "."
 
     for coin in list(coins_bought):
 
