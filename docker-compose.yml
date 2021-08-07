@@ -5,5 +5,5 @@ services:
         build: ./
         tty: yes
         volumes:
-            - "./:/usr/src/app"
+          - "./:/usr/src/app:Z"
         command: python3 "Binance_Detect_Moonings.py"
