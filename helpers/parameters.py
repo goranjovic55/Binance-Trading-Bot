@@ -2,7 +2,7 @@ import yaml
 import argparse
 
 
-def load_config(file):
+def load_config(file: str):
     try:
 
         with open(file) as file:

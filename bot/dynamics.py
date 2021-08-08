@@ -18,8 +18,7 @@ from helpers.handle_creds import (
 
 from bot.settings import *
 
-def dynamic_settings(type, TIME_DIFFERENCE, RECHECK_INTERVAL):
-
+def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float) -> None:
     global session_struct, settings_struct, trading_struct
 
     DYNAMIC_STOP_LOSS = settings_struct['STOP_LOSS']

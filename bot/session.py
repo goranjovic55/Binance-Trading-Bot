@@ -25,7 +25,7 @@ import json
 
 from bot.settings import *
 
-def session(type):
+def session(type: str) -> None:
     #various session calculations like uptime 24H gain profit risk to reward ratio unrealised profit etc
     global session_struct, settings_struct
 

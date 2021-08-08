@@ -75,7 +75,7 @@ old_out = sys.stdout
 class St_ampe_dOut:
     """Stamped stdout."""
     nl = True
-    def write(self, x):
+    def write(self, x: str) -> None:
         """Write function overloaded."""
         if x == '\n':
             old_out.write(x)
@@ -86,13 +86,13 @@ class St_ampe_dOut:
         else:
             old_out.write(x)
 
-    def flush(self):
+    def flush(self) -> None:
         pass
 
 sys.stdout = St_ampe_dOut()
 
 
-def pause_bot():
+def pause_bot() -> None:
     '''Pause the script when external indicators detect a bearish trend in the market'''
     global bot_paused, hsp_head, settings_struct
     global LIST_AUTOCREATE
@@ -143,6 +143,7 @@ def pause_bot():
 
 
 if __name__ == '__main__':
+    print(None)
 
     mymodule = {}
 
