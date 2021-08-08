@@ -27,6 +27,9 @@ This Binance trading bot analyses the changes in price across all coins on Bina
 - Reporting to discord channel and telegram optional
 - Automatic changing of settings from config file on the fly based on wins / losses
 
+## WIKI
+https://github.com/goranjovic55/Binance-Trading-Bot/wiki
+
 ## READ BEFORE USE
 1. If you use the `TEST_MODE: False` in your config, you will be using REAL money.
 2. To ensure you do not do this, ALWAYS check the `TEST_MODE` configuration item in the config.yml file..
