@@ -41,7 +41,7 @@ ignorelist=[line.strip() for line in open(IGNORE_LIST)]
 # Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
 if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]
 
-def tickers_list(type):
+def tickers_list(type: str) -> None:
 
     global LIST_AUTOCREATE
 
@@ -119,7 +119,7 @@ def tickers_list(type):
             session_struct['tickers_list_changed'] = True
             print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
 
-def reload_tickers():
+def reload_tickers() -> None:
     if session_struct['reload_tickers_list'] == True:
        tickers_list(SORT_LIST_TYPE)
        session_struct['reload_tickers_list'] = False

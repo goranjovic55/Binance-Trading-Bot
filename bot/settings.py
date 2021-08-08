@@ -88,7 +88,7 @@ report_struct = {
       'log': False
 }
 
-def get_git_commit_number():
+def get_git_commit_number() -> str:
 
     try:
        git_commit_count = str(subprocess.check_output(['git', 'rev-list', '--count', 'HEAD']))[:-3][2:]
@@ -98,14 +98,14 @@ def get_git_commit_number():
 
     return git_commit_count
 
-def decimals():
+def decimals() -> int:
     # set number of decimals for reporting fractions
     if is_fiat():
         return 2
     else:
         return 8
 
-def is_fiat():
+def is_fiat() -> bool:
     # check if we are using a fiat as a base currency
     global hsp_head
     PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']

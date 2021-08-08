@@ -34,7 +34,7 @@ access_key, secret_key = load_correct_creds(parsed_creds)
 
 client = Client(access_key, secret_key)
 
-def write_log(logline):
+def write_log(logline: str) -> None:
     timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
     with open(LOG_FILE_PATH,'a+') as f:
         f.write(timestamp + ' ' + logline + '\n')
