@@ -115,6 +115,8 @@ def trade_calculations(type, priceChange):
        session_struct['unrealised_percent'] = 0
 
 def convert_volume():
+    global session_struct
+
     '''Converts the volume given in QUANTITY from USDT to the each coin's volume'''
 
     #added feature to buy only if percent and signal triggers uses PERCENT_SIGNAL_BUY true or false from config
@@ -131,35 +133,37 @@ def convert_volume():
 
     for coin in buy_volatile_coins:
 
-        # Find the correct step size for each coin
-        # max accuracy for BTC for example is 6 decimal points
-        # while XRP is only 1
-        try:
-            step_size = session_struct['symbol_info'][coin]
-            lot_size[coin] = step_size.index('1') - 1
-        except KeyError:
-            # not retrieved at startup, try again
-            try:
-                coin_info = client.get_symbol_info(coin)
-                step_size = coin_info['filters'][2]['stepSize']
-                lot_size[coin] = step_size.index('1') - 1
-            except:
-                pass
-        lot_size[coin] = max(lot_size[coin], 0)
+        if session_struct['trade_slots'] + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
 
-        # calculate the volume in coin from QUANTITY in USDT (default)
-        volume[coin] = float(QUANTITY / float(last_price[coin]['price']))
+           # Find the correct step size for each coin
+           # max accuracy for BTC for example is 6 decimal points
+           # while XRP is only 1
+           try:
+               step_size = session_struct['symbol_info'][coin]
+               lot_size[coin] = step_size.index('1') - 1
+           except KeyError:
+               # not retrieved at startup, try again
+               try:
+                   coin_info = client.get_symbol_info(coin)
+                   step_size = coin_info['filters'][2]['stepSize']
+                   lot_size[coin] = step_size.index('1') - 1
+               except:
+                   pass
+           lot_size[coin] = max(lot_size[coin], 0)
 
-        # define the volume with the correct step size
-        if coin not in lot_size:
-            volume[coin] = float('{:.1f}'.format(volume[coin]))
+           # calculate the volume in coin from QUANTITY in USDT (default)
+           volume[coin] = float(QUANTITY / float(last_price[coin]['price']))
 
-        else:
-            # if lot size has 0 decimal points, make the volume an integer
-            if lot_size[coin] == 0:
-                volume[coin] = int(volume[coin])
-            else:
-                volume[coin] = float('{:.{}f}'.format(volume[coin], lot_size[coin]))
+           # define the volume with the correct step size
+           if coin not in lot_size:
+               volume[coin] = float('{:.1f}'.format(volume[coin]))
+
+           else:
+               # if lot size has 0 decimal points, make the volume an integer
+                if lot_size[coin] == 0:
+                    volume[coin] = int(volume[coin])
+                else:
+                    volume[coin] = float('{:.{}f}'.format(volume[coin], lot_size[coin]))
 
     return volume, last_price
 
