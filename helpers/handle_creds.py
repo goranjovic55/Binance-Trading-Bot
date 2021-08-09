@@ -1,4 +1,6 @@
-def load_correct_creds(creds: dict) -> tuple[str, str]:
+from typing import Tuple, Dict
+
+def load_correct_creds(creds: Dict) -> Tuple[str, str]:
     """Returns the binance API key details from the config
 
     Args:
@@ -9,11 +11,11 @@ def load_correct_creds(creds: dict) -> tuple[str, str]:
     """
     return creds['prod']['access_key'], creds['prod']['secret_key']
 
-def load_telegram_creds(creds: dict) -> tuple[str, str, str, str]:
+def load_telegram_creds(creds: Dict) -> Tuple[str, str, str, str]:
     return creds['telegram']['TELEGRAM_BOT_TOKEN'], creds['telegram']['TELEGRAM_BOT_ID'], creds['discord']['TEST_DISCORD_WEBHOOK'], creds['discord']['LIVE_DISCORD_WEBHOOK']
 
 
-def test_api_key(client, BinanceAPIException) -> tuple[bool, str]:
+def test_api_key(client, BinanceAPIException) -> Tuple[bool, str]:
     """Checks to see if API keys supplied returns errors
 
     Args:

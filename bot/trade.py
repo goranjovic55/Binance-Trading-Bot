@@ -5,6 +5,7 @@ import sys
 import glob
 import time
 import threading
+from typing import Tuple, Dict
 
 #gogo MOD telegram needs import request
 import requests
@@ -31,7 +32,7 @@ from bot.settings import *
 from bot.grab import *
 
 
-def trailing_buy(volatile_coins: dict[str, float]) -> dict[str, float]:
+def trailing_buy(volatile_coins: Dict[str, float]) -> Dict[str, float]:
 
     global trail_buy_historical
     global trail_buy_coins
@@ -114,7 +115,7 @@ def trade_calculations(type: str, priceChange: float) -> None:
        trading_struct['stop_loss_adjust'] = True
        session_struct['unrealised_percent'] = 0
 
-def convert_volume() -> tuple[dict, dict]:
+def convert_volume() -> Tuple[Dict, Dict]:
     global session_struct
 
     '''Converts the volume given in QUANTITY from USDT to the each coin's volume'''
@@ -172,7 +173,7 @@ def test_order_id() -> int:
     test_order_id_number = random.randint(100000000,999999999)
     return test_order_id_number
 
-def buy() -> tuple[dict, dict, dict]:
+def buy() -> Tuple[Dict, Dict, Dict]:
     '''Place Buy market orders for each volatile coin found'''
     global UNIQUE_BUYS
     volume, last_price = convert_volume()
@@ -241,7 +242,7 @@ def buy() -> tuple[dict, dict, dict]:
 
     return orders, last_price, volume
 
-def sell_coins() -> dict:
+def sell_coins() -> Dict:
     '''sell coins that have reached the STOP LOSS or TAKE PROFIT threshold'''
     global session_struct, settings_struct, trading_struct
 
@@ -362,7 +363,7 @@ def sell_coins() -> dict:
     return coins_sold
 
 
-def extract_order_data(order_details: dict) -> dict:
+def extract_order_data(order_details: Dict) -> Dict:
     global TRADING_FEE, STOP_LOSS, TAKE_PROFIT
     transactionInfo = {}
     # adding order fill extractions here
@@ -407,7 +408,7 @@ def extract_order_data(order_details: dict) -> dict:
     return transactionInfo
 
 
-def update_portfolio(orders: dict, last_price: dict, volume: dict) -> dict:
+def update_portfolio(orders: Dict, last_price: Dict, volume: Dict) -> Dict:
 
     global session_struct
 
@@ -448,7 +449,7 @@ def update_portfolio(orders: dict, last_price: dict, volume: dict) -> dict:
         session_struct['trade_slots'] = len(coins_bought)
 
 
-def remove_from_portfolio(coins_sold: dict) -> None:
+def remove_from_portfolio(coins_sold: Dict) -> None:
 
     global session_struct
 

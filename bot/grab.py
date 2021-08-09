@@ -5,6 +5,7 @@ import sys
 import glob
 import time
 import threading
+from typing import Tuple, Dict
 
 #gogo MOD telegram needs import request
 import requests
@@ -56,7 +57,7 @@ def get_historical_price() -> None:
         market_historic = client.get_historical_trades(symbol=session_struct['exchange_symbol'])
         session_struct['market_price'] = market_historic[0].get('price')
 
-def external_signals() -> dict[str, str]:
+def external_signals() -> Dict[str, str]:
     external_list = {}
     signals = {}
 
@@ -75,7 +76,7 @@ def external_signals() -> dict[str, str]:
     return external_list
 
 
-def get_price(add_to_historical: bool = True) -> dict:
+def get_price(add_to_historical: bool = True) -> Dict:
     '''Return the current price for all coins on binance'''
 
     global historical_prices, hsp_head, session_struct
@@ -100,7 +101,7 @@ def get_price(add_to_historical: bool = True) -> dict:
         historical_prices[hsp_head] = initial_price
     return initial_price
 
-def wait_for_price(type: str) -> tuple[dict, float, dict]:
+def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
     '''calls the initial price and ensures the correct amount of time has passed
     before reading the current price again'''
 
