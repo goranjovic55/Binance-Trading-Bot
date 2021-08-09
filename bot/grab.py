@@ -5,7 +5,6 @@ import sys
 import glob
 import time
 import threading
-from typing import Dict
 
 #gogo MOD telegram needs import request
 import requests
