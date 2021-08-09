@@ -143,7 +143,6 @@ def pause_bot() -> None:
 
 
 if __name__ == '__main__':
-    print(None)
 
     mymodule = {}
 
