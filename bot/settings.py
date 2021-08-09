@@ -138,12 +138,12 @@ DEBUG_SETTING = parsed_config['script_options'].get('VERBOSE_MODE')
 AMERICAN_USER = parsed_config['script_options'].get('AMERICAN_USER')
 BOT_MESSAGE_REPORTS =  parsed_config['script_options'].get('BOT_MESSAGE_REPORTS')
 BOT_ID = parsed_config['script_options'].get('BOT_ID')
-UNIQUE_BUYS = parsed_config['script_options'].get('UNIQUE_BUYS')
 
 # Load trading vars
 PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
 INVESTMENT = parsed_config['trading_options']['INVESTMENT']
 TRADE_SLOTS = parsed_config['trading_options']['TRADE_SLOTS']
+UNIQUE_BUYS = parsed_config['trading_options'].get('UNIQUE_BUYS')
 EXCLUDED_PAIRS = parsed_config['trading_options']['EXCLUDED_PAIRS']
 TIME_DIFFERENCE = parsed_config['trading_options']['TIME_DIFFERENCE']
 RECHECK_INTERVAL = parsed_config['trading_options']['RECHECK_INTERVAL']
