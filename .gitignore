@@ -13,3 +13,5 @@ docker-compose.yml
 tickers.*
 session_struct.py
 log.csv
+/env
+/.vscode

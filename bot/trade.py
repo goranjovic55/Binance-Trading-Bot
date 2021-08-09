@@ -5,6 +5,7 @@ import sys
 import glob
 import time
 import threading
+from typing import Tuple, Dict
 
 #gogo MOD telegram needs import request
 import requests
@@ -31,7 +32,7 @@ from bot.settings import *
 from bot.grab import *
 
 
-def trailing_buy(volatile_coins):
+def trailing_buy(volatile_coins: Dict[str, float]) -> Dict[str, float]:
 
     global trail_buy_historical
     global trail_buy_coins
@@ -69,7 +70,7 @@ def trailing_buy(volatile_coins):
 
     return buy_volatile_coins
 
-def trade_calculations(type, priceChange):
+def trade_calculations(type: str, priceChange: float) -> None:
 
     if type == 'holding':
 
@@ -114,7 +115,7 @@ def trade_calculations(type, priceChange):
        trading_struct['stop_loss_adjust'] = True
        session_struct['unrealised_percent'] = 0
 
-def convert_volume():
+def convert_volume() -> Tuple[Dict, Dict]:
     global session_struct
 
     '''Converts the volume given in QUANTITY from USDT to the each coin's volume'''
@@ -164,16 +165,15 @@ def convert_volume():
                     volume[coin] = int(volume[coin])
                 else:
                     volume[coin] = float('{:.{}f}'.format(volume[coin], lot_size[coin]))
-
     return volume, last_price
 
-def test_order_id():
+def test_order_id() -> int:
     import random
     """returns a fake order id by hashing the current time"""
     test_order_id_number = random.randint(100000000,999999999)
     return test_order_id_number
 
-def buy():
+def buy() -> Tuple[Dict, Dict, Dict]:
     '''Place Buy market orders for each volatile coin found'''
     global UNIQUE_BUYS
     volume, last_price = convert_volume()
@@ -242,7 +242,7 @@ def buy():
 
     return orders, last_price, volume
 
-def sell_coins():
+def sell_coins() -> Dict:
     '''sell coins that have reached the STOP LOSS or TAKE PROFIT threshold'''
     global session_struct, settings_struct, trading_struct
 
@@ -363,7 +363,7 @@ def sell_coins():
     return coins_sold
 
 
-def extract_order_data(order_details):
+def extract_order_data(order_details: Dict) -> Dict:
     global TRADING_FEE, STOP_LOSS, TAKE_PROFIT
     transactionInfo = {}
     # adding order fill extractions here
@@ -408,7 +408,7 @@ def extract_order_data(order_details):
     return transactionInfo
 
 
-def update_portfolio(orders, last_price, volume):
+def update_portfolio(orders: Dict, last_price: Dict, volume: Dict) -> Dict:
 
     global session_struct
 
@@ -449,7 +449,7 @@ def update_portfolio(orders, last_price, volume):
         session_struct['trade_slots'] = len(coins_bought)
 
 
-def remove_from_portfolio(coins_sold):
+def remove_from_portfolio(coins_sold: Dict) -> None:
 
     global session_struct
 
@@ -469,7 +469,7 @@ def remove_from_portfolio(coins_sold):
         session_struct['reload_tickers_list'] = True
 
 
-def trade_crypto():
+def trade_crypto() -> None:
     global CONNECTION_ERROR_COUNT, READ_TIMEOUT_COUNT
     try:
 

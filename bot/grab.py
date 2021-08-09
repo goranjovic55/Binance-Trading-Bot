@@ -5,6 +5,7 @@ import sys
 import glob
 import time
 import threading
+from typing import Tuple, Dict
 
 #gogo MOD telegram needs import request
 import requests
@@ -37,7 +38,7 @@ from bot.settings import *
 historical_prices = [None] * 2
 hsp_head = -1
 
-def get_symbol_info(url='https://api.binance.com/api/v3/exchangeInfo'):
+def get_symbol_info(url: str = 'https://api.binance.com/api/v3/exchangeInfo') -> None:
     global session_struct
     response = requests.get(url)
     json_message = json.loads(response.content)
@@ -46,7 +47,7 @@ def get_symbol_info(url='https://api.binance.com/api/v3/exchangeInfo'):
         session_struct['symbol_info'][symbol_info['symbol']] = symbol_info['filters'][2]['stepSize']
 
 
-def get_historical_price():
+def get_historical_price() -> None:
     global session_struct
     if is_fiat():
         session_struct['market_price'] = 1
@@ -56,7 +57,7 @@ def get_historical_price():
         market_historic = client.get_historical_trades(symbol=session_struct['exchange_symbol'])
         session_struct['market_price'] = market_historic[0].get('price')
 
-def external_signals():
+def external_signals() -> Dict[str, str]:
     external_list = {}
     signals = {}
 
@@ -75,7 +76,7 @@ def external_signals():
     return external_list
 
 
-def get_price(add_to_historical=True):
+def get_price(add_to_historical: bool = True) -> Dict:
     '''Return the current price for all coins on binance'''
 
     global historical_prices, hsp_head, session_struct
@@ -98,10 +99,9 @@ def get_price(add_to_historical=True):
             hsp_head = 0
 
         historical_prices[hsp_head] = initial_price
-
     return initial_price
 
-def wait_for_price(type):
+def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
     '''calls the initial price and ensures the correct amount of time has passed
     before reading the current price again'''
 

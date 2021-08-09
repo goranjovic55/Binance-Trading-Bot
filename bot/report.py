@@ -26,7 +26,7 @@ from helpers.handle_creds import (
 from bot.settings import *
 
 
-def txcolor(input):
+def txcolor(input: float) -> str:
     if input > 0:
         return txcolors.SELL_PROFIT
     elif input < 0:
@@ -34,7 +34,7 @@ def txcolor(input):
     else:
         return txcolors.DEFAULT
 
-def discord_avatar():
+def discord_avatar() -> str:
     # Custom coin avatar dependant on PAIR_WITH
     # Fallback image is a nice Binance logo, yay!
     DISCORD_AVATAR =  "https://i.imgur.com/w1vS5Oc.png"
@@ -46,7 +46,7 @@ def discord_avatar():
         DISCORD_AVATAR =  "https://i.imgur.com/VyOdlRS.jpeg"
     return DISCORD_AVATAR
 
-def report(type, reportline):
+def report(type: str, reportline: str) -> None:
 
     global session_struct, settings_struct, trading_struct
 
@@ -201,7 +201,7 @@ def report(type, reportline):
     session_struct['last_report_time'] = time.time()
 
 
-def csv_log(interval=60):
+def csv_log(interval: float = 60) -> None:
     global session_struct, trading_struct, settings_struct
     # Intended for use in separate thread
     log_file = 'log.csv'
