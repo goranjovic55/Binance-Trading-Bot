@@ -49,7 +49,14 @@ def tickers_list(type: str) -> None:
     tickers_list_price_change = {}
 
     # get all info on tickers from binance
-    tickers_binance = client.get_ticker()
+    # with retry on error reading
+    while True:
+        try:
+            tickers_binance = client.get_ticker()
+        except:
+            time.sleep(1)
+            continue
+        break
     tickers_pairwith = {}
     tickers_new = {}
 
