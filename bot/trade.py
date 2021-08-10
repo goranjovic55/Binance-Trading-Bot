@@ -198,7 +198,7 @@ def buy() -> Tuple[Dict, Dict, Dict]:
                 }]
 
                 # Log trades
-                report_struct['report'] = REPORT
+                report_struct['report'] += REPORT
                 report_struct['log'] = True
 
                 continue
@@ -234,7 +234,7 @@ def buy() -> Tuple[Dict, Dict, Dict]:
                     if not TEST_MODE:
                        orders[coin] = extract_order_data(order_details)
                        REPORT = str(f"BUY: bought {orders[coin]['volume']} {coin} - average price: {orders[coin]['avgPrice']} {PAIR_WITH}")
-                       report_struct['report'] = REPORT
+                       report_struct['report'] += REPORT
                        report_struct['log'] = True
 
         else:

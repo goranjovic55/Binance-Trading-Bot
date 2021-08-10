@@ -197,6 +197,7 @@ def report(type: str, reportline: str) -> None:
         with open(LOG_FILE,'a+') as f:
             f.write(timestamp + ' ' + reportline + '\n')
         report_struct['log'] = False
+        report_struct['report'] = None
 
     session_struct['last_report_time'] = time.time()
 
