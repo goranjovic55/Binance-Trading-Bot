@@ -136,36 +136,37 @@ def convert_volume() -> Tuple[Dict, Dict]:
 
         if session_struct['trade_slots'] + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
 
-           # Find the correct step size for each coin
-           # max accuracy for BTC for example is 6 decimal points
-           # while XRP is only 1
-           try:
-               step_size = session_struct['symbol_info'][coin]
-               lot_size[coin] = step_size.index('1') - 1
-           except KeyError:
-               # not retrieved at startup, try again
-               try:
-                   coin_info = client.get_symbol_info(coin)
-                   step_size = coin_info['filters'][2]['stepSize']
-                   lot_size[coin] = step_size.index('1') - 1
-               except:
-                   pass
-           lot_size[coin] = max(lot_size[coin], 0)
-
            # calculate the volume in coin from QUANTITY in USDT (default)
-           volume[coin] = float(QUANTITY / float(last_price[coin]['price']))
+           volume[coin] = coin_volume_precision(coin,float(QUANTITY / float(last_price[coin]['price'])))
 
-           # define the volume with the correct step size
-           if coin not in lot_size:
-               volume[coin] = float('{:.1f}'.format(volume[coin]))
-
-           else:
-               # if lot size has 0 decimal points, make the volume an integer
-                if lot_size[coin] == 0:
-                    volume[coin] = int(volume[coin])
-                else:
-                    volume[coin] = float('{:.{}f}'.format(volume[coin], lot_size[coin]))
     return volume, last_price
+
+def coin_volume_precision(coin : str, volume: float) -> float:
+    lot_size = 0
+
+    # Find the correct step size for each coin
+    # max accuracy for BTC for example is 6 decimal points
+    # while XRP is only 1
+    try:
+        step_size = session_struct['symbol_info'][coin]
+        lot_size = step_size.index('1') - 1
+    except KeyError:
+        # not retrieved at startup, try again
+        try:
+            coin_info = client.get_symbol_info(coin)
+            step_size = coin_info['filters'][2]['stepSize']
+            lot_size = step_size.index('1') - 1
+        except:
+            pass
+
+    lot_size = max(lot_size, 0)
+
+    if lot_size == 0:
+        volume = int(volume)
+    else:
+        volume = float('{:.{}f}'.format(volume, lot_size))
+
+    return volume
 
 def test_order_id() -> int:
     import random
@@ -312,7 +313,7 @@ def sell_coins() -> Dict:
                         symbol = coin,
                         side = 'SELL',
                         type = 'MARKET',
-                        quantity = coins_bought[coin]['volume']
+                        quantity = coin_volume_precision(coin,coins_bought[coin]['volume'])
                     )
 
             # error handling here in case position cannot be placed
