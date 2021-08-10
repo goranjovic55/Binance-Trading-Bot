@@ -351,7 +351,7 @@ def sell_coins() -> Dict:
 
                 holding_timeout_sell_trigger = False
 
-                report_struct['report'] = REPORT
+                report_struct['report'] += REPORT
                 report_struct['message'] = True
                 report_struct['log'] = True
 
