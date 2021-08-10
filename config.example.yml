@@ -13,7 +13,7 @@ script_options:
   # Specify the location of log file (default: trades.txt).
   LOG_FILE: 'trades.txt'
 
-  # gogos MOD Telegram bot integration
+  # gogos MOD Telegram bot integration 
   BOT_MESSAGE_REPORTS: True
 
   # Bot id for BOT_MESSAGE_REPORTS on discord
