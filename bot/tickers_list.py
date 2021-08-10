@@ -125,7 +125,7 @@ def tickers_list(type: str) -> None:
             session_struct['tickers_list_changed'] = True
             print(f'>> Tickers CREATED from Binance tickers!!!{TICKERS_LIST} <<')
 
-        if type == 'volume' and CUSTOM_LIST:
+        if type == 'volume':
         # write sorted lists to files
             with open (TICKERS_LIST, 'w') as f:
                     for sublist in list_tickers_volume:
