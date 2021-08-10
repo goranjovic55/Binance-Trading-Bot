@@ -8,6 +8,7 @@ import threading
 
 #gogo MOD telegram needs import request
 import requests
+import re
 
 # needed for the binance API / websockets / Exception handling
 from binance.client import Client
@@ -72,6 +73,20 @@ def tickers_list(type: str) -> None:
                         f.writelines(str(i['s'][8:-len(PAIR_WITH)])+'\n')
             session_struct['tickers_list_changed'] = True
             print(f'>> Tickers CREATED from TradingView tickers!!!{TICKERS_LIST} <<')
+
+        if type == 'create_edge':
+            url = 'http://edgesforledges.com/watchlists/download/binance/' + LIST_CREATE_TYPE_OPTION
+            response = requests.get(url)
+            signals_file = open(TICKERS_LIST,'w')
+            with open (TICKERS_LIST, 'w') as f:
+                for line in response.text.splitlines():
+                    if line.endswith(PAIR_WITH):
+                        coin = re.sub(r'BINANCE:(.*)'+PAIR_WITH,r'\1',line)
+                        if coin not in ignorelist:
+                            f.writelines(coin+'\n')
+            session_struct['tickers_list_changed'] = True
+            print(f'>> Tickers CREATED from {url} tickers!!!{TICKERS_LIST} <<')
+
 
         if type == 'volume' or type == 'price_change':
         #  create list with volume and change in price on our pairs
@@ -146,4 +161,8 @@ if LIST_AUTOCREATE:
 
     if LIST_CREATE_TYPE == 'tradingview':
         tickers_list('create_ta')
+        tickers=[line.strip() for line in open(TICKERS_LIST)]
+
+    if LIST_CREATE_TYPE == 'edgesforledges':
+        tickers_list('create_edge')
         tickers=[line.strip() for line in open(TICKERS_LIST)]

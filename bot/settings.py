@@ -170,6 +170,7 @@ PERCENT_SIGNAL_BUY = parsed_config['trading_options']['PERCENT_SIGNAL_BUY']
 SORT_LIST_TYPE = parsed_config['trading_options']['SORT_LIST_TYPE']
 LIST_AUTOCREATE = parsed_config['trading_options']['LIST_AUTOCREATE']
 LIST_CREATE_TYPE = parsed_config['trading_options']['LIST_CREATE_TYPE']
+LIST_CREATE_TYPE_OPTION = parsed_config['trading_options']['LIST_CREATE_TYPE_OPTION']
 IGNORE_LIST = parsed_config['trading_options']['IGNORE_LIST']
 
 REPORT_FREQUENCY = parsed_config['script_options']['REPORT_FREQUENCY']
