@@ -144,11 +144,18 @@ trading_options:
   # this enables autocreation of list and will recreate current list and overwrite it
   LIST_AUTOCREATE: True
 
-  # type of list creation either from binance or tradingview
-  LIST_CREATE_TYPE: binance_b
+  # type of list creation :
+  #  - binance
+  #  - tradingview 
+  #  - edgesforledges : http://edgesforledges.com/watchlists/binance
+  LIST_CREATE_TYPE: edgesforledges
 
-  # list sorting by volume or by price change
-  SORT_LIST_TYPE: volume
+  # option by type of list creation :
+  #  - edgesforledges : ebd of url ex : innovation => fiat/usdt/innovation-zone
+  LIST_CREATE_TYPE_OPTION : fiat/usdt/innovation-zone
+
+  # list sorting by 'volume' or by 'price_change'
+  SORT_LIST_TYPE: price_change
 
   SIGNALLING_MODULES:
     #- modules.pausebotmod
