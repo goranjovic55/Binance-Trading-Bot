@@ -134,7 +134,7 @@ def convert_volume() -> Tuple[Dict, Dict]:
 
     for coin in buy_volatile_coins:
 
-        if session_struct['trade_slots'] + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
+        if session_struct['trade_slots'] + len(volume) < TRADE_SLOTS or TRADE_SLOTS == 0:
 
            # calculate the volume in coin from QUANTITY in USDT (default)
            volume[coin] = coin_volume_precision(coin,float(QUANTITY / float(last_price[coin]['price'])))
