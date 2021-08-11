@@ -305,6 +305,10 @@ def sell_coins() -> Dict:
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
         if session_struct['sell_all_coins'] == True or lastPrice < coinStopLoss or lastPrice > coinTakeProfit and not USE_TRAILING_STOP_LOSS or holding_timeout_sell_trigger == True:
             print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChange:.2f}% - Est: {(QUANTITY * priceChange) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
+            
+            # Keep lastPrice to Sell
+            lastPriceSell = lastPrice
+
             # try to create a real order
             try:
 
@@ -344,8 +348,8 @@ def sell_coins() -> Dict:
                 #gogo MOD to trigger trade lost or won and to count lost or won trades
 
                 if session_struct['sell_all_coins'] == True: REPORT =  f"PAUSE_SELL - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {trade_profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
-                if lastPrice < coinStopLoss: REPORT =  f"STOP_LOSS - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {trade_profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
-                if lastPrice > coinTakeProfit: REPORT =  f"TAKE_PROFIT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {trade_profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
+                if lastPriceSell < coinStopLoss: REPORT =  f"STOP_LOSS - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {trade_profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
+                if lastPriceSell > coinTakeProfit: REPORT =  f"TAKE_PROFIT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {trade_profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if holding_timeout_sell_trigger: REPORT =  f"HOLDING_TIMEOUT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {trade_profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
 
                 session_struct['session_profit'] = session_struct['session_profit'] + trade_profit
