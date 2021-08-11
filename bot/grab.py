@@ -146,7 +146,7 @@ def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
              # Verify if coin doesn't appear
               try:
                 for x in historical_prices:
-                  if coin not in historical_prices[x]:
+                  if coin not in x:
                     raise 
               except:
                 continue
@@ -174,7 +174,7 @@ def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
            # Verify if coin doesn't appear
            try:
                for x in historical_prices:
-                   if coin not in historical_prices[x]:
+                   if coin not in x:
                        raise 
            except:
                continue
