@@ -206,6 +206,8 @@ if __name__ == '__main__':
 
     while True:
 
+        ts = time.time()
+
         pause_bot()
 
         #main trading function
@@ -229,6 +231,9 @@ if __name__ == '__main__':
         #write report to console
         if time.time() - session_struct['last_report_time'] > REPORT_FREQUENCY:
             report(SESSION_REPORT_STYLE,report_struct['report'])
+            report_struct['report'] = ""
 
         #sleep for RECHECK_INTERVAL time
-        time.sleep(round(settings_struct['RECHECK_INTERVAL']))
+        ts_sleep = settings_struct['RECHECK_INTERVAL'] - ( time.time() - ts ) 
+        if (ts_sleep > 0 ) : 
+            time.sleep(ts_sleep)

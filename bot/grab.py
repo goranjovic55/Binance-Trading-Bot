@@ -141,7 +141,15 @@ def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
 
        if session_struct['prices_grabbed'] == True:
           # calculate the difference in prices
+
           for coin in historical_prices[hsp_head]:
+             # Verify if coin doesn't appear
+              try:
+                for x in historical_prices:
+                  if coin not in x:
+                    raise 
+              except:
+                continue
 
               # minimum and maximum prices over time period
               min_price = min(historical_prices, key = lambda x: float("inf") if x is None else float(x[coin]['price']))
@@ -162,6 +170,14 @@ def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
 
        # calculate the difference in prices
        for coin in historical_prices[hsp_head]:
+
+           # Verify if coin doesn't appear
+           try:
+               for x in historical_prices:
+                   if coin not in x:
+                       raise 
+           except:
+               continue
 
            # minimum and maximum prices over time period
            min_price = min(historical_prices, key = lambda x: float("inf") if x is None else float(x[coin]['price']))

@@ -46,6 +46,14 @@ def discord_avatar() -> str:
         DISCORD_AVATAR =  "https://i.imgur.com/VyOdlRS.jpeg"
     return DISCORD_AVATAR
 
+def report_add(line: str, message: bool = False) -> None:
+    if report_struct['report']  != "":
+        report_struct['report'] += "\n"
+    report_struct['report'] += line
+    report_struct['log'] = True
+    if message:
+        report_struct['message'] = True
+
 def report(type: str, reportline: str) -> None:
 
     global session_struct, settings_struct, trading_struct
@@ -195,9 +203,9 @@ def report(type: str, reportline: str) -> None:
         timestamp = datetime.now().strftime("%d/%m %H:%M:%S")
         # print(f'LOG_FILE: {LOG_FILE}')
         with open(LOG_FILE,'a+') as f:
-            f.write(timestamp + ' ' + reportline + '\n')
+            for line in reportline.splitlines():
+              f.write(timestamp + ' ' + line + '\n')
         report_struct['log'] = False
-        report_struct['report'] = ""
 
     session_struct['last_report_time'] = time.time()
 
