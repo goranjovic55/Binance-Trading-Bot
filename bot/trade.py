@@ -104,7 +104,7 @@ def trade_calculations(type: str, priceChange: float) -> None:
            trading_struct['lost_trade_percent'] = priceChange
            trading_struct['sum_lost_trades'] = trading_struct['sum_lost_trades'] + trading_struct['lost_trade_percent']
 
-       settings_struct['STOP_LOSS'] = (settings_struct['STOP_LOSS'] + session_struct['profit_to_trade_ratio']) / 2
+       if DYNAMIC_SETTINGS: settings_struct['STOP_LOSS'] = (settings_struct['STOP_LOSS'] + session_struct['profit_to_trade_ratio']) / 2
 
        trading_struct['sum_max_holding_price'] = trading_struct['sum_max_holding_price'] + trading_struct['max_holding_price']
        trading_struct['max_holding_price'] = 0
