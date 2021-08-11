@@ -1,3 +1,4 @@
+from bot.report import report
 import os
 # use if needed to pass args to external modules
 import sys
@@ -30,7 +31,7 @@ from helpers.handle_creds import (
 
 from bot.settings import *
 from bot.grab import *
-
+from bot.report import *
 
 def trailing_buy(volatile_coins: Dict[str, float]) -> Dict[str, float]:
 
@@ -199,8 +200,7 @@ def buy() -> Tuple[Dict, Dict, Dict]:
                 }]
 
                 # Log trades
-                report_struct['report'] += REPORT
-                report_struct['log'] = True
+                report_add(REPORT)
 
                 continue
 
@@ -235,8 +235,8 @@ def buy() -> Tuple[Dict, Dict, Dict]:
                     if not TEST_MODE:
                        orders[coin] = extract_order_data(order_details)
                        REPORT = str(f"BUY: bought {orders[coin]['volume']} {coin} - average price: {orders[coin]['avgPrice']} {PAIR_WITH}")
-                       report_struct['report'] += REPORT
-                       report_struct['log'] = True
+
+                       report_add(REPORT)
 
         else:
             print(f'Signal detected, but there is already an active trade on {coin}')
@@ -356,9 +356,7 @@ def sell_coins() -> Dict:
 
                 holding_timeout_sell_trigger = False
 
-                report_struct['report'] += REPORT
-                report_struct['message'] = True
-                report_struct['log'] = True
+                report_add(REPORT,True)
 
             continue
 
