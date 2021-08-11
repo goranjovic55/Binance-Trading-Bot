@@ -58,8 +58,6 @@ def tickers_list(type: str) -> None:
             time.sleep(1)
             continue
         break
-    tickers_pairwith = {}
-    tickers_new = {}
 
     if LIST_AUTOCREATE:
     # pull coins from trading view and create a list
@@ -107,21 +105,12 @@ def tickers_list(type: str) -> None:
 
         # pull coins from binance and create list
         if type == 'create_b':
-            for coin in tickers_binance:
-                if PAIR_WITH in coin['symbol']:
-                    tickers_pairwith[coin['symbol']] = coin['symbol']
-                    if tickers_pairwith[coin['symbol']].endswith(PAIR_WITH):
-                        tickers_new[coin['symbol']] = tickers_pairwith[coin['symbol']]
-
-            list_tickers_new = list(tickers_new)
-
-
             with open (TICKERS_LIST, 'w') as f:
-                for ele in list_tickers_new:
-                    f.writelines(str(ele.replace(PAIR_WITH,''))+'\n')
-            session_struct['tickers_list_changed'] = True
-            print(f'>> Tickers CREATED from binance tickers!!!{TICKERS_LIST} <<')
-
+                for ticker in tickers_binance:
+                    if ticker['symbol'].endswith(PAIR_WITH):
+                        coin = ticker['symbol'].replace(PAIR_WITH,"")
+                        if coin not in ignorelist:
+                            f.writelines(coin+'\n')
             session_struct['tickers_list_changed'] = True
             print(f'>> Tickers CREATED from Binance tickers!!!{TICKERS_LIST} <<')
 
