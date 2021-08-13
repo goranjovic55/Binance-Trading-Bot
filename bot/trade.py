@@ -224,14 +224,16 @@ def buy() -> Tuple[Dict, Dict, Dict]:
 
 # run the else block if the position has been placed and return order info
             else:
-                orders[coin] = client.get_all_orders(symbol=coin, limit=1)
+                orders[coin] = []
 
 # binance sometimes returns an empty list, the code will wait here until binance returns the order
                 while orders[coin] == []:
-                    print('Binance is being slow in returning the order, calling the API again...')
-
-                    orders[coin] = client.get_all_orders(symbol=coin, limit=1)
-                    time.sleep(1)
+                    try:
+                        orders[coin] = client.get_all_orders(symbol=coin, limit=1)
+                    except:
+                        if (orders[coin] == []) :
+                            print('Binance is being slow in returning the order, calling the API again...')
+                        time.sleep(0.5)
 
                 else:
 # Log, announce, and report trade

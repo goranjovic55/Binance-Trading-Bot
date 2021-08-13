@@ -55,6 +55,7 @@ def tickers_list(type: str) -> None:
         try:
             tickers_binance = client.get_ticker()
         except:
+            print(f"{txcolors.WARNING}Binance Problem Get Tickers{txcolors.DEFAULT}")
             time.sleep(1)
             continue
         break
