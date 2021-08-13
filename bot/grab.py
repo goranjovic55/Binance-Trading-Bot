@@ -82,7 +82,17 @@ def get_price(add_to_historical: bool = True) -> Dict:
     global historical_prices, hsp_head, session_struct
 
     initial_price = {}
-    prices = client.get_all_tickers()
+
+    # get all info on tickers from binance
+    # with retry on error reading
+    while True:
+        try:
+            prices = client.get_all_tickers()
+        except:
+            print(f"{txcolors.WARNING}Binance Problem Get All Tickers{txcolors.DEFAULT}")
+            time.sleep(0.2)
+            continue
+        break
 
     for coin in prices:
         if CUSTOM_LIST:
