@@ -237,7 +237,6 @@ def sell_coins() -> Dict:
     #last_price = get_price(add_to_historical=True) # don't populate rolling window
     coins_sold = {}
     holding_timeout_sell_trigger = False
-    REPORT = "."
     session_struct['unrealised_percent'] = 0
 
     for coin in list(coins_bought):
@@ -303,16 +302,21 @@ def sell_coins() -> Dict:
 
             #gogo MOD to trigger trade lost or won and to count lost or won trades
 
-            if session_struct['sell_all_coins'] == True: REPORT =  f"PAUSE_SELL - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {trade_profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
-            if lastPriceSell < coinStopLoss: REPORT =  f"STOP_LOSS - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {trade_profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
-            if lastPriceSell > coinTakeProfit: REPORT =  f"TAKE_PROFIT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {trade_profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
-            if holding_timeout_sell_trigger: REPORT =  f"HOLDING_TIMEOUT - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {trade_profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
+            ORDER = ""
+            if session_struct['sell_all_coins']: 
+                ORDER =  "PAUSE_SELL"
+            if lastPriceSell < coinStopLoss: 
+                ORDER =  "STOP_LOSS"
+            if lastPriceSell > coinTakeProfit: 
+                ORDER =  "TAKE_PROFIT"
+            if holding_timeout_sell_trigger: 
+                ORDER =  "HOLDING_TIMEOUT"
 
             session_struct['session_profit'] = session_struct['session_profit'] + trade_profit
 
             holding_timeout_sell_trigger = False
 
-            report_add(REPORT,True)
+            report_add(f"{ORDER} - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {trade_profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)",True)
 
             continue
 
