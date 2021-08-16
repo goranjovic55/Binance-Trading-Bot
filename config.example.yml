@@ -95,7 +95,7 @@ trading_options:
   STOP_LOSS: 3
 
   # define in % when to take profit on a profitable coin.
-  TAKE_PROFIT: 0.5
+  TAKE_PROFIT: 0.3
 
   # whether to use trailing stop loss or not; default is True
   USE_TRAILING_STOP_LOSS: True
@@ -120,7 +120,7 @@ trading_options:
   DYNAMIC_CHANGE_IN_PRICE: 10
 
   #this is a coeficient we use to determine max an min TIME_DIFFERENCE in wich we let bot work
-  DYNAMIC_MIN_MAX: 10
+  DYNAMIC_MIN_MAX: 3
 
   # this is minimum price % we want to sell above if max holding time is up (this was added to cut loses if coins are stale)
   HOLDING_PRICE_THRESHOLD: 0.3
@@ -146,7 +146,7 @@ trading_options:
 
   # type of list creation :
   #  - binance
-  #  - tradingview 
+  #  - tradingview
   #  - edgesforledges : http://edgesforledges.com/watchlists/binance
   LIST_CREATE_TYPE: edgesforledges
 
