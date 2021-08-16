@@ -275,7 +275,17 @@ def sell_coins() -> Dict:
            holding_timeout_sell_trigger = True
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
-        if session_struct['sell_all_coins'] == True or lastPrice < coinStopLoss or lastPrice > coinTakeProfit and not USE_TRAILING_STOP_LOSS or holding_timeout_sell_trigger == True:
+        ORDER = ""
+        if session_struct['sell_all_coins']: 
+            ORDER =  "PAUSE_SELL"
+        if lastPrice < coinStopLoss: 
+            ORDER =  "STOP_LOSS"
+        if lastPrice > coinTakeProfit and not USE_TRAILING_STOP_LOSS: 
+            ORDER =  "TAKE_PROFIT"
+        if holding_timeout_sell_trigger: 
+            ORDER =  "HOLDING_TIMEOUT"
+
+        if ORDER != "":
             print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChange:.2f}% - Est: {(QUANTITY * priceChange) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
             
             # Keep a copy lastPrice to Sell
@@ -301,16 +311,6 @@ def sell_coins() -> Dict:
             trade_calculations('sell', priceChange)
 
             #gogo MOD to trigger trade lost or won and to count lost or won trades
-
-            ORDER = ""
-            if session_struct['sell_all_coins']: 
-                ORDER =  "PAUSE_SELL"
-            if lastPriceSell < coinStopLoss: 
-                ORDER =  "STOP_LOSS"
-            if lastPriceSell > coinTakeProfit: 
-                ORDER =  "TAKE_PROFIT"
-            if holding_timeout_sell_trigger: 
-                ORDER =  "HOLDING_TIMEOUT"
 
             session_struct['session_profit'] = session_struct['session_profit'] + trade_profit
 
