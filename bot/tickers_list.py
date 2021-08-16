@@ -30,21 +30,16 @@ from helpers.handle_creds import (
 
 from bot.settings import *
 
-# Authenticate with the client, Ensure API key is good before continuing
-if AMERICAN_USER:
-    client = Client(access_key, secret_key, tld='us')
-else:
-    client = Client(access_key, secret_key)
-
-# Load coins to be ignored from file
-ignorelist=[line.strip() for line in open(IGNORE_LIST)]
-
-# Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
-if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]
-
 def tickers_list() -> None:
 
-    global LIST_AUTOCREATE, LIST_CREATE_TYPE, SORT_LIST_TYPE
+    global LIST_AUTOCREATE, LIST_CREATE_TYPE, SORT_LIST_TYPE, session_struct
+
+    # Load coins to be ignored from file
+    ignorelist=[line.strip() for line in open(IGNORE_LIST)]
+
+    # Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
+    if CUSTOM_LIST: 
+        session_struct['tickers']=[line.strip() for line in open(TICKERS_LIST)]
 
     tickers_sort = {}
 
@@ -97,12 +92,12 @@ def tickers_list() -> None:
             print(f'>> Tickers CREATED from Binance tickers!!!{TICKERS_LIST} <<')
 
         # Reload Tickers
-        tickers=[line.strip() for line in open(TICKERS_LIST)]
+        session_struct['tickers']=[line.strip() for line in open(TICKERS_LIST)]
 
     if SORT_LIST_TYPE == 'volume' or SORT_LIST_TYPE == 'price_change':
     #  create list with volume and change in price on our pairs
         for coin in tickers_binance:
-            if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
+            if any(item + PAIR_WITH == coin['symbol'] for item in session_struct['tickers']) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
                 if SORT_LIST_TYPE == 'volume':
                     tickers_sort[coin['symbol']] = { 'volume': float(coin['volume'])}
                 if SORT_LIST_TYPE == 'price_change':    
@@ -121,7 +116,7 @@ def tickers_list() -> None:
         session_struct['tickers_list_changed'] = True
 
         print(f'>> Tickers sort List {TICKERS_LIST} by {SORT_LIST_TYPE}<<')
-        tickers=[line.strip() for line in open(TICKERS_LIST)]
+        session_struct['tickers']=[line.strip() for line in open(TICKERS_LIST)]
 
     session_struct['tickers_list_changed'] = False
     session_struct['reload_tickers_list'] = False    
