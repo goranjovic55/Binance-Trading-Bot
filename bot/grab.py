@@ -79,7 +79,7 @@ def external_signals() -> Dict[str, str]:
 def get_price(add_to_historical: bool = True) -> Dict:
     '''Return the current price for all coins on binance'''
 
-    global historical_prices, hsp_head, session_struct
+    global historical_prices, hsp_head, session_struct 
 
     initial_price = {}
 
@@ -99,7 +99,7 @@ def get_price(add_to_historical: bool = True) -> Dict:
         if coin['symbol'] == 'BNB' + PAIR_WITH:
             session_struct['bnb_current_price'] = float(coin['price'])
 
-        if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
+        if any(item + PAIR_WITH == coin['symbol'] for item in session_struct['tickers']) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
             initial_price[coin['symbol']] = { 'price': float(coin['price']), 'time': datetime.now()}
 
     if add_to_historical:

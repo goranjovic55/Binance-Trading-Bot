@@ -80,7 +80,8 @@ session_struct = {
      'prices_grabbed': False,
      'reload_tickers_list': True,
      'profit_to_trade_ratio': 0,
-     'bnb_current_price': 0
+     'bnb_current_price': 0,
+     'tickers': []
 }
 
 report_struct = {
@@ -247,12 +248,6 @@ if api_ready is not True:
 if DEBUG:
     print(f'Loaded config below\n{json.dumps(parsed_config, indent=4)}')
     print(f'Your credentials have been loaded from {creds_file}')
-
-# Load coins to be ignored from file
-ignorelist=[line.strip() for line in open(IGNORE_LIST)]
-
-# Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
-if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]
 
 # prevent including a coin in volatile_coins if it has already appeared there less than TIME_DIFFERENCE minutes ago
 volatility_cooloff = {}
