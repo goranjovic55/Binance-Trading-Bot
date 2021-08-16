@@ -279,8 +279,8 @@ def sell_coins() -> Dict:
         if session_struct['sell_all_coins'] == True or lastPrice < coinStopLoss or lastPrice > coinTakeProfit and not USE_TRAILING_STOP_LOSS or holding_timeout_sell_trigger == True:
             print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChange:.2f}% - Est: {(QUANTITY * priceChange) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
             
-            # Keep lastPrice to Sell
-            lastPriceSell = lastPrice
+            # Keep a copy lastPrice to Sell
+            lastPriceSell = float(lastPrice)
 
             try: 
                 volume = coin_volume_precision(coin,coins_bought[coin]['volume'],lastPrice)
