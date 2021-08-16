@@ -28,6 +28,7 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
     TIME_DIFFERENCE = parsed_config['trading_options']['TIME_DIFFERENCE']
     DYNAMIC_MIN_MAX = parsed_config['trading_options']['DYNAMIC_MIN_MAX']
     HOLDING_PRICE_THRESHOLD = parsed_config['trading_options']['HOLDING_PRICE_THRESHOLD']
+    TRADE_SLOTS = parsed_config['trading_options']['TRADE_SLOTS']
 
     if (session_struct['win_trade_count'] > 0) and (session_struct['loss_trade_count'] > 0):
         WIN_LOSS_PERCENT = round((session_struct['win_trade_count'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])) * 100, 2)
@@ -41,14 +42,13 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
            settings_struct['STOP_LOSS'] = STOP_LOSS / DYNAMIC_MIN_MAX
 
         if session_struct['closed_trades_percent'] > 0 and WIN_LOSS_PERCENT > 0 and session_struct['trade_slots'] > 0 and trading_struct['stop_loss_adjust'] == True:
-           DYNAMIC_STOP_LOSS = session_struct['closed_trades_percent'] / session_struct['trade_slots'] * WIN_LOSS_PERCENT / 100
+           DYNAMIC_STOP_LOSS = session_struct['closed_trades_percent'] / TRADE_SLOTS * WIN_LOSS_PERCENT / 100
            settings_struct['STOP_LOSS'] = (settings_struct['STOP_LOSS'] + DYNAMIC_STOP_LOSS) / 2
            trading_struct['stop_loss_adjust'] = False
 
-
         if settings_struct['TIME_DIFFERENCE'] < TIME_DIFFERENCE / DYNAMIC_MIN_MAX:
            settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE / DYNAMIC_MIN_MAX
-        if settings_struct['TRAILING_STOP_LOSS'] < STOP_LOSS / DYNAMIC_MIN_MAX:
+        if settings_struct['TRAILING_STOP_LOSS'] < TRAILING_STOP_LOSS / DYNAMIC_MIN_MAX:
            settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS /DYNAMIC_MIN_MAX
 
         #if settings_struct['STOP_LOSS'] > STOP_LOSS * DYNAMIC_MIN_MAX:
