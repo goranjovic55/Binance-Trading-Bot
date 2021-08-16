@@ -33,6 +33,9 @@ from bot.settings import *
 from bot.grab import *
 from bot.report import *
 
+# this function puts coins that trigger a price change buy to trailing buy list then it follows and when coins trigger
+# a buy signal aka when they price passes TRAILING_BUY_THRESHOLD they are sent to buy list wich is passed to rest of buy procedures
+
 def trailing_buy(volatile_coins: Dict[str, float]) -> Dict[str, float]:
 
     global trail_buy_historical
@@ -70,6 +73,8 @@ def trailing_buy(volatile_coins: Dict[str, float]) -> Dict[str, float]:
     print(f"BUY_VOLATILE_COINS: {buy_volatile_coins}")
 
     return buy_volatile_coins
+
+# this functions makes various trade calculations and writes them to global structures wich get passed to other funtions
 
 def trade_calculations(type: str, priceChange: float) -> None:
 
@@ -305,7 +310,7 @@ def sell_coins() -> Dict:
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
         if session_struct['sell_all_coins'] == True or lastPrice < coinStopLoss or lastPrice > coinTakeProfit and not USE_TRAILING_STOP_LOSS or holding_timeout_sell_trigger == True:
             print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChange:.2f}% - Est: {(QUANTITY * priceChange) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
-            
+
             # Keep lastPrice to Sell
             lastPriceSell = lastPrice
 
