@@ -99,12 +99,8 @@ def get_price(add_to_historical: bool = True) -> Dict:
         if coin['symbol'] == 'BNB' + PAIR_WITH:
             session_struct['bnb_current_price'] = float(coin['price'])
 
-        if CUSTOM_LIST:
-            if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-                initial_price[coin['symbol']] = { 'price': float(coin['price']), 'time': datetime.now()}
-        else:
-            if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-                initial_price[coin['symbol']] = { 'price': float(coin['price']), 'time': datetime.now()}
+        if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
+            initial_price[coin['symbol']] = { 'price': float(coin['price']), 'time': datetime.now()}
 
     if add_to_historical:
         hsp_head += 1
