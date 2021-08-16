@@ -132,5 +132,4 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
                  trading_struct['trade_resistance'] = trading_struct['sum_won_trades'] / session_struct['win_trade_count']
                  settings_struct['TRAILING_STOP_LOSS'] = trading_struct['trade_resistance']
 
-        if not TEST_MODE: settings_struct['HOLDING_TIME_LIMIT'] = (settings_struct['TIME_DIFFERENCE'] * 60 * 1000) * HOLDING_INTERVAL_LIMIT
-        if TEST_MODE: settings_struct['HOLDING_TIME_LIMIT'] = (settings_struct['TIME_DIFFERENCE'] * 60) * HOLDING_INTERVAL_LIMIT
+        settings_struct['HOLDING_TIME_LIMIT'] = (settings_struct['TIME_DIFFERENCE'] * 60 * 1000) * HOLDING_INTERVAL_LIMIT

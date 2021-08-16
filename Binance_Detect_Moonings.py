@@ -133,8 +133,7 @@ def pause_bot() -> None:
         # resume the bot and set pause_bot to False
         if  bot_paused == True:
             print(f"{txcolors.WARNING}Resuming buying due to positive market conditions, total sleep time: {time_elapsed}{txcolors.DEFAULT}")
-            if LIST_AUTOCREATE:
-                tickers_list(SORT_LIST_TYPE)
+            tickers_list()
             session_struct['dynamic'] = 'reset'
             session_struct['sell_all_coins'] = False
             bot_paused = False
@@ -170,7 +169,7 @@ if __name__ == '__main__':
 
     # load signalling modules
     try:
-        if len(SIGNALLING_MODULES) > 0:
+        if SIGNALLING_MODULES != None and len(SIGNALLING_MODULES) > 0:
             for module in SIGNALLING_MODULES:
                 print(f'Starting {module}')
                 mymodule[module] = importlib.import_module(module)

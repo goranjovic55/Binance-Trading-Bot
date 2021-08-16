@@ -34,7 +34,6 @@ def session(type: str) -> None:
         session_struct['NEW_BALANCE'] = (INVESTMENT + session_struct['TOTAL_GAINS'])
         session_struct['INVESTMENT_GAIN'] = (session_struct['TOTAL_GAINS'] / INVESTMENT) * 100
         session_struct['CURRENT_EXPOSURE'] = (QUANTITY * session_struct['trade_slots'])
-        session_struct['unrealised_percent'] = 0
 
         # this number is your actual ETH or other coin value in correspondence to USDT aka your market investment_value
         # it is important cuz your exchange aha ETH or BTC can vary and if you pause bot during that time you gain profit

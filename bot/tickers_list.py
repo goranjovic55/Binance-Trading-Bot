@@ -42,12 +42,11 @@ ignorelist=[line.strip() for line in open(IGNORE_LIST)]
 # Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
 if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]
 
-def tickers_list(type: str) -> None:
+def tickers_list() -> None:
 
-    global LIST_AUTOCREATE
+    global LIST_AUTOCREATE, LIST_CREATE_TYPE, SORT_LIST_TYPE
 
-    tickers_list_volume = {}
-    tickers_list_price_change = {}
+    tickers_sort = {}
 
     # get all info on tickers from binance
     # with retry on error reading
@@ -62,7 +61,7 @@ def tickers_list(type: str) -> None:
 
     if LIST_AUTOCREATE:
     # pull coins from trading view and create a list
-        if type == 'create_ta':
+        if LIST_CREATE_TYPE == 'tradingview':
             response = requests.get('https://scanner.tradingview.com/crypto/scan')
             ta_data = response.json()
             signals_file = open(TICKERS_LIST,'w')
@@ -73,7 +72,7 @@ def tickers_list(type: str) -> None:
             session_struct['tickers_list_changed'] = True
             print(f'>> Tickers CREATED from TradingView tickers!!!{TICKERS_LIST} <<')
 
-        if type == 'create_edge':
+        if LIST_CREATE_TYPE == 'edgesforledges':
             url = 'http://edgesforledges.com/watchlists/download/binance/' + LIST_CREATE_TYPE_OPTION
             response = requests.get(url)
             signals_file = open(TICKERS_LIST,'w')
@@ -86,26 +85,8 @@ def tickers_list(type: str) -> None:
             session_struct['tickers_list_changed'] = True
             print(f'>> Tickers CREATED from {url} tickers!!!{TICKERS_LIST} <<')
 
-
-        if type == 'volume' or type == 'price_change':
-        #  create list with volume and change in price on our pairs
-                for coin in tickers_binance:
-                    if CUSTOM_LIST:
-                        if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-                            tickers_list_volume[coin['symbol']] = { 'volume': float(coin['volume'])}
-                            tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': float(coin['priceChangePercent'])}
-
-                    else:
-                        if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-                            tickers_list_volume[coin['symbol']] = { 'volume': float(coin['volume'])}
-                            tickers_list_price_change[coin['symbol']] = { 'priceChangePercent': float(coin['priceChangePercent'])}
-
-                # sort tickers by descending order volume and price
-                list_tickers_volume = list(sorted( tickers_list_volume.items(), key=lambda x: x[1]['volume'], reverse=True))
-                list_tickers_price_change = list(sorted( tickers_list_price_change.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True))
-
         # pull coins from binance and create list
-        if type == 'create_b':
+        if LIST_CREATE_TYPE == 'binance':
             with open (TICKERS_LIST, 'w') as f:
                 for ticker in tickers_binance:
                     if ticker['symbol'].endswith(PAIR_WITH):
@@ -115,44 +96,38 @@ def tickers_list(type: str) -> None:
             session_struct['tickers_list_changed'] = True
             print(f'>> Tickers CREATED from Binance tickers!!!{TICKERS_LIST} <<')
 
-        if type == 'volume':
-        # write sorted lists to files
-            with open (TICKERS_LIST, 'w') as f:
-                    for sublist in list_tickers_volume:
-                        f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
-            session_struct['tickers_list_changed'] = True
-            print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
+        # Reload Tickers
+        tickers=[line.strip() for line in open(TICKERS_LIST)]
 
-        if type == 'price_change':
-        # write sorted list to files
-            with open (TICKERS_LIST, 'w') as f:
-                    for sublist in list_tickers_price_change:
-                        f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
-            session_struct['tickers_list_changed'] = True
-            print(f'>> Tickers List {TICKERS_LIST} recreated and loaded!! <<')
+    if SORT_LIST_TYPE == 'volume' or SORT_LIST_TYPE == 'price_change':
+    #  create list with volume and change in price on our pairs
+        for coin in tickers_binance:
+            if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
+                if SORT_LIST_TYPE == 'volume':
+                    tickers_sort[coin['symbol']] = { 'volume': float(coin['volume'])}
+                if SORT_LIST_TYPE == 'price_change':    
+                    tickers_sort[coin['symbol']] = { 'priceChangePercent': float(coin['priceChangePercent'])}
+
+        # sort tickers by descending order volume and price
+        if SORT_LIST_TYPE == 'volume':
+            tickers_sort = list(sorted( tickers_sort.items(), key=lambda x: x[1]['volume'], reverse=True))
+        if SORT_LIST_TYPE == 'price_change':    
+            tickers_sort = list(sorted( tickers_sort.items(), key=lambda x: x[1]['priceChangePercent'], reverse=True))
+
+        # write sorted lists to files
+        with open (TICKERS_LIST, 'w') as f:
+                for sublist in tickers_sort:
+                    f.writelines(str(sublist[0].replace(PAIR_WITH,''))+'\n')
+        session_struct['tickers_list_changed'] = True
+
+        print(f'>> Tickers sort List {TICKERS_LIST} by {SORT_LIST_TYPE}<<')
+        tickers=[line.strip() for line in open(TICKERS_LIST)]
+
+    session_struct['tickers_list_changed'] = False
+    session_struct['reload_tickers_list'] = False    
 
 def reload_tickers() -> None:
     if session_struct['reload_tickers_list'] == True:
-       tickers_list(SORT_LIST_TYPE)
-       session_struct['reload_tickers_list'] = False
+       tickers_list()
 
-    #reload tickers list by volume if triggered recreation
-    if session_struct['tickers_list_changed'] == True :
-        tickers=[line.strip() for line in open(TICKERS_LIST)]
-        print(f'>> Tickers RELOADED from tickers!!!{TICKERS_LIST} <<')
-        session_struct['tickers_list_changed'] = False
-    # print(f'Tickers list changed and loaded: {tickers}')
-
-#sort tickers list by volume
-if LIST_AUTOCREATE:
-    if LIST_CREATE_TYPE == 'binance':
-        tickers_list('create_b')
-        tickers=[line.strip() for line in open(TICKERS_LIST)]
-
-    if LIST_CREATE_TYPE == 'tradingview':
-        tickers_list('create_ta')
-        tickers=[line.strip() for line in open(TICKERS_LIST)]
-
-    if LIST_CREATE_TYPE == 'edgesforledges':
-        tickers_list('create_edge')
-        tickers=[line.strip() for line in open(TICKERS_LIST)]
+tickers_list()

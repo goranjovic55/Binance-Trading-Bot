@@ -79,7 +79,8 @@ session_struct = {
      'session_start': False,
      'prices_grabbed': False,
      'reload_tickers_list': True,
-     'profit_to_trade_ratio': 0
+     'profit_to_trade_ratio': 0,
+     'bnb_current_price': 0
 }
 
 report_struct = {
@@ -157,6 +158,7 @@ USE_TRAILING_STOP_LOSS = parsed_config['trading_options']['USE_TRAILING_STOP_LOS
 TRAILING_STOP_LOSS = parsed_config['trading_options']['TRAILING_STOP_LOSS']
 TRAILING_TAKE_PROFIT = parsed_config['trading_options']['TRAILING_TAKE_PROFIT']
 TRADING_FEE = parsed_config['trading_options']['TRADING_FEE']
+TRADING_FEE_BNB = parsed_config['trading_options']['TRADING_FEE_BNB']
 SIGNALLING_MODULES = parsed_config['trading_options']['SIGNALLING_MODULES']
 DYNAMIC_WIN_LOSS_UP = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_UP']
 DYNAMIC_WIN_LOSS_DOWN = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_DOWN']
@@ -177,8 +179,7 @@ REPORT_FREQUENCY = parsed_config['script_options']['REPORT_FREQUENCY']
 HOLDING_INTERVAL_LIMIT = parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
 QUANTITY = INVESTMENT/TRADE_SLOTS
 
-if not TEST_MODE: HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60 * 1000) * HOLDING_INTERVAL_LIMIT
-if TEST_MODE: HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60) * HOLDING_INTERVAL_LIMIT
+HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60 * 1000) * HOLDING_INTERVAL_LIMIT
 
 settings_struct = {
       'TIME_DIFFERENCE': TIME_DIFFERENCE,
