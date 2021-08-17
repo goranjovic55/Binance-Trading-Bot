@@ -146,7 +146,7 @@ def convert_volume() -> Tuple[Dict, Dict]:
     return volume, last_price
 
 def coin_volume_precision(coin : str, volume: float, price: float) -> float:
-    lot_size = 0
+    stepSize = 0
     minQty = 0
     minNotional = 0
 
@@ -165,18 +165,12 @@ def coin_volume_precision(coin : str, volume: float, price: float) -> float:
 
     for coin_info_fiter in coin_info['filters']:
         if coin_info_fiter['filterType'] == 'LOT_SIZE':
-            step_size = coin_info_fiter['stepSize']
+            stepSize = float(coin_info_fiter['stepSize'])
             minQty = float(coin_info_fiter['minQty'])
-            lot_size = step_size.index('1') - 1
         if coin_info_fiter['filterType'] == 'MIN_NOTIONAL':
-            minNotional = float(step_size.index('1') - 1)
+            minNotional = float(coin_info_fiter['minNotional'])
 
-    lot_size = max(lot_size, 0)
-
-    if lot_size == 0:
-        volume = int(volume)
-    else:
-        volume = float('{:.{}f}'.format(volume, lot_size))
+    volume = int( volume / stepSize ) * stepSize
 
     if volume < minQty:
         raise Exception("Volume too lower/not enought (minQty)")
@@ -463,11 +457,14 @@ def update_portfolio(orders: Dict, last_price: Dict, volume: Dict) -> Dict:
             coin_bought['tradeWithFee'] += coins_bought[coin]['tradeWithFee']
             coin_bought['tradeWithoutFee'] += coins_bought[coin]['tradeWithoutFee']
 
+        coins_bought[coin] = coin_bought
+
+        print(f'Order for {orders[coin]["symbol"]} with ID {orders[coin]["orderId"]} placed and saved to file.')
+
+    if len(orders) > 0:
         # save the coins in a json file in the same directory
         with open(coins_bought_file_path, 'w') as file:
             json.dump(coins_bought, file, indent=4)
-
-        print(f'Order for {orders[coin]["symbol"]} with ID {orders[coin]["orderId"]} placed and saved to file.')
 
         update_trade_slot()
 
