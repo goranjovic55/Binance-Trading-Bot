@@ -30,6 +30,8 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
     HOLDING_PRICE_THRESHOLD = parsed_config['trading_options']['HOLDING_PRICE_THRESHOLD']
     TRADE_SLOTS = parsed_config['trading_options']['TRADE_SLOTS']
 
+# calculate and define win/loss percent for STOPLOSS calculations
+
     if (session_struct['win_trade_count'] > 0) and (session_struct['loss_trade_count'] > 0):
         WIN_LOSS_PERCENT = round((session_struct['win_trade_count'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])) * 100, 2)
     else:

@@ -34,6 +34,8 @@ def txcolor(input: float) -> str:
     else:
         return txcolors.DEFAULT
 
+# code for showing discord avatar based on crypto coin type
+
 def discord_avatar() -> str:
     # Custom coin avatar dependant on PAIR_WITH
     # Fallback image is a nice Binance logo, yay!
@@ -46,6 +48,8 @@ def discord_avatar() -> str:
         DISCORD_AVATAR =  "https://i.imgur.com/VyOdlRS.jpeg"
     return DISCORD_AVATAR
 
+# code for fixing errors with multiple coins buy not writing to trades.txt
+
 def report_add(line: str, message: bool = False) -> None:
     if report_struct['report']  != "":
         report_struct['report'] += "\n"
@@ -53,6 +57,9 @@ def report_add(line: str, message: bool = False) -> None:
     report_struct['log'] = True
     if message:
         report_struct['message'] = True
+
+# code for generating reports that will print current bot state upon sell to telegram or discord
+# to console and to logfile
 
 def report(type: str, reportline: str) -> None:
 
@@ -209,6 +216,7 @@ def report(type: str, reportline: str) -> None:
 
     session_struct['last_report_time'] = time.time()
 
+# code that logs settings to scv file for creating graphs 
 
 def csv_log(interval: float = 60) -> None:
     global session_struct, trading_struct, settings_struct
