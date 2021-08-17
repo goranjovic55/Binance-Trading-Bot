@@ -467,7 +467,7 @@ def update_portfolio(orders: Dict, last_price: Dict, volume: Dict) -> Dict:
         # Multi Buy Same Coin ?
         if coin in coins_bought:
             coin_bought['volume'] += coins_bought[coin]['volume']
-            coin_bought['avgPrice'] = ( orders[coin]['avgPrice'] * orders[coin]['volume'] + coins_bought[coin]['bought_at'] * coins_bought[coin]['volume'] ) / coin_bought['volume']
+            coin_bought['bought_at'] = ( orders[coin]['bought_at'] * orders[coin]['volume'] + coins_bought[coin]['bought_at'] * coins_bought[coin]['volume'] ) / coin_bought['volume']
             coin_bought['tradeWithFee'] += coins_bought[coin]['tradeWithFee']
             coin_bought['tradeWithoutFee'] += coins_bought[coin]['tradeWithoutFee']
 
