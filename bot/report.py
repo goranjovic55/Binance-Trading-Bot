@@ -178,6 +178,7 @@ def report(type: str, reportline: str) -> None:
               f"{str(timedelta(seconds=(int(session_struct['session_uptime']/1000))))}"
             )
 
+# sending messages report to telegram and or discord channel
 
     if type == 'message' or report_struct['message']:
         TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, TEST_DISCORD_WEBHOOK, LIVE_DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
@@ -216,7 +217,7 @@ def report(type: str, reportline: str) -> None:
 
     session_struct['last_report_time'] = time.time()
 
-# code that logs settings to scv file for creating graphs 
+# code that logs settings to scv file for creating graphs
 
 def csv_log(interval: float = 60) -> None:
     global session_struct, trading_struct, settings_struct
