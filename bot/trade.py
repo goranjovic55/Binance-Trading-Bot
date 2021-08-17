@@ -6,6 +6,7 @@ import sys
 import glob
 import time
 import threading
+import math
 from typing import Tuple, Dict
 
 #gogo MOD telegram needs import request
@@ -175,7 +176,8 @@ def coin_volume_precision(coin : str, volume: float, price: float) -> float:
         if coin_info_fiter['filterType'] == 'MIN_NOTIONAL':
             minNotional = float(coin_info_fiter['minNotional'])
 
-    volume = int( volume / stepSize ) * stepSize
+    power = 1 / stepSize
+    volume = math.trunc( volume * power ) / power
 
     if volume < minQty:
         raise Exception("Volume too lower/not enought (minQty)")
