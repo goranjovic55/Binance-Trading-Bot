@@ -150,10 +150,10 @@ trading_options:
   LIST_AUTOCREATE: True
 
   # type of list creation :
-  #  - binance
-  #  - tradingview
-  #  - edgesforledges : http://edgesforledges.com/watchlists/binance
-  LIST_CREATE_TYPE: edgesforledges
+  #  - binance / create_b
+  #  - tradingview / create_ta
+  #  - edgesforledges : http://edgesforledges.com/watchlists/binance / create_edge
+  LIST_CREATE_TYPE: create_b
 
   # option by type of list creation :
   #  - edgesforledges : ebd of url ex : innovation => fiat/usdt/innovation-zone
