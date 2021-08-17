@@ -39,7 +39,7 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
 
     if DYNAMIC_SETTINGS:
 
-        #limiting STOP_LOSS TIME_DIFFERENCE and TRAILING_STOP_LOSS to dynamic min and max values
+#limiting STOP_LOSS TIME_DIFFERENCE and TRAILING_STOP_LOSS to dynamic min and max values
         if settings_struct['STOP_LOSS'] < STOP_LOSS / DYNAMIC_MIN_MAX:
            settings_struct['STOP_LOSS'] = STOP_LOSS / DYNAMIC_MIN_MAX
 

@@ -37,8 +37,8 @@ def txcolor(input: float) -> str:
 # code for showing discord avatar based on crypto coin type
 
 def discord_avatar() -> str:
-    # Custom coin avatar dependant on PAIR_WITH
-    # Fallback image is a nice Binance logo, yay!
+# Custom coin avatar dependant on PAIR_WITH
+# Fallback image is a nice Binance logo, yay!
     DISCORD_AVATAR =  "https://i.imgur.com/w1vS5Oc.png"
     if PAIR_WITH == 'ETH':
         DISCORD_AVATAR =  "https://i.imgur.com/L9Txc9F.jpeg"
@@ -109,7 +109,7 @@ def report(type: str, reportline: str) -> None:
     else:
         WIN_LOSS_PERCENT = 100
 
-    # adding all the stats together:
+# adding all the stats together:
     report_string= 'Trade slots: '+str(session_struct['trade_slots'])+'/'\
                    +str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_TRIM)+'/'\
                    +str(INVESTMENT_TOTAL_TRIM)+' '+PAIR_WITH+') | Session: '\
@@ -121,12 +121,12 @@ def report(type: str, reportline: str) -> None:
                    +str(timedelta(seconds=(int(session_struct['session_uptime']/1000))))
 
 
-    #gogo MOD todo more verbose having all the report things in it!!!!!
+#gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
         # print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol}> {reportline} <<{txcolors.DEFAULT}")
         print(f"{report_string}")
 
-    #More detailed/verbose report style
+#More detailed/verbose report style
     if type == 'detailed':
         print(
             f"{txcolors.NOTICE}>> Using {session_struct['trade_slots']}/{TRADE_SLOTS} trade slots. << \n"
