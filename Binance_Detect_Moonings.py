@@ -120,8 +120,7 @@ def pause_bot() -> None:
         # pausing here
 
         #gogo MOD todo more verbose having all the report things in it!!!!!
-        if hsp_head:
-           report(SESSION_REPORT_STYLE, '.')
+        report_update()
 
         time.sleep(settings_struct['RECHECK_INTERVAL'])
 
@@ -228,9 +227,7 @@ if __name__ == '__main__':
         session('save')
 
         #write report to console
-        if time.time() - session_struct['last_report_time'] > REPORT_FREQUENCY:
-            report(SESSION_REPORT_STYLE,report_struct['report'])
-            report_struct['report'] = ""
+        report_update()
 
         #sleep for RECHECK_INTERVAL time
         ts_sleep = settings_struct['RECHECK_INTERVAL'] - ( time.time() - ts ) 
