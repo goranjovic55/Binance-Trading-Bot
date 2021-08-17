@@ -288,9 +288,6 @@ def sell_coins() -> Dict:
         if ORDER != "":
             print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChange:.2f}% - Est: {(QUANTITY * priceChange) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
             
-            # Keep a copy lastPrice to Sell
-            lastPriceSell = float(lastPrice)
-
             try: 
                 volume = coin_volume_precision(coin,coins_bought[coin]['volume'],lastPrice)
                 coins_sold[coin] = order_coin(coin,SIDE_SELL,lastPrice,volume)
@@ -447,8 +444,8 @@ def update_portfolio(orders: Dict, last_price: Dict, volume: Dict) -> Dict:
     '''add every coin bought to our portfolio for tracking/selling later'''
     if DEBUG: print(orders)
     for coin in orders:
-
-        coins_bought[coin] = {
+        # Prepare Coin Bought
+        coin_bought = {
             'symbol': orders[coin]['symbol'],
             'orderId': orders[coin]['orderId'],
             'timestamp': orders[coin]['timestamp'],
@@ -459,6 +456,12 @@ def update_portfolio(orders: Dict, last_price: Dict, volume: Dict) -> Dict:
             'stop_loss': -settings_struct['STOP_LOSS'],
             'take_profit': settings_struct['TAKE_PROFIT'],
             }
+        # Multi Buy Same Coin ? 
+        if coin in coins_bought:
+            coin_bought['volume'] += coins_bought[coin]['volume']
+            coin_bought['avgPrice'] = ( orders[coin]['avgPrice'] * orders[coin]['volume'] + coins_bought[coin]['avgPrice'] * coins_bought[coin]['volume'] ) / coin_bought['volume']
+            coin_bought['tradeWithFee'] += coins_bought[coin]['tradeWithFee']
+            coin_bought['tradeWithoutFee'] += coins_bought[coin]['tradeWithoutFee']
 
         # save the coins in a json file in the same directory
         with open(coins_bought_file_path, 'w') as file:
@@ -466,7 +469,17 @@ def update_portfolio(orders: Dict, last_price: Dict, volume: Dict) -> Dict:
 
         print(f'Order for {orders[coin]["symbol"]} with ID {orders[coin]["orderId"]} placed and saved to file.')
 
-        session_struct['trade_slots'] = len(coins_bought)
+        update_trade_slot()
+
+def update_trade_slot() -> None:
+    totalTrade = 0
+    for coin in coins_bought:
+        totalTrade += coins_bought[coin]['tradeWithoutFee']
+
+    if totalTrade > 0:
+        session_struct['trade_slots'] = int(totalTrade / QUANTITY) + 1 
+    else:
+        session_struct['trade_slots'] = 0
 
 
 def remove_from_portfolio(coins_sold: Dict) -> None:
@@ -485,7 +498,7 @@ def remove_from_portfolio(coins_sold: Dict) -> None:
                 with open(coins_bought_file_path, 'w') as file:
                     json.dump(coins_bought, file, indent=4)
                 break
-        session_struct['trade_slots'] = len(coins_bought)
+        update_trade_slot()
         session_struct['reload_tickers_list'] = True
 
 
