@@ -206,6 +206,10 @@ def report(type: str, reportline: str) -> None:
 
     session_struct['last_report_time'] = time.time()
 
+def report_update() -> None :
+    if time.time() - session_struct['last_report_time'] > REPORT_FREQUENCY:
+        report(SESSION_REPORT_STYLE,report_struct['report'])
+        report_struct['report'] = ""
 
 def csv_log(interval: float = 60) -> None:
     global session_struct, trading_struct, settings_struct
