@@ -25,6 +25,8 @@ import json
 
 from bot.settings import *
 
+# code that saves settings to session file and loads it from it so we can transfer session from one instance of bot to another
+
 def session(type: str) -> None:
     #various session calculations like uptime 24H gain profit risk to reward ratio unrealised profit etc
     global session_struct, settings_struct

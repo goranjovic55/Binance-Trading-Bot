@@ -88,6 +88,8 @@ report_struct = {
       'log': False
 }
 
+# creating git commit number so we can use it in reports to see wich bot version is running
+
 def get_git_commit_number() -> str:
 
     try:
