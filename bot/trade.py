@@ -33,6 +33,9 @@ from bot.settings import *
 from bot.grab import *
 from bot.report import *
 
+# this function puts coins that trigger a price change buy to trailing buy list then it follows and when coins trigger
+# a buy signal aka when they price passes TRAILING_BUY_THRESHOLD they are sent to buy list wich is passed to rest of buy procedures
+
 def trailing_buy(volatile_coins: Dict[str, float]) -> Dict[str, float]:
 
     global trail_buy_historical
@@ -70,6 +73,8 @@ def trailing_buy(volatile_coins: Dict[str, float]) -> Dict[str, float]:
     print(f"BUY_VOLATILE_COINS: {buy_volatile_coins}")
 
     return buy_volatile_coins
+
+# this functions makes various trade calculations and writes them to global structures wich get passed to other funtions
 
 def trade_calculations(type: str, priceChange: float) -> None:
 
@@ -121,7 +126,7 @@ def convert_volume() -> Tuple[Dict, Dict]:
 
     '''Converts the volume given in QUANTITY from USDT to the each coin's volume'''
 
-    #added feature to buy only if percent and signal triggers uses PERCENT_SIGNAL_BUY true or false from config
+#added feature to buy only if percent and signal triggers uses PERCENT_SIGNAL_BUY true or false from config
     if PERCENT_SIGNAL_BUY == True:
        volatile_coins, number_of_coins, last_price = wait_for_price('percent_mix_signal')
     else:
@@ -137,7 +142,7 @@ def convert_volume() -> Tuple[Dict, Dict]:
 
         if session_struct['trade_slots'] + len(volume) < TRADE_SLOTS or TRADE_SLOTS == 0:
 
-           # calculate the volume in coin from QUANTITY in USDT (default)
+# calculate the volume in coin from QUANTITY in USDT (default)
            volume[coin] = coin_volume_precision(coin,float(QUANTITY / float(last_price[coin]['price'])))
 
     return volume, last_price
@@ -145,14 +150,14 @@ def convert_volume() -> Tuple[Dict, Dict]:
 def coin_volume_precision(coin : str, volume: float) -> float:
     lot_size = 0
 
-    # Find the correct step size for each coin
-    # max accuracy for BTC for example is 6 decimal points
-    # while XRP is only 1
+# Find the correct step size for each coin
+# max accuracy for BTC for example is 6 decimal points
+# while XRP is only 1
     try:
         step_size = session_struct['symbol_info'][coin]
         lot_size = step_size.index('1') - 1
     except KeyError:
-        # not retrieved at startup, try again
+# not retrieved at startup, try again
         try:
             coin_info = client.get_symbol_info(coin)
             step_size = coin_info['filters'][2]['stepSize']
@@ -186,7 +191,7 @@ def buy() -> Tuple[Dict, Dict, Dict]:
         if UNIQUE_BUYS and (coin in coins_bought):
             BUYABLE = False
 
-        # only buy if the there are no active trades on the coin
+# only buy if the there are no active trades on the coin
         if BUYABLE:
             print(f"{txcolors.BUY}Preparing to buy {volume[coin]} {coin}{txcolors.DEFAULT}")
 
@@ -199,12 +204,12 @@ def buy() -> Tuple[Dict, Dict, Dict]:
                     'time': datetime.now().timestamp()
                 }]
 
-                # Log trades
+# Log trades
                 report_add(REPORT)
 
                 continue
 
-            # try to create a real order if the test orders did not raise an exception
+# try to create a real order if the test orders did not raise an exception
             try:
                 order_details = client.create_order(
                     symbol = coin,
@@ -213,15 +218,15 @@ def buy() -> Tuple[Dict, Dict, Dict]:
                     quantity = volume[coin]
                 )
 
-            # error handling here in case position cannot be placed
+# error handling here in case position cannot be placed
             except Exception as e:
                 print(e)
 
-            # run the else block if the position has been placed and return order info
+# run the else block if the position has been placed and return order info
             else:
                 orders[coin] = client.get_all_orders(symbol=coin, limit=1)
 
-                # binance sometimes returns an empty list, the code will wait here until binance returns the order
+# binance sometimes returns an empty list, the code will wait here until binance returns the order
                 while orders[coin] == []:
                     print('Binance is being slow in returning the order, calling the API again...')
 
@@ -229,7 +234,7 @@ def buy() -> Tuple[Dict, Dict, Dict]:
                     time.sleep(1)
 
                 else:
-                    # Log, announce, and report trade
+# Log, announce, and report trade
                     print('Order returned, saving order to file')
 
                     if not TEST_MODE:
@@ -281,9 +286,9 @@ def sell_coins() -> Dict:
         # sellFee = (150 * 0.00006648) * (0.075/100)
         # sellFee = 0.000007479
 
-        # check that the price is above the take profit and readjust coinStopLoss and coinTakeProfit accordingly if trialing stop loss used
+# check that the price is above the take profit and readjust coinStopLoss and coinTakeProfit accordingly if trialing stop loss used
         if lastPrice > coinTakeProfit and USE_TRAILING_STOP_LOSS:
-            # increasing coinTakeProfit by TRAILING_TAKE_PROFIT (essentially next time to readjust coinStopLoss)
+# increasing coinTakeProfit by TRAILING_TAKE_PROFIT (essentially next time to readjust coinStopLoss)
             coins_bought[coin]['take_profit'] = priceChange + settings_struct['TRAILING_TAKE_PROFIT']
             coins_bought[coin]['stop_loss'] = coins_bought[coin]['take_profit'] - settings_struct['TRAILING_STOP_LOSS']
             if DEBUG: print(f"{coin} TP reached, adjusting TP {coins_bought[coin]['take_profit']:.{decimals()}f} and SL {coins_bought[coin]['stop_loss']:.{decimals()}f} accordingly to lock-in profit")
@@ -302,14 +307,14 @@ def sell_coins() -> Dict:
         if coinHoldingTimeLimit < current_time and priceChange > settings_struct['HOLDING_PRICE_THRESHOLD']:
            holding_timeout_sell_trigger = True
 
-        # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
+# check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
         if session_struct['sell_all_coins'] == True or lastPrice < coinStopLoss or lastPrice > coinTakeProfit and not USE_TRAILING_STOP_LOSS or holding_timeout_sell_trigger == True:
             print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChange:.2f}% - Est: {(QUANTITY * priceChange) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
-            
-            # Keep lastPrice to Sell
+
+# Keep lastPrice to Sell
             lastPriceSell = lastPrice
 
-            # try to create a real order
+# try to create a real order
             try:
 
                 if not TEST_MODE:
@@ -320,11 +325,11 @@ def sell_coins() -> Dict:
                         quantity = coin_volume_precision(coin,coins_bought[coin]['volume'])
                     )
 
-            # error handling here in case position cannot be placed
+# error handling here in case position cannot be placed
             except Exception as e:
                 print(e)
 
-            # run the else block if coin has been sold and create a dict for each coin sold
+# run the else block if coin has been sold and create a dict for each coin sold
             else:
                 if not TEST_MODE:
 
@@ -337,15 +342,15 @@ def sell_coins() -> Dict:
                 else:
                    coins_sold[coin] = coins_bought[coin]
 
-                # prevent system from buying this coin for the next TIME_DIFFERENCE minutes
+# prevent system from buying this coin for the next TIME_DIFFERENCE minutes
                 volatility_cooloff[coin] = datetime.now()
 
-                # Log trade
+# Log trade
                 trade_profit = (lastPrice - buyPrice) * coins_sold[coin]['volume']
 
                 trade_calculations('sell', priceChange)
 
-                #gogo MOD to trigger trade lost or won and to count lost or won trades
+#gogo MOD to trigger trade lost or won and to count lost or won trades
 
                 if session_struct['sell_all_coins'] == True: REPORT =  f"PAUSE_SELL - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {trade_profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
                 if lastPriceSell < coinStopLoss: REPORT =  f"STOP_LOSS - SELL: {coins_sold[coin]['volume']} {coin} - Bought at {buyPrice:.{decimals()}f}, sold at {lastPrice:.{decimals()}f} - Profit: {trade_profit:.{decimals()}f} {PAIR_WITH} ({priceChange:.2f}%)"
@@ -369,12 +374,12 @@ def sell_coins() -> Dict:
 def extract_order_data(order_details: Dict) -> Dict:
     global TRADING_FEE, STOP_LOSS, TAKE_PROFIT
     transactionInfo = {}
-    # adding order fill extractions here
-    #
-    # just to explain what I am doing here:
-    # Market orders are not always filled at one price, we need to find the averages of all 'parts' (fills) of this order.
-    #
-    # reset other variables to 0 before use
+# adding order fill extractions here
+#
+# just to explain what I am doing here:
+# Market orders are not always filled at one price, we need to find the averages of all 'parts' (fills) of this order.
+#
+# reset other variables to 0 before use
     FILLS_TOTAL = 0
     FILLS_QTY = 0
     FILLS_FEE = 0
@@ -388,17 +393,17 @@ def extract_order_data(order_details: Dict) -> Dict:
         if (fills['commissionAsset'] != 'BNB') and (TRADING_FEE == 0.75) and (BNB_WARNING == 0):
             print(f"WARNING: BNB not used for trading fee, please ")
             BNB_WARNING += 1
-        # quantity of fills * price
+# quantity of fills * price
         FILLS_TOTAL += (FILL_PRICE * FILL_QTY)
-        # add to running total of fills quantity
+# add to running total of fills quantity
         FILLS_QTY += FILL_QTY
-        # increase fills array index by 1
+# increase fills array index by 1
 
-    # calculate average fill price:
+# calculate average fill price:
     FILL_AVG = (FILLS_TOTAL / FILLS_QTY)
 
     tradeFeeApprox = (float(FILLS_QTY) * float(FILL_AVG)) * (TRADING_FEE/100)
-    # create object with received data from Binance
+# create object with received data from Binance
     transactionInfo = {
         'symbol': order_details['symbol'],
         'orderId': order_details['orderId'],
@@ -442,7 +447,7 @@ def update_portfolio(orders: Dict, last_price: Dict, volume: Dict) -> Dict:
                'take_profit': settings_struct['TAKE_PROFIT'],
                }
 
-        # save the coins in a json file in the same directory
+# save the coins in a json file in the same directory
         with open(coins_bought_file_path, 'w') as file:
             json.dump(coins_bought, file, indent=4)
 

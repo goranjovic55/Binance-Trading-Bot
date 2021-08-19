@@ -25,8 +25,11 @@ import json
 
 from bot.settings import *
 
+# code that saves settings to session file and loads it from it so we can transfer session from one instance of bot to another
+
 def session(type: str) -> None:
-    #various session calculations like uptime 24H gain profit risk to reward ratio unrealised profit etc
+#various session calculations like uptime 24H gain profit risk to reward ratio unrealised profit etc
+
     global session_struct, settings_struct
 
     if type == 'calc':
@@ -36,8 +39,9 @@ def session(type: str) -> None:
         session_struct['CURRENT_EXPOSURE'] = (QUANTITY * session_struct['trade_slots'])
         session_struct['unrealised_percent'] = 0
 
-        # this number is your actual ETH or other coin value in correspondence to USDT aka your market investment_value
-        # it is important cuz your exchange aha ETH or BTC can vary and if you pause bot during that time you gain profit
+# this number is your actual ETH or other coin value in correspondence to USDT aka your market investment_value
+# it is important cuz your exchange aha ETH or BTC can vary and if you pause bot during that time you gain profit
+
         session_struct['investment_value'] = float(session_struct['market_price']) * session_struct['NEW_BALANCE']
         session_struct['investment_value_gain'] = float(session_struct['market_price']) * (session_struct['NEW_BALANCE'] - INVESTMENT)
 
@@ -55,6 +59,7 @@ def session(type: str) -> None:
            trading_struct['trade_support'] = trading_struct['sum_min_holding_price'] / session_struct['loss_trade_count']
            trading_struct['trade_resistance'] = trading_struct['sum_max_holding_price'] / session_struct['win_trade_count']
 
+# saving session info to file during work
 
     if type == 'save':
 
@@ -94,16 +99,18 @@ def session(type: str) -> None:
             'HOLDING_PRICE_THRESHOLD': settings_struct['HOLDING_PRICE_THRESHOLD']
             }
 
-        # save the coins in a json file in the same directory
+# save the coins in a json file in the same directory
         with open(session_info_file_path, 'w') as file:
             json.dump(session_info, file, indent=4)
 
     if type == 'load':
 
         session_info = {}
-        #gogo MOD path to session info file and loading variables from previous sessions
-        #sofar only used for session profit TODO implement to use other things too
-        #session_profit is calculated in % wich is innacurate if QUANTITY is not the same!!!!!
+
+#gogo MOD path to session info file and loading variables from previous sessions
+#sofar only used for session profit TODO implement to use other things too
+#session_profit is calculated in % wich is innacurate if QUANTITY is not the same!!!!!
+
         session_info_file_path = 'session_info.json'
 
         if os.path.isfile(session_info_file_path) and os.stat(session_info_file_path).st_size!= 0:
