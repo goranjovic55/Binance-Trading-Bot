@@ -73,13 +73,13 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
 # all other settings adding % on every win
 
         if session_struct['last_trade_won'] == True:
-            if session_struct['dynamics_state'] == 'up':
-               settings_struct['TIME_DIFFERENCE'] = settings_struct['TIME_DIFFERENCE'] + (settings_struct['TIME_DIFFERENCE'] * DYNAMIC_WIN_LOSS_UP) /100
-               session_struct['dynamics_state'] = 'up'
+           if session_struct['dynamics_state'] == 'up':
+              settings_struct['TIME_DIFFERENCE'] = settings_struct['TIME_DIFFERENCE'] + (settings_struct['TIME_DIFFERENCE'] * DYNAMIC_WIN_LOSS_UP) /100
+              session_struct['dynamics_state'] = 'up'
 
-            if session_struct['dynamics_state'] == 'down':
-               settings_struct['TIME_DIFFERENCE'] = settings_struct['TIME_DIFFERENCE'] - (settings_struct['TIME_DIFFERENCE'] * DYNAMIC_WIN_LOSS_UP) /100
-               session_struct['dynamics_state'] = 'down'
+           if session_struct['dynamics_state'] == 'down':
+              settings_struct['TIME_DIFFERENCE'] = settings_struct['TIME_DIFFERENCE'] - (settings_struct['TIME_DIFFERENCE'] * DYNAMIC_WIN_LOSS_UP) /100
+              session_struct['dynamics_state'] = 'down'
 
            session_struct['last_trade_won'] = 'none'
            type = 'performance_adjust_up'
