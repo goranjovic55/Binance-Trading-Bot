@@ -160,7 +160,7 @@ trading_options:
   LIST_CREATE_TYPE_OPTION : fiat/usdt/innovation-zone
 
   # list sorting by 'volume' or by 'price_change'
-  SORT_LIST_TYPE: price_change
+  SORT_LIST_TYPE: volume
 
   SIGNALLING_MODULES:
     #- modules.pausebotmod
