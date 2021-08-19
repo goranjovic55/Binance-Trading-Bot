@@ -34,6 +34,8 @@ https://github.com/goranjovic55/Binance-Trading-Bot/wiki
 1. If you use the `TEST_MODE: False` in your config, you will be using REAL money.
 2. To ensure you do not do this, ALWAYS check the `TEST_MODE` configuration item in the config.yml file..
 
+## DISCORD CHANNEL
+https://discord.gg/AjJYXy3C
 
 ## 💥 Disclaimer
 
