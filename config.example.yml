@@ -62,10 +62,11 @@ trading_options:
     - JPYUSDT
     - USDUSDT
 
-  # Trading fee in % per trade.
+  # Trading fee in % per trade. ( Only in Test Mode / Real mode get information from Binance API )
   # If using 0.75% (using BNB for fees) you must have BNB in your account to cover trading fees.
   # If using BNB for fees, it MUST be enabled in your Binance 'Dashboard' page (checkbox).
   TRADING_FEE: .075
+  TRADING_FEE_BNB: True
 
   # Specify in minutes the frequency to check for trading signals from TradingView
   SIGNALS_FREQUENCY: 1
@@ -137,7 +138,14 @@ trading_options:
   PERCENT_SIGNAL_BUY: False
 
   # MODS SETTINGS_STRING
+
+  # pausebotmod
+  # X of 15 MA's indicating sell  
   PAUSEBOTMOD_THRESHOLD: 14
+  PAUSEBOTMOD_SYMBOL: ETHUSDT
+
+  # custsignalmod
+  # How many of the 26 indicators to indicate a buy
   SIGNALSAMPLEMOD_THRESHOLD : 18
 
 
@@ -163,7 +171,7 @@ trading_options:
   SORT_LIST_TYPE: volume
 
   SIGNALLING_MODULES:
-    #- modules.pausebotmod
+    - modules.pausebotmod
     #- modules.custsignalmod
     #- modules.custsignalmod_speed
     #- modules.signalsamplemod

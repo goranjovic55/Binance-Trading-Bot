@@ -99,10 +99,7 @@ def report(type: str, reportline: str) -> None:
                       +str(round(settings_struct['TRAILING_TAKE_PROFIT'], 2))+ ' | Holding time limit: ' \
                       +str(round(settings_struct['HOLDING_TIME_LIMIT'], 2))
 
-    if session_struct['trade_slots'] > 0:
-        UNREALISED_PERCENT = round(session_struct['unrealised_percent'])
-    else:
-        UNREALISED_PERCENT = 0
+    UNREALISED_PERCENT = session_struct['unrealised_percent']
 
     if (session_struct['win_trade_count'] > 0) and (session_struct['loss_trade_count'] > 0):
         WIN_LOSS_PERCENT = round((session_struct['win_trade_count'] / (session_struct['win_trade_count'] + session_struct['loss_trade_count'])) * 100, 2)
@@ -216,6 +213,11 @@ def report(type: str, reportline: str) -> None:
         report_struct['log'] = False
 
     session_struct['last_report_time'] = time.time()
+
+def report_update() -> None :
+    if time.time() - session_struct['last_report_time'] > REPORT_FREQUENCY:
+        report(SESSION_REPORT_STYLE,report_struct['report'])
+        report_struct['report'] = ""
 
 # code that logs settings to scv file for creating graphs
 

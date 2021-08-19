@@ -120,8 +120,7 @@ def pause_bot() -> None:
         # pausing here
 
         #gogo MOD todo more verbose having all the report things in it!!!!!
-        if hsp_head:
-           report(SESSION_REPORT_STYLE, '.')
+        report_update()
 
         time.sleep(settings_struct['RECHECK_INTERVAL'])
 
@@ -133,8 +132,7 @@ def pause_bot() -> None:
         # resume the bot and set pause_bot to False
         if  bot_paused == True:
             print(f"{txcolors.WARNING}Resuming buying due to positive market conditions, total sleep time: {time_elapsed}{txcolors.DEFAULT}")
-            if LIST_AUTOCREATE:
-                tickers_list(SORT_LIST_TYPE)
+            tickers_list()
             session_struct['dynamic'] = 'reset'
             session_struct['sell_all_coins'] = False
             bot_paused = False
@@ -170,7 +168,7 @@ if __name__ == '__main__':
 
     # load signalling modules
     try:
-        if len(SIGNALLING_MODULES) > 0:
+        if SIGNALLING_MODULES != None and len(SIGNALLING_MODULES) > 0:
             for module in SIGNALLING_MODULES:
                 print(f'Starting {module}')
                 mymodule[module] = importlib.import_module(module)
@@ -229,9 +227,7 @@ if __name__ == '__main__':
         session('save')
 
         #write report to console
-        if time.time() - session_struct['last_report_time'] > REPORT_FREQUENCY:
-            report(SESSION_REPORT_STYLE,report_struct['report'])
-            report_struct['report'] = ""
+        report_update()
 
         #sleep for RECHECK_INTERVAL time
         ts_sleep = settings_struct['RECHECK_INTERVAL'] - ( time.time() - ts ) 

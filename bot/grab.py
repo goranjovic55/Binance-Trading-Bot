@@ -44,7 +44,7 @@ def get_symbol_info(url: str = 'https://api.binance.com/api/v3/exchangeInfo') ->
     json_message = json.loads(response.content)
 
     for symbol_info in json_message['symbols']:
-        session_struct['symbol_info'][symbol_info['symbol']] = symbol_info['filters'][2]['stepSize']
+        session_struct['symbol_info'][symbol_info['symbol']] = symbol_info
 
 
 def get_historical_price() -> None:
@@ -79,18 +79,28 @@ def external_signals() -> Dict[str, str]:
 def get_price(add_to_historical: bool = True) -> Dict:
     '''Return the current price for all coins on binance'''
 
-    global historical_prices, hsp_head, session_struct
+    global historical_prices, hsp_head, session_struct 
 
     initial_price = {}
-    prices = client.get_all_tickers()
+
+    # get all info on tickers from binance
+    # with retry on error reading
+    while True:
+        try:
+            prices = client.get_all_tickers()
+        except:
+            print(f"{txcolors.WARNING}Binance Problem Get All Tickers{txcolors.DEFAULT}")
+            time.sleep(0.2)
+            continue
+        break
 
     for coin in prices:
-        if CUSTOM_LIST:
-            if any(item + PAIR_WITH == coin['symbol'] for item in tickers) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-                initial_price[coin['symbol']] = { 'price': coin['price'], 'time': datetime.now()}
-        else:
-            if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-                initial_price[coin['symbol']] = { 'price': coin['price'], 'time': datetime.now()}
+        # Get Current Bnb Price to fee calculation
+        if coin['symbol'] == 'BNB' + PAIR_WITH:
+            session_struct['bnb_current_price'] = float(coin['price'])
+
+        if any(item + PAIR_WITH == coin['symbol'] for item in session_struct['tickers']) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
+            initial_price[coin['symbol']] = { 'price': float(coin['price']), 'time': datetime.now()}
 
     if add_to_historical:
         hsp_head += 1
@@ -151,11 +161,11 @@ def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
               except:
                 continue
 
-# minimum and maximum prices over time period
-              min_price = min(historical_prices, key = lambda x: float("inf") if x is None else float(x[coin]['price']))
-              max_price = max(historical_prices, key = lambda x: -1 if x is None else float(x[coin]['price']))
+              # minimum and maximum prices over time period
+              min_price = min(historical_prices, key = lambda x: float("inf") if x is None else x[coin]['price'])
+              max_price = max(historical_prices, key = lambda x: -1 if x is None else x[coin]['price'])
 
-              threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (float(max_price[coin]['price']) - float(min_price[coin]['price'])) / float(min_price[coin]['price']) * 100
+              threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (max_price[coin]['price'] - min_price[coin]['price']) / min_price[coin]['price'] * 100
 
               if threshold_check > 0:
                  session_struct['market_resistance'] = session_struct['market_resistance'] + threshold_check
@@ -180,10 +190,10 @@ def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
                continue
 
            # minimum and maximum prices over time period
-           min_price = min(historical_prices, key = lambda x: float("inf") if x is None else float(x[coin]['price']))
-           max_price = max(historical_prices, key = lambda x: -1 if x is None else float(x[coin]['price']))
+           min_price = min(historical_prices, key = lambda x: float("inf") if x is None else x[coin]['price'])
+           max_price = max(historical_prices, key = lambda x: -1 if x is None else x[coin]['price'])
 
-           threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (float(max_price[coin]['price']) - float(min_price[coin]['price'])) / float(min_price[coin]['price']) * 100
+           threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (max_price[coin]['price'] - min_price[coin]['price']) / min_price[coin]['price'] * 100
 
            if type == 'percent_mix_signal':
 
