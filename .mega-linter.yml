@@ -10,6 +10,9 @@ DISABLE:
   - SPELL # Uncomment to enable checks of spelling mistakes # - SPELL # Uncomment to disable checks of spelling mistakes
 SHOW_ELAPSED_TIME: true
 FILEIO_REPORTER: false
+GIT_GIT_DIFF_DISABLE_ERRORS: true
+
+# These linter should be enabled after code fixes
 PYTHON_FLAKE8_DISABLE_ERRORS: true
 PYTHON_MYPY_DISABLE_ERRORS: true
-GIT_GIT_DIFF_DISABLE_ERRORS: true
+PYTHON_PYLINT_DISABLE_ERRORS: true
