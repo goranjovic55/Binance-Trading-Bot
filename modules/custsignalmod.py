@@ -1,45 +1,63 @@
-from helpers.parameters import (
-    parse_args, load_config
-)
+from helpers.parameters import load_config, parse_args
+
 # Load arguments then parse settings
 args = parse_args()
-#get config file
-DEFAULT_CONFIG_FILE = 'config.yml'
+# get config file
+DEFAULT_CONFIG_FILE = "config.yml"
 config_file = args.config if args.config else DEFAULT_CONFIG_FILE
 parsed_config = load_config(config_file)
 
 # Available indicators here: https://python-tradingview-ta.readthedocs.io/en/latest/usage.html#retrieving-the-analysis
 
-from tradingview_ta import TA_Handler, Interval, Exchange
-# use for environment variables
-import os
-# use if needed to pass args to external modules
-import sys
 # used for directory handling
 import glob
-import time
+
+# use for environment variables
+import os
+
+# use if needed to pass args to external modules
+import sys
 import threading
+import time
 
-OSC_INDICATORS = ['MACD', 'Stoch.RSI', 'Mom', 'BBP', 'AO', 'RSI'] # Indicators to use in Oscillator analysis
-OSC_THRESHOLD = 3 # Must be less or equal to number of items in OSC_INDICATORS
-MA_INDICATORS = ['VWMA', 'HullMA', 'Ichimoku'] # Indicators to use in Moving averages analysis
-MA_THRESHOLD = 2 # Must be less or equal to number of items in MA_INDICATORS 
-INTERVAL = Interval.INTERVAL_1_MINUTE #Timeframe for analysis
+from tradingview_ta import Exchange, Interval, TA_Handler
 
-EXCHANGE = 'BINANCE'
-SCREENER = 'CRYPTO'
-PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
-TICKERS = parsed_config['trading_options']['TICKERS_LIST']
-TIME_TO_WAIT = parsed_config['trading_options']['TIME_DIFFERENCE'] # Minutes to wait between analysis
-FULL_LOG = parsed_config['script_options']['VERBOSE_MODE'] # List analysis result to console
+OSC_INDICATORS = [
+    "MACD",
+    "Stoch.RSI",
+    "Mom",
+    "BBP",
+    "AO",
+    "RSI",
+]  # Indicators to use in Oscillator analysis
+OSC_THRESHOLD = 3  # Must be less or equal to number of items in OSC_INDICATORS
+MA_INDICATORS = [
+    "VWMA",
+    "HullMA",
+    "Ichimoku",
+]  # Indicators to use in Moving averages analysis
+MA_THRESHOLD = 2  # Must be less or equal to number of items in MA_INDICATORS
+INTERVAL = Interval.INTERVAL_1_MINUTE  # Timeframe for analysis
+
+EXCHANGE = "BINANCE"
+SCREENER = "CRYPTO"
+PAIR_WITH = parsed_config["trading_options"]["PAIR_WITH"]
+TICKERS = parsed_config["trading_options"]["TICKERS_LIST"]
+TIME_TO_WAIT = parsed_config["trading_options"][
+    "TIME_DIFFERENCE"
+]  # Minutes to wait between analysis
+FULL_LOG = parsed_config["script_options"][
+    "VERBOSE_MODE"
+]  # List analysis result to console
+
 
 def analyze(pairs):
     signal_coins = {}
     analysis = {}
     handler = {}
 
-    if os.path.exists('signals/custsignalmod.exs'):
-        os.remove('signals/custsignalmod.exs')
+    if os.path.exists("signals/custsignalmod.exs"):
+        os.remove("signals/custsignalmod.exs")
 
     for pair in pairs:
         handler[pair] = TA_Handler(
@@ -47,7 +65,8 @@ def analyze(pairs):
             exchange=EXCHANGE,
             screener=SCREENER,
             interval=INTERVAL,
-            timeout= 10)
+            timeout=10,
+        )
 
     for pair in pairs:
         try:
@@ -61,38 +80,48 @@ def analyze(pairs):
             # print('')
             dont_print_on_exception = True
 
-        oscCheck=0
-        maCheck=0
+        oscCheck = 0
+        maCheck = 0
         for indicator in OSC_INDICATORS:
-            if analysis.oscillators ['COMPUTE'][indicator] == 'BUY': oscCheck +=1
+            if analysis.oscillators["COMPUTE"][indicator] == "BUY":
+                oscCheck += 1
 
         for indicator in MA_INDICATORS:
-            if analysis.moving_averages ['COMPUTE'][indicator] == 'BUY': maCheck +=1
+            if analysis.moving_averages["COMPUTE"][indicator] == "BUY":
+                maCheck += 1
 
         if FULL_LOG:
-            print(f'Custsignalmod:{pair} Oscillators:{oscCheck}/{len(OSC_INDICATORS)} Moving averages:{maCheck}/{len(MA_INDICATORS)}')
+            print(
+                f"Custsignalmod:{pair} Oscillators:{oscCheck}/{len(OSC_INDICATORS)} Moving averages:{maCheck}/{len(MA_INDICATORS)}"
+            )
 
         if oscCheck >= OSC_THRESHOLD and maCheck >= MA_THRESHOLD:
-                signal_coins[pair] = pair
-                if FULL_LOG:
-                    print(f'Custsignalmod: Signal detected on {pair} at {oscCheck}/{len(OSC_INDICATORS)} oscillators and {maCheck}/{len(MA_INDICATORS)} moving averages.')
-                with open('signals/custsignalmod.exs','a+') as f:
-                    f.write(pair + '\n')
+            signal_coins[pair] = pair
+            if FULL_LOG:
+                print(
+                    f"Custsignalmod: Signal detected on {pair} at {oscCheck}/{len(OSC_INDICATORS)} oscillators and {maCheck}/{len(MA_INDICATORS)} moving averages."
+                )
+            with open("signals/custsignalmod.exs", "a+") as f:
+                f.write(pair + "\n")
 
     return signal_coins
+
 
 def do_work():
     signal_coins = {}
     pairs = {}
 
-    pairs=[line.strip() for line in open(TICKERS)]
+    pairs = [line.strip() for line in open(TICKERS)]
     for line in open(TICKERS):
-        pairs=[line.strip() + PAIR_WITH for line in open(TICKERS)]
+        pairs = [line.strip() + PAIR_WITH for line in open(TICKERS)]
 
     while True:
-        if not threading.main_thread().is_alive(): exit()
+        if not threading.main_thread().is_alive():
+            exit()
         signal_coins = analyze(pairs)
         if FULL_LOG:
-            print(f'Custsignalmod: Analyzing {len(pairs)} coins')
-            print(f'Custsignalmod: {len(signal_coins)} coins above {OSC_THRESHOLD}/{len(OSC_INDICATORS)} oscillators and {MA_THRESHOLD}/{len(MA_INDICATORS)} moving averages Waiting {TIME_TO_WAIT} minutes for next analysis.')
-        time.sleep((TIME_TO_WAIT*60))
+            print(f"Custsignalmod: Analyzing {len(pairs)} coins")
+            print(
+                f"Custsignalmod: {len(signal_coins)} coins above {OSC_THRESHOLD}/{len(OSC_INDICATORS)} oscillators and {MA_THRESHOLD}/{len(MA_INDICATORS)} moving averages Waiting {TIME_TO_WAIT} minutes for next analysis."
+            )
+        time.sleep((TIME_TO_WAIT * 60))

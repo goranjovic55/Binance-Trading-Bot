@@ -1,6 +1,5 @@
 # These options apply to how the script will operate.
 script_options:
-
   # Setting TEST_MODE to False will use REAL funds, use at your own risk!
   TEST_MODE: True
 
@@ -11,17 +10,17 @@ script_options:
   LOG_TRADES: True
 
   # Specify the location of log file (default: trades.txt).
-  LOG_FILE: 'trades.txt'
+  LOG_FILE: "trades.txt"
 
   # gogos MOD Telegram bot integration
   BOT_MESSAGE_REPORTS: True
 
   # Bot id for BOT_MESSAGE_REPORTS on discord
   # Give your bot a recognizable name so everyone understands exactly what going on
-  BOT_ID: '@>>'
+  BOT_ID: "@>>"
 
   # Should session status be reported detailed or simple? Options: 'detailed' 'console'
-  SESSION_REPORT_STYLE: 'detailed'
+  SESSION_REPORT_STYLE: "detailed"
 
   # How often the bot reports session status to console, in seconds.
   REPORT_FREQUENCY: 5
@@ -29,10 +28,8 @@ script_options:
   # show/hide additional data on bot screen. False = silent, True = spam (debug mode).
   VERBOSE_MODE: False
 
-
 # These options apply to the trading methods the script executes
 trading_options:
-
   # select your base currency to use for trading pairs (for example USDT, ETH, BTC)
   PAIR_WITH: ETH
 
@@ -73,10 +70,10 @@ trading_options:
 
   # TICKERS: Use custom 'tickers.txt' list for filtering pairs?
   CUSTOM_LIST: True
-  TICKERS_LIST: 'tickers/tickers_ETH.txt'
+  TICKERS_LIST: "tickers/tickers_ETH.txt"
 
   # Name of list that cointains currencies to be ignored
-  IGNORE_LIST: 'ignorelist.txt'
+  IGNORE_LIST: "ignorelist.txt"
 
   # the amount of time in MINUTES to calculate the difference from the current price (minimum: 1).
   # it will also affect minimum and maximum time difference multiplied or divided by DYNAMIC_MIN_MAX
@@ -117,7 +114,7 @@ trading_options:
   DYNAMIC_WIN_LOSS_UP: 10
 
   # this is % by wich we subtract all settings like stoploss takeprofit trailing take profit etc if we loose
-  DYNAMIC_WIN_LOSS_DOWN : 10
+  DYNAMIC_WIN_LOSS_DOWN: 10
 
   # this is a fixed % for dynamic change in price calculation
   DYNAMIC_CHANGE_IN_PRICE: 10
@@ -139,8 +136,7 @@ trading_options:
 
   # MODS SETTINGS_STRING
   PAUSEBOTMOD_THRESHOLD: 14
-  SIGNALSAMPLEMOD_THRESHOLD : 18
-
+  SIGNALSAMPLEMOD_THRESHOLD: 18
 
   # multiplier for HOLDING_TIME_LIMIT wich gives actual TIME_DIFFERENCE * HOLDING_TIME_LIMIT_MULTIPLIER when to start lowering STOP_LOSS
   # holding take profit is % at wich we sell if holding time limit is passed defualt is 1 and after one timeperiod we will sell on holding take profit
@@ -158,7 +154,7 @@ trading_options:
 
   # option by type of list creation :
   #  - edgesforledges : ebd of url ex : innovation => fiat/usdt/innovation-zone
-  LIST_CREATE_TYPE_OPTION : fiat/usdt/innovation-zone
+  LIST_CREATE_TYPE_OPTION: fiat/usdt/innovation-zone
 
   # list sorting by 'volume' or by 'price_change'
   SORT_LIST_TYPE: volume
