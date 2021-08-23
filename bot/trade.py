@@ -35,6 +35,9 @@ from bot.settings import *
 from bot.grab import *
 from bot.report import *
 
+# this function puts coins that trigger a price change buy to trailing buy list then it follows and when coins trigger
+# a buy signal aka when they price passes TRAILING_BUY_THRESHOLD they are sent to buy list wich is passed to rest of buy procedures
+
 def trailing_buy(volatile_coins: Dict[str, float]) -> Dict[str, float]:
 
     global trail_buy_historical
@@ -72,6 +75,8 @@ def trailing_buy(volatile_coins: Dict[str, float]) -> Dict[str, float]:
     print(f"BUY_VOLATILE_COINS: {buy_volatile_coins}")
 
     return buy_volatile_coins
+
+# this functions makes various trade calculations and writes them to global structures wich get passed to other funtions
 
 def trade_calculations(type: str, priceChange: float) -> None:
 
@@ -122,7 +127,7 @@ def convert_volume() -> Tuple[Dict, Dict]:
 
     '''Converts the volume given in QUANTITY from USDT to the each coin's volume'''
 
-    #added feature to buy only if percent and signal triggers uses PERCENT_SIGNAL_BUY true or false from config
+#added feature to buy only if percent and signal triggers uses PERCENT_SIGNAL_BUY true or false from config
     if PERCENT_SIGNAL_BUY == True:
        volatile_coins, number_of_coins, last_price = wait_for_price('percent_mix_signal')
     else:
@@ -151,13 +156,13 @@ def coin_volume_precision(coin : str, volume: float, price: float) -> float:
     minQty = 0
     minNotional = 0
 
-    # Find the correct step size for each coin
-    # max accuracy for BTC for example is 6 decimal points
-    # while XRP is only 1
+# Find the correct step size for each coin
+# max accuracy for BTC for example is 6 decimal points
+# while XRP is only 1
     try:
         coin_info = session_struct['symbol_info'][coin]
     except KeyError:
-        # not retrieved at startup, try again
+# not retrieved at startup, try again
         try:
             coin_info = client.get_symbol_info(coin)
         except Exception as e:
@@ -199,7 +204,7 @@ def buy() -> Tuple[Dict, Dict, Dict]:
         if UNIQUE_BUYS and (coin in coins_bought):
             BUYABLE = False
 
-        # only buy if the there are no active trades on the coin
+# only buy if the there are no active trades on the coin
         if BUYABLE:
             print(f"{txcolors.BUY}Preparing to buy {volume[coin]} {coin}{txcolors.DEFAULT}")
 
@@ -256,7 +261,7 @@ def sell_coins() -> Dict:
 
         # check that the price is above the take profit and readjust coinStopLoss and coinTakeProfit accordingly if trialing stop loss used
         if lastPrice > coinTakeProfit and USE_TRAILING_STOP_LOSS:
-            # increasing coinTakeProfit by TRAILING_TAKE_PROFIT (essentially next time to readjust coinStopLoss)
+        # increasing coinTakeProfit by TRAILING_TAKE_PROFIT (essentially next time to readjust coinStopLoss)
             coins_bought[coin]['take_profit'] = priceChange + settings_struct['TRAILING_TAKE_PROFIT']
             coins_bought[coin]['stop_loss'] = coins_bought[coin]['take_profit'] - settings_struct['TRAILING_STOP_LOSS']
             if DEBUG: print(f"{coin} TP reached, adjusting TP {coins_bought[coin]['take_profit']:.{decimals()}f} and SL {coins_bought[coin]['stop_loss']:.{decimals()}f} accordingly to lock-in profit")
@@ -368,12 +373,12 @@ def order_coin(coin: str, order: str, lastPrice: float, volume: float) -> Dict:
         )
 
     transactionInfo = {}
-    # adding order fill extractions here
-    #
-    # just to explain what I am doing here:
-    # Market orders are not always filled at one price, we need to find the averages of all 'parts' (fills) of this order.
-    #
-    # reset other variables to 0 before use
+# adding order fill extractions here
+#
+# just to explain what I am doing here:
+# Market orders are not always filled at one price, we need to find the averages of all 'parts' (fills) of this order.
+#
+# reset other variables to 0 before use
     FILLS_TOTAL = 0
     FILLS_QTY = 0
     FILLS_QTY_FEE = 0
@@ -411,7 +416,7 @@ def order_coin(coin: str, order: str, lastPrice: float, volume: float) -> Dict:
 
         # quantity of fills * price
         FILLS_TOTAL += (FILL_PRICE * FILL_QTY)
-        # add to running total of fills quantity
+# add to running total of fills quantity
         FILLS_QTY += FILL_QTY
 
     # calculate average fill price:

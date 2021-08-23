@@ -61,7 +61,7 @@ def external_signals() -> Dict[str, str]:
     external_list = {}
     signals = {}
 
-    # check directory and load pairs from files into external_list
+# check directory and load pairs from files into external_list
     signals = glob.glob("signals/*.exs")
     for filename in signals:
         for line in open(filename):
@@ -122,9 +122,9 @@ def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
 
     current_time_minutes = float(round(time.time()))/60
 
-    #first time we just skip untill we find a way for historic fata to be grabbed here
+#first time we just skip untill we find a way for historic fata to be grabbed here
     if session_struct['price_timedelta'] == 0: session_struct['price_timedelta'] = current_time_minutes
-    #we give local variable value of time that we use for checking to grab prices again
+#we give local variable value of time that we use for checking to grab prices again
     price_timedelta_value = session_struct['price_timedelta']
 
     #if historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'] > datetime.now() - timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)):
@@ -138,7 +138,7 @@ def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
     if session_struct['price_timedelta'] < current_time_minutes - round(settings_struct['TIME_DIFFERENCE']):
 
        #print(f'GET PRICE TRIGGERED !!!!! PRICE_TIMEDELTA: {price_timedelta_value} - TIME_DIFFERENCE: {TIME_DIFFERENCE}')
-       # retrieve latest prices
+# retrieve latest prices
        get_price(add_to_historical=True)
        externals = external_signals()
        session_struct['price_timedelta'] = current_time_minutes
@@ -150,14 +150,14 @@ def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
 
 
        if session_struct['prices_grabbed'] == True:
-          # calculate the difference in prices
+# calculate the difference in prices
 
           for coin in historical_prices[hsp_head]:
-             # Verify if coin doesn't appear
+# Verify if coin doesn't appear
               try:
                 for x in historical_prices:
                   if coin not in x:
-                    raise 
+                    raise
               except:
                 continue
 
@@ -178,14 +178,14 @@ def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
           if coins_up != 0: session_struct['market_resistance'] = session_struct['market_resistance'] / coins_up
           if coins_down != 0: session_struct['market_support'] = -session_struct['market_support'] / coins_down
 
-       # calculate the difference in prices
+# calculate the difference in prices
        for coin in historical_prices[hsp_head]:
 
-           # Verify if coin doesn't appear
+# Verify if coin doesn't appear
            try:
                for x in historical_prices:
                    if coin not in x:
-                       raise 
+                       raise
            except:
                continue
 
@@ -197,7 +197,7 @@ def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
 
            if type == 'percent_mix_signal':
 
-              # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
+# each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
               if threshold_check > settings_struct['CHANGE_IN_PRICE_MIN'] and threshold_check < settings_struct['CHANGE_IN_PRICE_MAX']:
 
                   #if os.path.exists('signals/nigec_custsignalmod.exs') or os.path.exists('signals/djcommie_custsignalmod.exs') or os.path.exists('signals/firewatch_signalsample.exs'):
@@ -209,7 +209,7 @@ def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
                         # print(f'EXCOIN: {excoin} == COIN: {coin}')
                          if coin not in volatility_cooloff:
                             volatility_cooloff[coin] = datetime.now() - timedelta(minutes=round(settings_struct['TIME_DIFFERENCE']))
-                         # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
+# only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
                          if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=round(settings_struct['TIME_DIFFERENCE'])):
                             volatility_cooloff[coin] = datetime.now()
                             if session_struct['trade_slots'] + len(volatile_coins) < TRADE_SLOTS or TRADE_SLOTS == 0:
@@ -221,13 +221,13 @@ def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
 
            if type == 'percent_and_signal':
 
-               # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
+# each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than TRADE_SLOTS is not reached.
                if threshold_check > settings_struct['CHANGE_IN_PRICE_MIN'] and threshold_check < settings_struct['CHANGE_IN_PRICE_MAX']:
 
                    if coin not in volatility_cooloff:
                        volatility_cooloff[coin] = datetime.now() - timedelta(minutes=round(settings_struct['TIME_DIFFERENCE']))
 
-                   # only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
+# only include coin as volatile if it hasn't been picked up in the last TIME_DIFFERENCE minutes already
                    if datetime.now() >= volatility_cooloff[coin] + timedelta(minutes=round(settings_struct['TIME_DIFFERENCE'])):
                        volatility_cooloff[coin] = datetime.now()
 

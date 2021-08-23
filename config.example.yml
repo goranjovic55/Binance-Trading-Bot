@@ -85,7 +85,7 @@ trading_options:
 
   # Number of times to check for TP/SL during each TIME_DIFFERENCE (minimum: 1).
   # Don't spam the Binance API, you will be banned (max 1200 requests per minute per IP).
-  RECHECK_INTERVAL: 1
+  RECHECK_INTERVAL: 5
 
   # the difference in % between the first and second checks for the price.
   # CHANGE_IN_PRICE is a range because we want more precise pickings
@@ -96,13 +96,15 @@ trading_options:
   STOP_LOSS: 3
 
   # define in % when to take profit on a profitable coin.
-  TAKE_PROFIT: 0.5
+  TAKE_PROFIT: 0.3
 
   # whether to use trailing stop loss or not; default is True
   USE_TRAILING_STOP_LOSS: True
 
   # when hit TAKE_PROFIT, move STOP_LOSS to TRAILING_STOP_LOSS percentage points below TAKE_PROFIT hence locking in profit
   # when hit TAKE_PROFIT, move TAKE_PROFIT up by TRAILING_TAKE_PROFIT percentage points
+  # when hit TRAILING_BUY_THRESHOLD buy coin that was in trailing buy list
+
   TRAILING_STOP_LOSS: 0.6
   TRAILING_TAKE_PROFIT: .01
   TRAILING_BUY_THRESHOLD: 0.01
@@ -120,8 +122,11 @@ trading_options:
   # this is a fixed % for dynamic change in price calculation
   DYNAMIC_CHANGE_IN_PRICE: 10
 
-  #this is a coeficient we use to determine max an min TIME_DIFFERENCE in wich we let bot work
-  DYNAMIC_MIN_MAX: 10
+  # this is a coeficient we use to determine max an min TIME_DIFFERENCE in wich we let bot work
+  # including hard caps on STOPLOSS, TRAILING_STOP_LOSS, TIME_DIFFERENCE and HOLDING_PRICE_THRESHOLD
+  # example: MIN=STOPLOSS/DYNAMIC_MIN_MAX, MAX=STOPLOSS * DYNAMIC_MIN_MAX
+  # this sets range in wich our dynamics work!!!
+  DYNAMIC_MIN_MAX: 3
 
   # this is minimum price % we want to sell above if max holding time is up (this was added to cut loses if coins are stale)
   HOLDING_PRICE_THRESHOLD: 0.3
@@ -129,7 +134,7 @@ trading_options:
   # activate all stop losses on pausebot mod trigger
   STOP_LOSS_ON_PAUSE: False
 
-  # mix % and signals for Buying
+  # mix % and signals for Buying aka buy only if both are TRUE
   PERCENT_SIGNAL_BUY: False
 
   # MODS SETTINGS_STRING
@@ -153,17 +158,17 @@ trading_options:
   LIST_AUTOCREATE: True
 
   # type of list creation :
-  #  - binance
-  #  - tradingview 
-  #  - edgesforledges : http://edgesforledges.com/watchlists/binance
-  LIST_CREATE_TYPE: edgesforledges
+  #  - binance / binance
+  #  - tradingview / tradingview
+  #  - edgesforledges : http://edgesforledges.com/watchlists/binance / create_edge
+  LIST_CREATE_TYPE: binance
 
   # option by type of list creation :
   #  - edgesforledges : ebd of url ex : innovation => fiat/usdt/innovation-zone
   LIST_CREATE_TYPE_OPTION : fiat/usdt/innovation-zone
 
   # list sorting by 'volume' or by 'price_change'
-  SORT_LIST_TYPE: price_change
+  SORT_LIST_TYPE: volume
 
   SIGNALLING_MODULES:
     - modules.pausebotmod

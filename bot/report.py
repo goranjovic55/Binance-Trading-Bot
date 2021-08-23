@@ -34,9 +34,11 @@ def txcolor(input: float) -> str:
     else:
         return txcolors.DEFAULT
 
+# code for showing discord avatar based on crypto coin type
+
 def discord_avatar() -> str:
-    # Custom coin avatar dependant on PAIR_WITH
-    # Fallback image is a nice Binance logo, yay!
+# Custom coin avatar dependant on PAIR_WITH
+# Fallback image is a nice Binance logo, yay!
     DISCORD_AVATAR =  "https://i.imgur.com/w1vS5Oc.png"
     if PAIR_WITH == 'ETH':
         DISCORD_AVATAR =  "https://i.imgur.com/L9Txc9F.jpeg"
@@ -46,6 +48,8 @@ def discord_avatar() -> str:
         DISCORD_AVATAR =  "https://i.imgur.com/VyOdlRS.jpeg"
     return DISCORD_AVATAR
 
+# code for fixing errors with multiple coins buy not writing to trades.txt
+
 def report_add(line: str, message: bool = False) -> None:
     if report_struct['report']  != "":
         report_struct['report'] += "\n"
@@ -53,6 +57,9 @@ def report_add(line: str, message: bool = False) -> None:
     report_struct['log'] = True
     if message:
         report_struct['message'] = True
+
+# code for generating reports that will print current bot state upon sell to telegram or discord
+# to console and to logfile
 
 def report(type: str, reportline: str) -> None:
 
@@ -99,7 +106,7 @@ def report(type: str, reportline: str) -> None:
     else:
         WIN_LOSS_PERCENT = 100
 
-    # adding all the stats together:
+# adding all the stats together:
     report_string= 'Trade slots: '+str(session_struct['trade_slots'])+'/'\
                    +str(TRADE_SLOTS)+' ('+str(CURRENT_EXPOSURE_TRIM)+'/'\
                    +str(INVESTMENT_TOTAL_TRIM)+' '+PAIR_WITH+') | Session: '\
@@ -111,12 +118,12 @@ def report(type: str, reportline: str) -> None:
                    +str(timedelta(seconds=(int(session_struct['session_uptime']/1000))))
 
 
-    #gogo MOD todo more verbose having all the report things in it!!!!!
+#gogo MOD todo more verbose having all the report things in it!!!!!
     if type == 'console':
         # print(f"{txcolors.NOTICE}>> Using {len(coins_bought)}/{TRADE_SLOTS} trade slots. OT:{UNREALISED_PERCENT:.2f}%> SP:{session_profit:.2f}%> Est:{TOTAL_GAINS:.{decimals()}f} {PAIR_WITH}> W:{win_trade_count}> L:{loss_trade_count}> IT:{INVESTMENT:.{decimals()}f} {PAIR_WITH}> CE:{CURRENT_EXPOSURE:.{decimals()}f} {PAIR_WITH}> NB:{NEW_BALANCE:.{decimals()}f} {PAIR_WITH}> IV:{investment_value:.2f} {exchange_symbol}> IG:{INVESTMENT_GAIN:.2f}%> IVG:{investment_value_gain:.{decimals()}f} {exchange_symbol}> {reportline} <<{txcolors.DEFAULT}")
         print(f"{report_string}")
 
-    #More detailed/verbose report style
+#More detailed/verbose report style
     if type == 'detailed':
         print(
             f"{txcolors.NOTICE}>> Using {session_struct['trade_slots']}/{TRADE_SLOTS} trade slots. << \n"
@@ -168,6 +175,7 @@ def report(type: str, reportline: str) -> None:
               f"{str(timedelta(seconds=(int(session_struct['session_uptime']/1000))))}"
             )
 
+# sending messages report to telegram and or discord channel
 
     if type == 'message' or report_struct['message']:
         TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, TEST_DISCORD_WEBHOOK, LIVE_DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
@@ -210,6 +218,8 @@ def report_update() -> None :
     if time.time() - session_struct['last_report_time'] > REPORT_FREQUENCY:
         report(SESSION_REPORT_STYLE,report_struct['report'])
         report_struct['report'] = ""
+        
+# code that logs settings to scv file for creating graphs
 
 def csv_log(interval: float = 60) -> None:
     global session_struct, trading_struct, settings_struct

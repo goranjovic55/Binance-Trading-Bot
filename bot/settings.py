@@ -46,6 +46,7 @@ global trail_buy_coins
 trail_buy_coins = {}
 trail_buy_historical = {}
 
+# structure used for session variable for saving and loading
 session_struct = {
      'session_profit': 0,
      'unrealised_percent': 0,
@@ -90,6 +91,7 @@ report_struct = {
       'log': False
 }
 
+# creating git commit number so we can use it in reports to see wich bot version is running
 def get_git_commit_number() -> str:
 
     try:
@@ -101,17 +103,17 @@ def get_git_commit_number() -> str:
     return git_commit_count
 
 def decimals() -> int:
-    # set number of decimals for reporting fractions
+# set number of decimals for reporting fractions
     if is_fiat():
         return 2
     else:
         return 8
 
 def is_fiat() -> bool:
-    # check if we are using a fiat as a base currency
+# check if we are using a fiat as a base currency
     global hsp_head
     PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
-    #list below is in the order that Binance displays them, apologies for not using ASC order but this is easier to update later
+#list below is in the order that Binance displays them, apologies for not using ASC order but this is easier to update later
     fiats = ['USDT', 'BUSD', 'AUD', 'BRL', 'EUR', 'GBP', 'RUB', 'TRY', 'TUSD', \
              'USDC', 'PAX', 'BIDR', 'DAI', 'IDRT', 'UAH', 'NGN', 'VAI', 'BVND']
 
@@ -182,6 +184,7 @@ QUANTITY = INVESTMENT/TRADE_SLOTS
 
 HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60 * 1000) * HOLDING_INTERVAL_LIMIT
 
+# structure used for settings variables and feed for bot settings
 settings_struct = {
       'TIME_DIFFERENCE': TIME_DIFFERENCE,
       'RECHECK_INTERVAL': RECHECK_INTERVAL,
@@ -198,6 +201,7 @@ settings_struct = {
       'TRAILING_BUY_THRESHOLD': TRAILING_BUY_THRESHOLD
 }
 
+# structure used for trading variables during runtime
 trading_struct = {
       'holding_timeout_dynamic': 'up',
       'holding_timeout_sell': 'none',
@@ -220,11 +224,11 @@ DEBUG = False
 
 if DEBUG_SETTING or args.debug:
     DEBUG = True
+
 # Load creds for correct environment
 access_key, secret_key = load_correct_creds(parsed_creds)
 
 # Telegram_Bot enabled? # **added by*Coding60plus
-
 if BOT_MESSAGE_REPORTS:
     TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID, TEST_DISCORD_WEBHOOK, LIVE_DISCORD_WEBHOOK = load_telegram_creds(parsed_creds)
 
