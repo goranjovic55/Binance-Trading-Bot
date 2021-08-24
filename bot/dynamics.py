@@ -101,7 +101,10 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
 
 # this part of code jumps to different part of timedifference scale this is to protect from consecutive losses
 # and to change context so bot goes from 5 minute range to 50 minute range for example if those were corresponding
-# scale values, it jumps on 2 consecutive losses
+# scale values, it jumps on TRADE_SLOTS / DYNAMIC_MIN_MAX consecutive losses
+# also it counts consecutive wins and future implementation of modifiyng dynamic winloss up and down wil be based on this
+# idea is to lower dynamic winloss up for example when we are winning so we can cut our losses upon sudden loss aftere win streak
+# if market turns upside down on us we will protect atuomatically from loosing streak that way
 
         if trading_struct['consecutive_loss'] > (TRADE_SLOTS / DYNAMIC_MIN_MAX):
            if settings_struct['TIME_DIFFERENCE'] > TIME_DIFFERENCE:
@@ -123,30 +126,30 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
 # if we loose they get less so we protect from consecutive losses and we are more "brave" on consecutive wins
 
         if type == 'performance_adjust_up':
-            settings_struct['STOP_LOSS'] = settings_struct['STOP_LOSS'] + (settings_struct['STOP_LOSS'] * DYNAMIC_WIN_LOSS_UP) / 100
-            settings_struct['TAKE_PROFIT'] = settings_struct['TAKE_PROFIT'] + (settings_struct['TAKE_PROFIT'] * DYNAMIC_WIN_LOSS_UP) / 100
-            settings_struct['TRAILING_STOP_LOSS'] = settings_struct['TRAILING_STOP_LOSS'] + (settings_struct['TRAILING_STOP_LOSS'] * DYNAMIC_WIN_LOSS_UP) / 100
-            settings_struct['CHANGE_IN_PRICE_MAX'] = settings_struct['CHANGE_IN_PRICE_MAX'] - (settings_struct['CHANGE_IN_PRICE_MAX'] * DYNAMIC_WIN_LOSS_UP) /100
-            settings_struct['CHANGE_IN_PRICE_MIN'] = settings_struct['CHANGE_IN_PRICE_MIN'] + (settings_struct['CHANGE_IN_PRICE_MIN'] * DYNAMIC_WIN_LOSS_UP) /100
-            settings_struct['DYNAMIC_CHANGE_IN_PRICE'] = settings_struct['DYNAMIC_CHANGE_IN_PRICE'] - (settings_struct['DYNAMIC_CHANGE_IN_PRICE'] * DYNAMIC_WIN_LOSS_UP) / 100 \
+            settings_struct['STOP_LOSS'] = settings_struct['STOP_LOSS'] + (settings_struct['STOP_LOSS'] * settings_struct['DYNAMIC_WIN_LOSS_UP']) / 100
+            settings_struct['TAKE_PROFIT'] = settings_struct['TAKE_PROFIT'] + (settings_struct['TAKE_PROFIT'] * settings_struct['DYNAMIC_WIN_LOSS_UP']) / 100
+            settings_struct['TRAILING_STOP_LOSS'] = settings_struct['TRAILING_STOP_LOSS'] + (settings_struct['TRAILING_STOP_LOSS'] * settings_struct['DYNAMIC_WIN_LOSS_UP']) / 100
+            settings_struct['CHANGE_IN_PRICE_MAX'] = settings_struct['CHANGE_IN_PRICE_MAX'] - (settings_struct['CHANGE_IN_PRICE_MAX'] * settings_struct['DYNAMIC_WIN_LOSS_UP']) /100
+            settings_struct['CHANGE_IN_PRICE_MIN'] = settings_struct['CHANGE_IN_PRICE_MIN'] + (settings_struct['CHANGE_IN_PRICE_MIN'] * settings_struct['DYNAMIC_WIN_LOSS_UP']) /100
+            settings_struct['DYNAMIC_CHANGE_IN_PRICE'] = settings_struct['DYNAMIC_CHANGE_IN_PRICE'] - (settings_struct['DYNAMIC_CHANGE_IN_PRICE'] * settings_struct['DYNAMIC_WIN_LOSS_UP']) / 100 \
                                                          - (settings_struct['DYNAMIC_CHANGE_IN_PRICE'] * settings_struct['TIME_DIFFERENCE']) / 100
-            settings_struct['HOLDING_PRICE_THRESHOLD'] = settings_struct['HOLDING_PRICE_THRESHOLD'] + (settings_struct['HOLDING_PRICE_THRESHOLD'] * DYNAMIC_WIN_LOSS_UP) / 100
+            settings_struct['HOLDING_PRICE_THRESHOLD'] = settings_struct['HOLDING_PRICE_THRESHOLD'] + (settings_struct['HOLDING_PRICE_THRESHOLD'] * settings_struct['DYNAMIC_WIN_LOSS_UP']) / 100
             session_struct['dynamic'] = 'none'
 
-            print(f"{txcolors.NOTICE}>> DYNAMICS_UP Changing STOP_LOSS: {settings_struct['STOP_LOSS']:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} - TAKE_PROFIT: {settings_struct['TAKE_PROFIT']:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} - TRAILING_STOP_LOSS: {settings_struct['TRAILING_STOP_LOSS']:.2f}/{DYNAMIC_WIN_LOSS_UP:.2f} CIP:{settings_struct['CHANGE_IN_PRICE_MIN']:.4f}/{settings_struct['CHANGE_IN_PRICE_MAX']:.4f}/{DYNAMIC_WIN_LOSS_UP:.2f} HTL: {settings_struct['HOLDING_TIME_LIMIT']:.2f} TD: {settings_struct['TIME_DIFFERENCE']} RI: {settings_struct['RECHECK_INTERVAL']} <<{txcolors.DEFAULT}")
+            print(f"{txcolors.NOTICE}>> DYNAMICS_UP Changing STOP_LOSS: {settings_struct['STOP_LOSS']:.2f}/{settings_struct['DYNAMIC_WIN_LOSS_UP']:.2f} - TAKE_PROFIT: {settings_struct['TAKE_PROFIT']:.2f}/{settings_struct['DYNAMIC_WIN_LOSS_UP']:.2f} - TRAILING_STOP_LOSS: {settings_struct['TRAILING_STOP_LOSS']:.2f}/{settings_struct['DYNAMIC_WIN_LOSS_UP']:.2f} CIP:{settings_struct['CHANGE_IN_PRICE_MIN']:.4f}/{settings_struct['CHANGE_IN_PRICE_MAX']:.4f}/{settings_struct['DYNAMIC_WIN_LOSS_UP']:.2f} HTL: {settings_struct['HOLDING_TIME_LIMIT']:.2f} TD: {settings_struct['TIME_DIFFERENCE']} RI: {settings_struct['RECHECK_INTERVAL']} <<{txcolors.DEFAULT}")
 
         if type == 'performance_adjust_down':
-            settings_struct['STOP_LOSS'] = settings_struct['STOP_LOSS'] - (settings_struct['STOP_LOSS'] * DYNAMIC_WIN_LOSS_DOWN) / 100
-            settings_struct['TAKE_PROFIT'] = settings_struct['TAKE_PROFIT'] - (settings_struct['TAKE_PROFIT'] * DYNAMIC_WIN_LOSS_DOWN) / 100
-            settings_struct['TRAILING_STOP_LOSS'] = settings_struct['TRAILING_STOP_LOSS'] - (settings_struct['TRAILING_STOP_LOSS'] * DYNAMIC_WIN_LOSS_DOWN) / 100
-            settings_struct['CHANGE_IN_PRICE_MAX'] = settings_struct['CHANGE_IN_PRICE_MAX'] + (settings_struct['CHANGE_IN_PRICE_MAX'] * DYNAMIC_WIN_LOSS_DOWN) /100
-            settings_struct['CHANGE_IN_PRICE_MIN'] = settings_struct['CHANGE_IN_PRICE_MIN'] - (settings_struct['CHANGE_IN_PRICE_MIN'] * DYNAMIC_WIN_LOSS_DOWN) /100
-            settings_struct['DYNAMIC_CHANGE_IN_PRICE'] = settings_struct['DYNAMIC_CHANGE_IN_PRICE'] + (settings_struct['DYNAMIC_CHANGE_IN_PRICE'] * DYNAMIC_WIN_LOSS_DOWN) / 100 \
+            settings_struct['STOP_LOSS'] = settings_struct['STOP_LOSS'] - (settings_struct['STOP_LOSS'] * settings_struct['DYNAMIC_WIN_LOSS_DOWN']) / 100
+            settings_struct['TAKE_PROFIT'] = settings_struct['TAKE_PROFIT'] - (settings_struct['TAKE_PROFIT'] * settings_struct['DYNAMIC_WIN_LOSS_DOWN']) / 100
+            settings_struct['TRAILING_STOP_LOSS'] = settings_struct['TRAILING_STOP_LOSS'] - (settings_struct['TRAILING_STOP_LOSS'] * settings_struct['DYNAMIC_WIN_LOSS_DOWN']) / 100
+            settings_struct['CHANGE_IN_PRICE_MAX'] = settings_struct['CHANGE_IN_PRICE_MAX'] + (settings_struct['CHANGE_IN_PRICE_MAX'] * settings_struct['DYNAMIC_WIN_LOSS_DOWN']) /100
+            settings_struct['CHANGE_IN_PRICE_MIN'] = settings_struct['CHANGE_IN_PRICE_MIN'] - (settings_struct['CHANGE_IN_PRICE_MIN'] * settings_struct['DYNAMIC_WIN_LOSS_DOWN']) /100
+            settings_struct['DYNAMIC_CHANGE_IN_PRICE'] = settings_struct['DYNAMIC_CHANGE_IN_PRICE'] + (settings_struct['DYNAMIC_CHANGE_IN_PRICE'] * settings_struct['DYNAMIC_WIN_LOSS_DOWN']) / 100 \
                                                          + (settings_struct['DYNAMIC_CHANGE_IN_PRICE'] * settings_struct['TIME_DIFFERENCE']) / 100
-            settings_struct['HOLDING_PRICE_THRESHOLD'] = settings_struct['HOLDING_PRICE_THRESHOLD'] - (settings_struct['HOLDING_PRICE_THRESHOLD'] * DYNAMIC_WIN_LOSS_DOWN) / 100
+            settings_struct['HOLDING_PRICE_THRESHOLD'] = settings_struct['HOLDING_PRICE_THRESHOLD'] - (settings_struct['HOLDING_PRICE_THRESHOLD'] * settings_struct['DYNAMIC_WIN_LOSS_DOWN']) / 100
             session_struct['dynamic'] = 'none'
 
-            print(f"{txcolors.NOTICE}>> DYNAMICS_DOWN Changing STOP_LOSS: {settings_struct['STOP_LOSS']:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TAKE_PROFIT: {settings_struct['TAKE_PROFIT']:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} - TRAILING_STOP_LOSS: {settings_struct['TRAILING_STOP_LOSS']:.2f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} CIP:{settings_struct['CHANGE_IN_PRICE_MIN']:.4f}/{settings_struct['CHANGE_IN_PRICE_MAX']:.4f}/{DYNAMIC_WIN_LOSS_DOWN:.2f} HTL: {settings_struct['HOLDING_TIME_LIMIT']:.2f} TD: {settings_struct['TIME_DIFFERENCE']} RI: {settings_struct['RECHECK_INTERVAL']} <<{txcolors.DEFAULT}")
+            print(f"{txcolors.NOTICE}>> DYNAMICS_DOWN Changing STOP_LOSS: {settings_struct['STOP_LOSS']:.2f}/{settings_struct['DYNAMIC_WIN_LOSS_DOWN']:.2f} - TAKE_PROFIT: {settings_struct['TAKE_PROFIT']:.2f}/{settings_struct['DYNAMIC_WIN_LOSS_DOWN']:.2f} - TRAILING_STOP_LOSS: {settings_struct['TRAILING_STOP_LOSS']:.2f}/{settings_struct['DYNAMIC_WIN_LOSS_DOWN']:.2f} CIP:{settings_struct['CHANGE_IN_PRICE_MIN']:.4f}/{settings_struct['CHANGE_IN_PRICE_MAX']:.4f}/{settings_struct['DYNAMIC_WIN_LOSS_DOWN']:.2f} HTL: {settings_struct['HOLDING_TIME_LIMIT']:.2f} TD: {settings_struct['TIME_DIFFERENCE']} RI: {settings_struct['RECHECK_INTERVAL']} <<{txcolors.DEFAULT}")
 
 # this code makes our market resistance and support levels triggres for buys and also applyies our dynamics based on wins/losses
 
