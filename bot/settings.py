@@ -12,7 +12,7 @@ from helpers.parameters import (
 )
 
 # used to store trades and sell assets
-import json
+import simplejson
 
 # Load creds modules
 from helpers.handle_creds import (
@@ -24,6 +24,13 @@ from helpers.handle_creds import (
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
 from requests.exceptions import ReadTimeout, ConnectionError
+
+# Decimal better precision 
+from decimal import *
+# Truncate down always 
+getcontext().rounding = ROUND_DOWN
+# Precision like Binance
+DECIMAL_PRECISION = Decimal('.00000001')
 
 # for colourful logging to the console
 class txcolors:
@@ -48,40 +55,40 @@ trail_buy_historical = {}
 
 # structure used for session variable for saving and loading
 session_struct = {
-     'session_profit': 0,
-     'unrealised_percent': 0,
-     'market_price': 0,
-     'investment_value': 0,
-     'investment_value_gain': 0,
+     'session_profit': Decimal('0'),
+     'unrealised_percent': Decimal('0'),
+     'market_price': Decimal('0'),
+     'investment_value': Decimal('0'),
+     'investment_value_gain': Decimal('0'),
      'session_uptime': 0,
      'session_start_time': 0,
-     'closed_trades_percent': 0,
-     'win_trade_count': 0,
-     'loss_trade_count': 0,
-     'market_support': 0,
-     'market_resistance': 0,
+     'closed_trades_percent': Decimal('0'),
+     'win_trade_count': int(0),
+     'loss_trade_count': int(0),
+     'market_support': Decimal('0'),
+     'market_resistance': Decimal('0'),
      'dynamic': 'none',
      'sell_all_coins': False,
      'tickers_list_changed': False,
      'exchange_symbol': 'USDT',
-     'price_list_counter': 0,
-     'CURRENT_EXPOSURE': 0,
-     'TOTAL_GAINS': 0,
-     'NEW_BALANCE': 0,
-     'INVESTMENT_GAIN': 0,
+     'price_list_counter': int(0),
+     'CURRENT_EXPOSURE': Decimal('0'),
+     'TOTAL_GAINS': Decimal('0'),
+     'NEW_BALANCE': Decimal('0'),
+     'INVESTMENT_GAIN': Decimal('0'),
      'STARTUP': True,
      'LIST_AUTOCREATE': False,
      'symbol_info': {},
-     'price_timedelta': 0,
-     'trade_slots': 0,
+     'price_timedelta': Decimal('0'),
+     'trade_slots': int(0),
      'dynamics_state': 'up',
      'last_trade_won': 2,
      'last_report_time': 0,
      'session_start': False,
      'prices_grabbed': False,
      'reload_tickers_list': True,
-     'profit_to_trade_ratio': 0,
-     'bnb_current_price': 0,
+     'profit_to_trade_ratio': Decimal('0'),
+     'bnb_current_price': Decimal('0'),
      'tickers': []
 }
 
@@ -145,31 +152,31 @@ BOT_ID = parsed_config['script_options'].get('BOT_ID')
 
 # Load trading vars
 PAIR_WITH = parsed_config['trading_options']['PAIR_WITH']
-INVESTMENT = parsed_config['trading_options']['INVESTMENT']
+INVESTMENT = Decimal(str(parsed_config['trading_options']['INVESTMENT']))
 TRADE_SLOTS = parsed_config['trading_options']['TRADE_SLOTS']
 UNIQUE_BUYS = parsed_config['trading_options'].get('UNIQUE_BUYS')
 EXCLUDED_PAIRS = parsed_config['trading_options']['EXCLUDED_PAIRS']
 TIME_DIFFERENCE = parsed_config['trading_options']['TIME_DIFFERENCE']
 RECHECK_INTERVAL = parsed_config['trading_options']['RECHECK_INTERVAL']
-CHANGE_IN_PRICE_MIN = parsed_config['trading_options']['CHANGE_IN_PRICE_MIN']
-CHANGE_IN_PRICE_MAX = parsed_config['trading_options']['CHANGE_IN_PRICE_MAX']
-STOP_LOSS = parsed_config['trading_options']['STOP_LOSS']
-TAKE_PROFIT = parsed_config['trading_options']['TAKE_PROFIT']
+CHANGE_IN_PRICE_MIN = Decimal(str(parsed_config['trading_options']['CHANGE_IN_PRICE_MIN']))
+CHANGE_IN_PRICE_MAX = Decimal(str(parsed_config['trading_options']['CHANGE_IN_PRICE_MAX']))
+STOP_LOSS = Decimal(str(parsed_config['trading_options']['STOP_LOSS']))
+TAKE_PROFIT = Decimal(str(parsed_config['trading_options']['TAKE_PROFIT']))
 CUSTOM_LIST = parsed_config['trading_options']['CUSTOM_LIST']
 TICKERS_LIST = parsed_config['trading_options']['TICKERS_LIST']
 USE_TRAILING_STOP_LOSS = parsed_config['trading_options']['USE_TRAILING_STOP_LOSS']
-TRAILING_STOP_LOSS = parsed_config['trading_options']['TRAILING_STOP_LOSS']
-TRAILING_TAKE_PROFIT = parsed_config['trading_options']['TRAILING_TAKE_PROFIT']
-TRADING_FEE = parsed_config['trading_options']['TRADING_FEE']
+TRAILING_STOP_LOSS = Decimal(str(parsed_config['trading_options']['TRAILING_STOP_LOSS']))
+TRAILING_TAKE_PROFIT = Decimal(str(parsed_config['trading_options']['TRAILING_TAKE_PROFIT']))
+TRADING_FEE = Decimal(str(parsed_config['trading_options']['TRADING_FEE']))
 TRADING_FEE_BNB = parsed_config['trading_options']['TRADING_FEE_BNB']
 SIGNALLING_MODULES = parsed_config['trading_options']['SIGNALLING_MODULES']
-DYNAMIC_WIN_LOSS_UP = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_UP']
-DYNAMIC_WIN_LOSS_DOWN = parsed_config['trading_options']['DYNAMIC_WIN_LOSS_DOWN']
-DYNAMIC_CHANGE_IN_PRICE = parsed_config['trading_options']['DYNAMIC_CHANGE_IN_PRICE']
+DYNAMIC_WIN_LOSS_UP = Decimal(str(parsed_config['trading_options']['DYNAMIC_WIN_LOSS_UP']))
+DYNAMIC_WIN_LOSS_DOWN = Decimal(str(parsed_config['trading_options']['DYNAMIC_WIN_LOSS_DOWN']))
+DYNAMIC_CHANGE_IN_PRICE = Decimal(str(parsed_config['trading_options']['DYNAMIC_CHANGE_IN_PRICE']))
 DYNAMIC_SETTINGS = parsed_config['trading_options']['DYNAMIC_SETTINGS']
-DYNAMIC_MIN_MAX = parsed_config['trading_options']['DYNAMIC_MIN_MAX']
-HOLDING_PRICE_THRESHOLD = parsed_config['trading_options']['HOLDING_PRICE_THRESHOLD']
-TRAILING_BUY_THRESHOLD = parsed_config['trading_options']['TRAILING_BUY_THRESHOLD']
+DYNAMIC_MIN_MAX = Decimal(str(parsed_config['trading_options']['DYNAMIC_MIN_MAX']))
+HOLDING_PRICE_THRESHOLD = Decimal(str(parsed_config['trading_options']['HOLDING_PRICE_THRESHOLD']))
+TRAILING_BUY_THRESHOLD = Decimal(str(parsed_config['trading_options']['TRAILING_BUY_THRESHOLD']))
 STOP_LOSS_ON_PAUSE = parsed_config['trading_options']['STOP_LOSS_ON_PAUSE']
 PERCENT_SIGNAL_BUY = parsed_config['trading_options']['PERCENT_SIGNAL_BUY']
 SORT_LIST_TYPE = parsed_config['trading_options']['SORT_LIST_TYPE']
@@ -180,7 +187,7 @@ IGNORE_LIST = parsed_config['trading_options']['IGNORE_LIST']
 
 REPORT_FREQUENCY = parsed_config['script_options']['REPORT_FREQUENCY']
 HOLDING_INTERVAL_LIMIT = parsed_config['trading_options']['HOLDING_INTERVAL_LIMIT']
-QUANTITY = INVESTMENT/TRADE_SLOTS
+QUANTITY = Decimal(INVESTMENT/TRADE_SLOTS)
 
 HOLDING_TIME_LIMIT = (TIME_DIFFERENCE * 60 * 1000) * HOLDING_INTERVAL_LIMIT
 
@@ -207,18 +214,17 @@ settings_struct = {
 trading_struct = {
       'holding_timeout_dynamic': 'up',
       'holding_timeout_sell': 'none',
-      'lost_trade_percent': 0,
-      'won_trade_percent': 0,
-      'trade_support': 0,
-      'trade_resistance': 0,
+      'lost_trade_percent': Decimal('0'),
+      'won_trade_percent': Decimal('0'),
+      'trade_support': Decimal('0'),
+      'trade_resistance': Decimal('0'),
       'sum_won_trades': settings_struct['TRAILING_STOP_LOSS'],
       'sum_lost_trades': -settings_struct['STOP_LOSS'],
-      'max_holding_price': 0,
-      'min_holding_price': 0,
-      'sum_min_holding_price': 0,
-      'sum_max_holding_price': 0,
-      'consecutive_loss': 0,
-      'consecutive_win': 0,
+      'max_holding_price': Decimal('0'),
+      'min_holding_price': Decimal('0'),
+      'sum_min_holding_price': Decimal('0'),
+      'sum_max_holding_price': Decimal('0'),
+      'consecutive_loss': Decimal('0'),
       'stop_loss_adjust': False
 }
 
@@ -253,7 +259,7 @@ if api_ready is not True:
 
 # Telegram_Bot enabled? # **added by*Coding60plus
 if DEBUG:
-    print(f'Loaded config below\n{json.dumps(parsed_config, indent=4)}')
+    print(f'Loaded config below\n{simplejson.dumps(parsed_config, indent=4, use_decimal=True)}')
     print(f'Your credentials have been loaded from {creds_file}')
 
 # prevent including a coin in volatile_coins if it has already appeared there less than TIME_DIFFERENCE minutes ago
@@ -272,7 +278,7 @@ if TEST_MODE:
 # if saved coins_bought json file exists and it's not empty then load it
 if os.path.isfile(coins_bought_file_path) and os.stat(coins_bought_file_path).st_size!= 0:
     with open(coins_bought_file_path) as file:
-            coins_bought = json.load(file)
+            coins_bought = simplejson.load(file, use_decimal=True)
 
 # Initiate the conneciton error counters
 READ_TIMEOUT_COUNT=0
