@@ -115,9 +115,22 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
               settings_struct['TIME_DIFFERENCE'] = (TIME_DIFFERENCE * DYNAMIC_MIN_MAX) - (settings_struct['TIME_DIFFERENCE']/TIME_DIFFERENCE * TIME_DIFFERENCE * DYNAMIC_MIN_MAX)
               print(f"TIMEFRAME JUMP TRIGGERED! TIME_DIFFERENCE: {settings_struct['TIME_DIFFERENCE']}")
 
+           settings_struct['DYNAMIC_WIN_LOSS_DOWN'] = settings_struct['DYNAMIC_WIN_LOSS_DOWN'] - (settings_struct['DYNAMIC_WIN_LOSS_DOWN'] * DYNAMIC_WIN_LOSS_DOWN) / 100
+           settings_struct['DYNAMIC_WIN_LOSS_UP'] = settings_struct['DYNAMIC_WIN_LOSS_UP'] + (settings_struct['DYNAMIC_WIN_LOSS_UP'] * DYNAMIC_WIN_LOSS_UP) / 100
+
            trading_struct['consecutive_loss'] = 0
 
+# when we have consecutive wins we lower our dynamic winloss up multiplier and we get our down multiplier higher so we react with more gain once market turns
+# in different direction aka we won 10 trades and 4 of them are in a row so our dynamics will get our stoploss higher and all other settings
+# but if we loose in this condition losses can be havey if market turned downtrend on us so we up the gain on losses on every win and once we loose we
+# respond with more force and we cut our losses more forcefully, also if we are on a loosing streak and we win we will up our dynamics multiplier more forcefully etc
+# this is a bit experimental and needs testing
+
         if trading_struct['consecutive_win'] > (TRADE_SLOTS / DYNAMIC_MIN_MAX):
+
+           settings_struct['DYNAMIC_WIN_LOSS_DOWN'] = settings_struct['DYNAMIC_WIN_LOSS_DOWN'] + (settings_struct['DYNAMIC_WIN_LOSS_DOWN'] * DYNAMIC_WIN_LOSS_DOWN) / 100
+           settings_struct['DYNAMIC_WIN_LOSS_UP'] = settings_struct['DYNAMIC_WIN_LOSS_UP'] - (settings_struct['DYNAMIC_WIN_LOSS_UP'] * DYNAMIC_WIN_LOSS_UP) / 100
+
            trading_struct['consecutive_win'] = 0
 
         #print(f'{txcolors.NOTICE}>> TRADE_WON: {session_struct['last_trade_won']} and DYNAMICS_STATE: {session_struct['dynamics_state']} <<<{txcolors.DEFAULT}')
