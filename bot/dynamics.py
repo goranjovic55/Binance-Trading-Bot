@@ -70,15 +70,15 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
 
 # this part checks to see if last trade was a win if it was it checks to see what was previous dynamics state and if it was up
 # it will go up with TIMEDIFFERENCE by % percent and if it was down it will go down with it, also it will TRIGGER
-# all other settings adding % on every win
+# all other settings adding % on every win, also timedifference % applied is lowered by TIMEDIFFERNCE % on every consecutive win/loss trigger
 
         if session_struct['last_trade_won'] == True:
            if session_struct['dynamics_state'] == 'up':
-              settings_struct['TIME_DIFFERENCE'] = settings_struct['TIME_DIFFERENCE'] + (settings_struct['TIME_DIFFERENCE'] * DYNAMIC_WIN_LOSS_UP) /100
+              settings_struct['TIME_DIFFERENCE'] = settings_struct['TIME_DIFFERENCE'] + (settings_struct['TIME_DIFFERENCE'] * settings_struct['DYNAMIC_WIN_LOSS_UP']) /100
               session_struct['dynamics_state'] = 'up'
 
            if session_struct['dynamics_state'] == 'down':
-              settings_struct['TIME_DIFFERENCE'] = settings_struct['TIME_DIFFERENCE'] - (settings_struct['TIME_DIFFERENCE'] * DYNAMIC_WIN_LOSS_UP) /100
+              settings_struct['TIME_DIFFERENCE'] = settings_struct['TIME_DIFFERENCE'] - (settings_struct['TIME_DIFFERENCE'] * settings_struct['DYNAMIC_WIN_LOSS_DOWN']) /100
               session_struct['dynamics_state'] = 'down'
 
            session_struct['last_trade_won'] = 'none'
