@@ -94,6 +94,10 @@ def get_price(add_to_historical: bool = True) -> Dict:
             continue
         break
 
+    # current price BNB pair BNB ;-) 1 = 1 
+    if PAIR_WITH == 'BNB':
+        session_struct['bnb_current_price'] = Decimal('1')
+
     for coin in prices:
         # Get Current Bnb Price to fee calculation
         if coin['symbol'] == 'BNB' + PAIR_WITH:
