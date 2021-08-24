@@ -93,7 +93,12 @@ def trade_calculations(type: str, priceChange: float) -> None:
     if type == 'sell':
 
        if priceChange > 0:
+
+          if session_struct['last_trade_won'] == True:
+             trading_struct['consecutive_win'] += 1
+
           session_struct['win_trade_count'] = session_struct['win_trade_count'] + 1
+
           session_struct['last_trade_won'] = True
           trading_struct['consecutive_loss'] = 0
 
@@ -104,6 +109,7 @@ def trade_calculations(type: str, priceChange: float) -> None:
 
            session_struct['loss_trade_count'] = session_struct['loss_trade_count'] + 1
            session_struct['last_trade_won'] = False
+           trading_struct['consecutive_win'] = 0
 
            if session_struct['last_trade_won'] == False:
               trading_struct['consecutive_loss'] += 1
@@ -210,12 +216,12 @@ def buy() -> Tuple[Dict, Dict, Dict]:
 
             REPORT = str(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
 
-            try: 
+            try:
                 orders[coin] = order_coin(coin,SIDE_BUY,last_price[coin]['price'],volume[coin])
             except Exception as e:
                 print(f"{txcolors.SELL_LOSS}ERROR "+ SIDE_BUY + " " + coin + " " +str(e))
                 continue
- 
+
             # Log, announce, and report trade
             print('Order returned, saving order to file')
 
@@ -277,19 +283,19 @@ def sell_coins() -> Dict:
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
         ORDER = ""
-        if session_struct['sell_all_coins']: 
+        if session_struct['sell_all_coins']:
             ORDER =  "PAUSE_SELL"
-        if lastPrice < coinStopLoss: 
+        if lastPrice < coinStopLoss:
             ORDER =  "STOP_LOSS"
-        if lastPrice > coinTakeProfit and not USE_TRAILING_STOP_LOSS: 
+        if lastPrice > coinTakeProfit and not USE_TRAILING_STOP_LOSS:
             ORDER =  "TAKE_PROFIT"
-        if holding_timeout_sell_trigger: 
+        if holding_timeout_sell_trigger:
             ORDER =  "HOLDING_TIMEOUT"
 
         if ORDER != "":
             print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChange:.2f}% - Est: {(QUANTITY * priceChange) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
-            
-            try: 
+
+            try:
                 volume = coin_volume_precision(coin,coins_bought[coin]['volume'],lastPrice)
                 coins_sold[coin] = order_coin(coin,SIDE_SELL,lastPrice,volume)
             except Exception as e:
@@ -304,7 +310,7 @@ def sell_coins() -> Dict:
             volatility_cooloff[coin] = datetime.now()
 
             # Log trade
-            trade_profit = coins_sold[coin]['tradeWithFee'] - coins_bought[coin]['tradeWithFee'] 
+            trade_profit = coins_sold[coin]['tradeWithFee'] - coins_bought[coin]['tradeWithFee']
 
             trade_calculations('sell', priceChange)
 
@@ -333,10 +339,10 @@ def order_coin(coin: str, order: str, lastPrice: float, volume: float) -> Dict:
                 side = order,
                 type = ORDER_TYPE_MARKET,
                 quantity = volume
-            )                    
+            )
         # Simulate request... wait 100 ms ( bad condition )
         time.sleep(0.1)
-        # Simulate response 
+        # Simulate response
         if TRADING_FEE_BNB:
             commissionAsset = 'BNB'
             commission = lastPrice * volume * TRADING_FEE / 100 / session_struct['bnb_current_price']
@@ -344,7 +350,7 @@ def order_coin(coin: str, order: str, lastPrice: float, volume: float) -> Dict:
             if order == SIDE_BUY:
                 commissionAsset = coin[:len(coin) - len(PAIR_WITH)]
                 commission = volume * TRADING_FEE / 100
-            else: 
+            else:
                 commissionAsset = PAIR_WITH
                 commission = lastPrice * volume * TRADING_FEE / 100
         # Prepare Order Coin
@@ -361,7 +367,7 @@ def order_coin(coin: str, order: str, lastPrice: float, volume: float) -> Dict:
                     'commission':commission,
                     'commissionAsset':commissionAsset
                 }]
-            }             
+            }
     else:
         # try to create a real order
         order_details = client.create_order(
@@ -369,7 +375,7 @@ def order_coin(coin: str, order: str, lastPrice: float, volume: float) -> Dict:
             side = order,
             type = ORDER_TYPE_MARKET,
             quantity = volume,
-            newOrderRespType = "FULL"  
+            newOrderRespType = "FULL"
         )
 
     transactionInfo = {}
@@ -386,11 +392,11 @@ def order_coin(coin: str, order: str, lastPrice: float, volume: float) -> Dict:
     tradeWithFee = 0
     tradeWithoutFee = 0
     # loop through each 'fill':
-    for fills in order_details['fills']: 
+    for fills in order_details['fills']:
         FILL_PRICE = float(fills['price'])
         FILL_QTY = float(fills['qty'])
         FILL_FEE = float(fills['commission'])
-        
+
         # check if the fee was in BNB. If not, log a nice warning:
         if (fills['commissionAsset'] != 'BNB') and (TRADING_FEE_BNB) and (BNB_WARNING == 0):
             print(f"{txcolors.WARNING}BNB not used for trading fee, please...{txcolors.DEFAULT}")
@@ -402,13 +408,13 @@ def order_coin(coin: str, order: str, lastPrice: float, volume: float) -> Dict:
                 tradeWithFee += FILL_PRICE * FILL_QTY +  FILL_FEE * session_struct['bnb_current_price']
             else:
                 tradeWithFee += FILL_PRICE * FILL_QTY -  FILL_FEE * session_struct['bnb_current_price']
-        else: 
+        else:
             # Sell without BNB ?
             if fills['commissionAsset'] == PAIR_WITH:
                 tradeWithFee += FILL_PRICE * FILL_QTY - FILL_FEE
                 tradeWithoutFee += FILL_PRICE * FILL_QTY
             # Buy without BNB
-            else: 
+            else:
                 tradeWithFee += FILL_PRICE * FILL_QTY
                 tradeWithoutFee += FILL_PRICE * FILL_QTY - FILL_FEE * FILL_PRICE
             # Quantity Fee... !
@@ -428,8 +434,8 @@ def order_coin(coin: str, order: str, lastPrice: float, volume: float) -> Dict:
         'orderId': order_details['orderId'],
         'timestamp': order_details['transactTime'],
         'avgPrice': FILL_AVG,
-        # Real Volume without Fee when don't use BNB... sometime you loose more than 0.1 due to precision of volume coin 
-        # Example a coin can be only be in integer mode ... you can 1 off coin ... 
+        # Real Volume without Fee when don't use BNB... sometime you loose more than 0.1 due to precision of volume coin
+        # Example a coin can be only be in integer mode ... you can 1 off coin ...
         'volume': FILLS_QTY - FILLS_QTY_FEE,
         'tradeWithFee': tradeWithFee,
         'tradeWithoutFee': tradeWithoutFee
@@ -457,7 +463,7 @@ def update_portfolio(orders: Dict, last_price: Dict, volume: Dict) -> Dict:
             'stop_loss': -settings_struct['STOP_LOSS'],
             'take_profit': settings_struct['TAKE_PROFIT'],
             }
-        # Multi Buy Same Coin ? 
+        # Multi Buy Same Coin ?
         if coin in coins_bought:
             coin_bought['volume'] += coins_bought[coin]['volume']
             coin_bought['avgPrice'] = ( orders[coin]['avgPrice'] * orders[coin]['volume'] + coins_bought[coin]['bought_at'] * coins_bought[coin]['volume'] ) / coin_bought['volume']
@@ -481,7 +487,7 @@ def update_trade_slot() -> None:
         totalTrade += coins_bought[coin]['tradeWithoutFee']
 
     if totalTrade > 0:
-        session_struct['trade_slots'] = int(totalTrade / QUANTITY) + 1 
+        session_struct['trade_slots'] = int(totalTrade / QUANTITY) + 1
     else:
         session_struct['trade_slots'] = 0
 

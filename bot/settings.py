@@ -216,6 +216,7 @@ trading_struct = {
       'sum_min_holding_price': 0,
       'sum_max_holding_price': 0,
       'consecutive_loss': 0,
+      'consecutive_win': 0,
       'stop_loss_adjust': False
 }
 
