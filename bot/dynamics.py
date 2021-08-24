@@ -118,6 +118,11 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
            settings_struct['DYNAMIC_WIN_LOSS_DOWN'] = settings_struct['DYNAMIC_WIN_LOSS_DOWN'] - (settings_struct['DYNAMIC_WIN_LOSS_DOWN'] * DYNAMIC_WIN_LOSS_DOWN) / 100
            settings_struct['DYNAMIC_WIN_LOSS_UP'] = settings_struct['DYNAMIC_WIN_LOSS_UP'] + (settings_struct['DYNAMIC_WIN_LOSS_UP'] * DYNAMIC_WIN_LOSS_UP) / 100
 
+# this code limits DYNAMICS WINLOSS UP and down to multiply of dynamic min max and divide so it has lower and upper limits
+
+           if settings_struct['DYNAMIC_WIN_LOSS_DOWN'] < DYNAMIC_WIN_LOSS_DOWN / DYNAMIC_MIN_MAX: settings_struct['DYNAMIC_WIN_LOSS_DOWN'] = DYNAMIC_WIN_LOSS_DOWN / DYNAMIC_MIN_MAX
+           if settings_struct['DYNAMIC_WIN_LOSS_UP'] > DYNAMIC_WIN_LOSS_UP * DYNAMIC_MIN_MAX: settings_struct['DYNAMIC_WIN_LOSS_UP'] = DYNAMIC_WIN_LOSS_UP * DYNAMIC_MIN_MAX
+
            trading_struct['consecutive_loss'] = 0
 
 # when we have consecutive wins we lower our dynamic winloss up multiplier and we get our down multiplier higher so we react with more gain once market turns
@@ -130,6 +135,11 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
 
            settings_struct['DYNAMIC_WIN_LOSS_DOWN'] = settings_struct['DYNAMIC_WIN_LOSS_DOWN'] + (settings_struct['DYNAMIC_WIN_LOSS_DOWN'] * DYNAMIC_WIN_LOSS_DOWN) / 100
            settings_struct['DYNAMIC_WIN_LOSS_UP'] = settings_struct['DYNAMIC_WIN_LOSS_UP'] - (settings_struct['DYNAMIC_WIN_LOSS_UP'] * DYNAMIC_WIN_LOSS_UP) / 100
+
+# this code limits DYNAMICS WINLOSS UP and down to multiply of dynamic min max and divide so it has lower and upper limits
+
+           if settings_struct['DYNAMIC_WIN_LOSS_DOWN'] > DYNAMIC_WIN_LOSS_DOWN * DYNAMIC_MIN_MAX: settings_struct['DYNAMIC_WIN_LOSS_DOWN'] = DYNAMIC_WIN_LOSS_DOWN * DYNAMIC_MIN_MAX
+           if settings_struct['DYNAMIC_WIN_LOSS_UP'] < DYNAMIC_WIN_LOSS_UP / DYNAMIC_MIN_MAX: settings_struct['DYNAMIC_WIN_LOSS_UP'] = DYNAMIC_WIN_LOSS_UP / DYNAMIC_MIN_MAX
 
            trading_struct['consecutive_win'] = 0
 
