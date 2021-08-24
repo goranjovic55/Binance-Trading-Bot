@@ -38,7 +38,7 @@ from bot.report import *
 # this function puts coins that trigger a price change buy to trailing buy list then it follows and when coins trigger
 # a buy signal aka when they price passes TRAILING_BUY_THRESHOLD they are sent to buy list wich is passed to rest of buy procedures
 
-def trailing_buy(volatile_coins: Dict[str, float]) -> Dict[str, float]:
+def trailing_buy(volatile_coins: Dict[str, Decimal]) -> Dict[str, Decimal]:
 
     global trail_buy_historical
     global trail_buy_coins
@@ -53,15 +53,15 @@ def trailing_buy(volatile_coins: Dict[str, float]) -> Dict[str, float]:
     for coin in trail_buy_coins:
         if trail_buy_historical[coin]['price'] > trail_buy_last_price[coin]['price']:
 
-            trail_buy_coins[coin] = trail_buy_coins[coin] + (-1.0 *(trail_buy_historical[coin]['price'] - trail_buy_last_price[coin]['price']) / trail_buy_historical[coin]['price'] * 100)
+            trail_buy_coins[coin] = trail_buy_coins[coin] + (Decimal('-1.0') *(trail_buy_historical[coin]['price'] - trail_buy_last_price[coin]['price']) / trail_buy_historical[coin]['price'] * Decimal('100'))
             print(f"COIN: {coin} has DROPPED from {trail_buy_historical[coin]['price']} to {trail_buy_last_price[coin]['price']}")
-            print(f"COIN: {coin} has DROPPED for {-1.0 *(trail_buy_historical[coin]['price'] - trail_buy_last_price[coin]['price']) / trail_buy_historical[coin]['price'] * 100}%")
+            print(f"COIN: {coin} has DROPPED for {Decimal('-1.0') *(trail_buy_historical[coin]['price'] - trail_buy_last_price[coin]['price']) / trail_buy_historical[coin]['price'] * Decimal('100')}%")
 
         if trail_buy_historical[coin]['price'] < trail_buy_last_price[coin]['price']:
             print(f"COIN: {coin} has GONE UP!!!! from {trail_buy_historical[coin]['price']} to {trail_buy_last_price[coin]['price']}")
-            print(f"COIN: {coin} has GONE UP!!!! for {-1.0 *(trail_buy_historical[coin]['price'] - trail_buy_last_price[coin]['price']) / trail_buy_historical[coin]['price'] * 100}%")
+            print(f"COIN: {coin} has GONE UP!!!! for {Decimal('-1.0') *(trail_buy_historical[coin]['price'] - trail_buy_last_price[coin]['price']) / trail_buy_historical[coin]['price'] * Decimal('100')}%")
 
-            if float(-1.0 *(trail_buy_historical[coin]['price'] - trail_buy_last_price[coin]['price']) / trail_buy_historical[coin]['price'] * 100) > settings_struct['TRAILING_BUY_THRESHOLD']:
+            if Decimal(Decimal('-1.0') *(trail_buy_historical[coin]['price'] - trail_buy_last_price[coin]['price']) / trail_buy_historical[coin]['price'] * Decimal('100')) > settings_struct['TRAILING_BUY_THRESHOLD']:
 
                buy_volatile_coins[coin] = trail_buy_coins[coin]
 
@@ -78,7 +78,7 @@ def trailing_buy(volatile_coins: Dict[str, float]) -> Dict[str, float]:
 
 # this functions makes various trade calculations and writes them to global structures wich get passed to other funtions
 
-def trade_calculations(type: str, priceChange: float) -> None:
+def trade_calculations(type: str, priceChange: Decimal) -> None:
 
     if type == 'holding':
 
@@ -111,7 +111,7 @@ def trade_calculations(type: str, priceChange: float) -> None:
            trading_struct['lost_trade_percent'] = priceChange
            trading_struct['sum_lost_trades'] = trading_struct['sum_lost_trades'] + trading_struct['lost_trade_percent']
 
-       if DYNAMIC_SETTINGS: settings_struct['STOP_LOSS'] = (settings_struct['STOP_LOSS'] + session_struct['profit_to_trade_ratio']) / 2
+       if DYNAMIC_SETTINGS: settings_struct['STOP_LOSS'] = (settings_struct['STOP_LOSS'] + session_struct['profit_to_trade_ratio']) / Decimal('2')
 
        trading_struct['sum_max_holding_price'] = trading_struct['sum_max_holding_price'] + trading_struct['max_holding_price']
        trading_struct['max_holding_price'] = 0
@@ -151,7 +151,7 @@ def convert_volume() -> Tuple[Dict, Dict]:
 
     return volume, last_price
 
-def coin_volume_precision(coin : str, volume: float, price: float) -> float:
+def coin_volume_precision(coin : str, volume: Decimal, price: Decimal) -> Decimal:
     stepSize = 0
     minQty = 0
     minNotional = 0
@@ -164,20 +164,19 @@ def coin_volume_precision(coin : str, volume: float, price: float) -> float:
     except KeyError:
 # not retrieved at startup, try again
         try:
-            coin_info = client.get_symbol_info(coin)
+            session_struct['symbol_info'][coin] = client.get_symbol_info(coin)
+            coin_info = session_struct['symbol_info'][coin]
         except Exception as e:
-            print(f"{txcolors.SELL_LOSS}ERROR get_symbol_info " + coin + " " +str(e))
-            return 0
+            raise Exception("Volume unable to get_symbol_info " + str(e))
 
     for coin_info_fiter in coin_info['filters']:
         if coin_info_fiter['filterType'] == 'LOT_SIZE':
-            stepSize = float(coin_info_fiter['stepSize'])
-            minQty = float(coin_info_fiter['minQty'])
+            stepSize = Decimal(coin_info_fiter['stepSize'].rstrip('0'))
+            minQty = Decimal(coin_info_fiter['minQty'])
         if coin_info_fiter['filterType'] == 'MIN_NOTIONAL':
-            minNotional = float(coin_info_fiter['minNotional'])
+            minNotional = Decimal(coin_info_fiter['minNotional'])
 
-    power = 1 / stepSize
-    volume = math.trunc( volume * power ) / power
+    volume = volume.quantize(stepSize)
 
     if volume < minQty:
         raise Exception("Volume too lower/not enought (minQty)")
@@ -242,20 +241,20 @@ def sell_coins() -> Dict:
 
     for coin in list(coins_bought):
 
-        BUY_PRICE = float(coins_bought[coin]['bought_at'])
+        BUY_PRICE = Decimal(coins_bought[coin]['bought_at'])
         # coinTakeProfit is the price at which to 'take profit' based on config % markup
-        coinTakeProfit = BUY_PRICE + ((BUY_PRICE * coins_bought[coin]['take_profit']) / 100)
+        coinTakeProfit = BUY_PRICE + ((BUY_PRICE * coins_bought[coin]['take_profit']) / Decimal('100'))
         # coinStopLoss is the price at which to 'stop losses' based on config % markdown
-        coinStopLoss = BUY_PRICE + ((BUY_PRICE * coins_bought[coin]['stop_loss']) / 100)
+        coinStopLoss = BUY_PRICE + ((BUY_PRICE * coins_bought[coin]['stop_loss']) / Decimal('100'))
         # coinHoldingTimeLimit is the time limit for holding onto a coin
-        coinHoldingTimeLimit = float(coins_bought[coin]['timestamp']) + settings_struct['HOLDING_TIME_LIMIT']
+        coinHoldingTimeLimit = Decimal(coins_bought[coin]['timestamp']) + settings_struct['HOLDING_TIME_LIMIT']
         lastPrice = last_price[coin]['price']
         LAST_PRICE = "{:.8f}".format(lastPrice)
-        buyPrice = float(coins_bought[coin]['bought_at'])
+        buyPrice = Decimal(coins_bought[coin]['bought_at'])
         BUY_PRICE = "{:.8f}". format(buyPrice)
 
         # Note: priceChange and priceChangeWithFee are percentages!
-        priceChange = float((lastPrice - buyPrice) / buyPrice * 100)
+        priceChange = Decimal((lastPrice - buyPrice) / buyPrice * Decimal('100'))
 
         profit_estimate = (QUANTITY*(priceChange))/100
 
@@ -267,7 +266,7 @@ def sell_coins() -> Dict:
             if DEBUG: print(f"{coin} TP reached, adjusting TP {coins_bought[coin]['take_profit']:.{decimals()}f} and SL {coins_bought[coin]['stop_loss']:.{decimals()}f} accordingly to lock-in profit")
             continue
 
-        current_time = float(round(time.time() * 1000))
+        current_time = round(time.time() * 1000)
 #           print(f'TL:{coinHoldingTimeLimit}, time: {current_time} HOLDING_TIME_LIMIT: {HOLDING_TIME_LIMIT}, TimeLeft: {(coinHoldingTimeLimit - current_time)/1000/60} ')
 
         trade_calculations('holding', priceChange)
@@ -287,7 +286,7 @@ def sell_coins() -> Dict:
             ORDER =  "HOLDING_TIMEOUT"
 
         if ORDER != "":
-            print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChange:.2f}% - Est: {(QUANTITY * priceChange) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
+            print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChange:.2f}% - Est: {(QUANTITY * priceChange) / Decimal('100'):.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
             
             try: 
                 volume = coin_volume_precision(coin,coins_bought[coin]['volume'],lastPrice)
@@ -298,7 +297,7 @@ def sell_coins() -> Dict:
 
             lastPrice = coins_sold[coin]['avgPrice']
             coins_sold[coin]['orderId'] = coins_bought[coin]['orderId']
-            priceChange = float((lastPrice - buyPrice) / buyPrice * 100)
+            priceChange = Decimal((lastPrice - buyPrice) / buyPrice * Decimal(100))
 
             # prevent system from buying this coin for the next TIME_DIFFERENCE minutes
             volatility_cooloff[coin] = datetime.now()
@@ -323,7 +322,7 @@ def sell_coins() -> Dict:
 
     return coins_sold
 
-def order_coin(coin: str, order: str, lastPrice: float, volume: float) -> Dict:
+def order_coin(coin: str, order: str, lastPrice: Decimal, volume: Decimal) -> Dict:
     global TRADING_FEE, STOP_LOSS, TAKE_PROFIT, session_struct
 
     if TEST_MODE:
@@ -339,14 +338,14 @@ def order_coin(coin: str, order: str, lastPrice: float, volume: float) -> Dict:
         # Simulate response 
         if TRADING_FEE_BNB:
             commissionAsset = 'BNB'
-            commission = lastPrice * volume * TRADING_FEE / 100 / session_struct['bnb_current_price']
+            commission = lastPrice * volume * TRADING_FEE / Decimal('100') / session_struct['bnb_current_price']
         else:
             if order == SIDE_BUY:
                 commissionAsset = coin[:len(coin) - len(PAIR_WITH)]
-                commission = volume * TRADING_FEE / 100
+                commission = volume * TRADING_FEE / Decimal('100')
             else: 
                 commissionAsset = PAIR_WITH
-                commission = lastPrice * volume * TRADING_FEE / 100
+                commission = lastPrice * volume * TRADING_FEE / Decimal('100')
         # Prepare Order Coin
         order_details = {
             'symbol': coin,
@@ -358,7 +357,7 @@ def order_coin(coin: str, order: str, lastPrice: float, volume: float) -> Dict:
                 {
                     'price': lastPrice,
                     'qty': volume,
-                    'commission':commission,
+                    'commission':commission.quantize(DECIMAL_PRECISION),
                     'commissionAsset':commissionAsset
                 }]
             }             
@@ -373,23 +372,23 @@ def order_coin(coin: str, order: str, lastPrice: float, volume: float) -> Dict:
         )
 
     transactionInfo = {}
-# adding order fill extractions here
-#
-# just to explain what I am doing here:
-# Market orders are not always filled at one price, we need to find the averages of all 'parts' (fills) of this order.
-#
-# reset other variables to 0 before use
-    FILLS_TOTAL = 0
-    FILLS_QTY = 0
-    FILLS_QTY_FEE = 0
+    # adding order fill extractions here
+    #
+    # just to explain what I am doing here:
+    # Market orders are not always filled at one price, we need to find the averages of all 'parts' (fills) of this order.
+    #
+    # reset other variables to 0 before use
+    FILLS_TOTAL = Decimal('0')
+    FILLS_QTY = Decimal('0')
+    FILLS_QTY_FEE = Decimal('0')
     BNB_WARNING = 0
-    tradeWithFee = 0
-    tradeWithoutFee = 0
+    tradeWithFee = Decimal('0')
+    tradeWithoutFee = Decimal('0')
     # loop through each 'fill':
     for fills in order_details['fills']: 
-        FILL_PRICE = float(fills['price'])
-        FILL_QTY = float(fills['qty'])
-        FILL_FEE = float(fills['commission'])
+        FILL_PRICE = Decimal(fills['price'])
+        FILL_QTY = Decimal(fills['qty'])
+        FILL_FEE = Decimal(fills['commission'])
         
         # check if the fee was in BNB. If not, log a nice warning:
         if (fills['commissionAsset'] != 'BNB') and (TRADING_FEE_BNB) and (BNB_WARNING == 0):
@@ -420,7 +419,11 @@ def order_coin(coin: str, order: str, lastPrice: float, volume: float) -> Dict:
         FILLS_QTY += FILL_QTY
 
     # calculate average fill price:
-    FILL_AVG = (FILLS_TOTAL / FILLS_QTY)
+    FILL_AVG = Decimal(FILLS_TOTAL / FILLS_QTY).quantize(DECIMAL_PRECISION)
+
+    # Real Volume without Fee when don't use BNB... sometime you loose more than 0.1 due to precision of volume coin 
+    # Example a coin can be only be in integer mode ... you can 1 off coin ... 
+    FILLS_QTY = Decimal(FILLS_QTY - FILLS_QTY_FEE).quantize(DECIMAL_PRECISION)
 
     # create object with received data from Binance
     transactionInfo = {
@@ -428,11 +431,9 @@ def order_coin(coin: str, order: str, lastPrice: float, volume: float) -> Dict:
         'orderId': order_details['orderId'],
         'timestamp': order_details['transactTime'],
         'avgPrice': FILL_AVG,
-        # Real Volume without Fee when don't use BNB... sometime you loose more than 0.1 due to precision of volume coin 
-        # Example a coin can be only be in integer mode ... you can 1 off coin ... 
-        'volume': FILLS_QTY - FILLS_QTY_FEE,
-        'tradeWithFee': tradeWithFee,
-        'tradeWithoutFee': tradeWithoutFee
+        'volume': FILLS_QTY,
+        'tradeWithFee': tradeWithFee.quantize(DECIMAL_PRECISION),
+        'tradeWithoutFee': tradeWithoutFee.quantize(DECIMAL_PRECISION)
     }
 
     return transactionInfo
@@ -471,7 +472,7 @@ def update_portfolio(orders: Dict, last_price: Dict, volume: Dict) -> Dict:
     if len(orders) > 0:
         # save the coins in a json file in the same directory
         with open(coins_bought_file_path, 'w') as file:
-            json.dump(coins_bought, file, indent=4)
+            simplejson.dump(coins_bought, file, indent=4, use_decimal=True)
 
         update_trade_slot()
 
@@ -500,7 +501,7 @@ def remove_from_portfolio(coins_sold: Dict) -> None:
                 print(f"Sold {bought_coin}, removed order ID {order_id} from history.")
                 coins_bought.pop(bought_coin)
                 with open(coins_bought_file_path, 'w') as file:
-                    json.dump(coins_bought, file, indent=4)
+                    simplejson.dump(coins_bought, file, indent=4, use_decimal=True)
                 break
         update_trade_slot()
         session_struct['reload_tickers_list'] = True

@@ -21,7 +21,7 @@ from datetime import date, datetime, timedelta
 import time
 
 # used to store trades and sell assets
-import json
+import simplejson
 
 from bot.settings import *
 
@@ -35,24 +35,23 @@ def session(type: str) -> None:
     if type == 'calc':
         session_struct['TOTAL_GAINS'] = session_struct['session_profit']
         session_struct['NEW_BALANCE'] = (INVESTMENT + session_struct['TOTAL_GAINS'])
-        session_struct['INVESTMENT_GAIN'] = (session_struct['TOTAL_GAINS'] / INVESTMENT) * 100
+        session_struct['INVESTMENT_GAIN'] = (session_struct['TOTAL_GAINS'] / INVESTMENT) * Decimal('100')
         session_struct['CURRENT_EXPOSURE'] = (QUANTITY * session_struct['trade_slots'])
 
-# this number is your actual ETH or other coin value in correspondence to USDT aka your market investment_value
-# it is important cuz your exchange aha ETH or BTC can vary and if you pause bot during that time you gain profit
+        # this number is your actual ETH or other coin value in correspondence to USDT aka your market investment_value
+        # it is important cuz your exchange aha ETH or BTC can vary and if you pause bot during that time you gain profit
+        session_struct['investment_value'] = Decimal(session_struct['market_price']) * session_struct['NEW_BALANCE']
+        session_struct['investment_value_gain'] = Decimal(session_struct['market_price']) * (session_struct['NEW_BALANCE'] - INVESTMENT)
 
-        session_struct['investment_value'] = float(session_struct['market_price']) * session_struct['NEW_BALANCE']
-        session_struct['investment_value_gain'] = float(session_struct['market_price']) * (session_struct['NEW_BALANCE'] - INVESTMENT)
-
-        current_time = float(round(time.time() * 1000))
+        current_time = round(time.time() * 1000)
         if session_struct['session_start_time'] == 0: session_struct['session_start_time'] = current_time
         session_struct['session_uptime'] = current_time - session_struct['session_start_time']
 
         if session_struct['win_trade_count'] > 0 or session_struct['loss_trade_count'] > 0:
-           session_struct['profit_to_trade_ratio'] = session_struct['closed_trades_percent'] / (session_struct['win_trade_count']+session_struct['loss_trade_count'])
+           session_struct['profit_to_trade_ratio'] = Decimal(session_struct['closed_trades_percent'] / (session_struct['win_trade_count']+session_struct['loss_trade_count']))
 
         else:
-           session_struct['profit_to_trade_ratio'] = 0
+           session_struct['profit_to_trade_ratio'] = Decimal('0')
 
         if session_struct['win_trade_count'] > 0 and session_struct['loss_trade_count'] > 0:
            trading_struct['trade_support'] = trading_struct['sum_min_holding_price'] / session_struct['loss_trade_count']
@@ -100,7 +99,7 @@ def session(type: str) -> None:
 
 # save the coins in a json file in the same directory
         with open(session_info_file_path, 'w') as file:
-            json.dump(session_info, file, indent=4)
+            simplejson.dump(session_info, file, indent=4, use_decimal=True)
 
     if type == 'load':
 
@@ -114,7 +113,7 @@ def session(type: str) -> None:
 
         if os.path.isfile(session_info_file_path) and os.stat(session_info_file_path).st_size!= 0:
             json_file=open(session_info_file_path)
-            session_info=json.load(json_file)
+            session_info=simplejson.load(json_file, use_decimal=True)
             json_file.close()
 
             session_struct['session_profit'] = session_info['session_profit']
@@ -152,4 +151,4 @@ def session(type: str) -> None:
 
         session_struct['TOTAL_GAINS'] = (session_struct['session_profit'])
         session_struct['NEW_BALANCE'] = (INVESTMENT + session_struct['TOTAL_GAINS'])
-        session_struct['INVESTMENT_GAIN'] = (session_struct['TOTAL_GAINS'] / INVESTMENT) * 100
+        session_struct['INVESTMENT_GAIN'] = (session_struct['TOTAL_GAINS'] / INVESTMENT) * Decimal('100')

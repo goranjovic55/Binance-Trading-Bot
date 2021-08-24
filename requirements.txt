@@ -2,3 +2,4 @@ python-binance==1.0.12
 colorama==0.4.4
 PyYAML==5.4.1
 tradingview-ta==3.2.7
+simplejson==3.17.3
