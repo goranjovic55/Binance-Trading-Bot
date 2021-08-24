@@ -98,11 +98,12 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
            session_struct['last_trade_won'] = 'none'
            type = 'performance_adjust_down'
 
+
 # this part of code jumps to different part of timedifference scale this is to protect from consecutive losses
 # and to change context so bot goes from 5 minute range to 50 minute range for example if those were corresponding
 # scale values, it jumps on 2 consecutive losses
 
-        if trading_struct['consecutive_loss'] > 1:
+        if trading_struct['consecutive_loss'] > (TRADE_SLOTS / DYNAMIC_MIN_MAX):
            if settings_struct['TIME_DIFFERENCE'] > TIME_DIFFERENCE:
               settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE - (settings_struct['TIME_DIFFERENCE'] / TIME_DIFFERENCE * TIME_DIFFERENCE/DYNAMIC_MIN_MAX)
               print(f"TIMEFRAME JUMP TRIGGERED! TIME_DIFFERENCE: {settings_struct['TIME_DIFFERENCE']}")
@@ -113,6 +114,8 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
 
            trading_struct['consecutive_loss'] = 0
 
+        if trading_struct['consecutive_win'] > (TRADE_SLOTS / DYNAMIC_MIN_MAX):
+           trading_struct['consecutive_win'] = 0
 
         #print(f'{txcolors.NOTICE}>> TRADE_WON: {session_struct['last_trade_won']} and DYNAMICS_STATE: {session_struct['dynamics_state']} <<<{txcolors.DEFAULT}')
 
