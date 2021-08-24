@@ -264,9 +264,9 @@ def sell_coins() -> Dict:
 
         profit_estimate = (QUANTITY*(priceChange))/100
 
-# check that the price is above the take profit and readjust coinStopLoss and coinTakeProfit accordingly if trialing stop loss used
+        # check that the price is above the take profit and readjust coinStopLoss and coinTakeProfit accordingly if trialing stop loss used
         if lastPrice > coinTakeProfit and USE_TRAILING_STOP_LOSS:
-# increasing coinTakeProfit by TRAILING_TAKE_PROFIT (essentially next time to readjust coinStopLoss)
+        # increasing coinTakeProfit by TRAILING_TAKE_PROFIT (essentially next time to readjust coinStopLoss)
             coins_bought[coin]['take_profit'] = priceChange + settings_struct['TRAILING_TAKE_PROFIT']
             coins_bought[coin]['stop_loss'] = coins_bought[coin]['take_profit'] - settings_struct['TRAILING_STOP_LOSS']
             if DEBUG: print(f"{coin} TP reached, adjusting TP {coins_bought[coin]['take_profit']:.{decimals()}f} and SL {coins_bought[coin]['stop_loss']:.{decimals()}f} accordingly to lock-in profit")
@@ -292,9 +292,9 @@ def sell_coins() -> Dict:
             ORDER =  "HOLDING_TIMEOUT"
 
         if ORDER != "":
-            print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChange:.2f}% - Est: {(QUANTITY * priceChange) / 100:.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
-
-            try:
+            print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChange:.2f}% - Est: {(QUANTITY * priceChange) / Decimal('100'):.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
+            
+            try: 
                 volume = coin_volume_precision(coin,coins_bought[coin]['volume'],lastPrice)
                 coins_sold[coin] = order_coin(coin,SIDE_SELL,lastPrice,volume)
             except Exception as e:
