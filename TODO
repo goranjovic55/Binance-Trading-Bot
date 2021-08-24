@@ -1,3 +1,3 @@
 add marketstate analysis so we know overall market tendency
-implement consecutive win/loss as modulation of dynamic winloss up DYNAMIC_WIN_LOSS_DOWN/UP so those multipliers are changed dynamically based on consecutive results
-implement trailing take profit modulation based on some performance settings 
+implement trailing take profit modulation based on some performance settings
+implement modulation of trailing buy treshold from dynmaic up and down 
