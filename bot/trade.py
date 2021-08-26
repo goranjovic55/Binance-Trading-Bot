@@ -107,12 +107,13 @@ def trade_calculations(type: str, priceChange: Decimal) -> None:
 
        else:
 
-           session_struct['loss_trade_count'] = session_struct['loss_trade_count'] + 1
-           session_struct['last_trade_won'] = False
-           trading_struct['consecutive_win'] = 0
-
            if session_struct['last_trade_won'] == False:
               trading_struct['consecutive_loss'] += 1
+
+           session_struct['loss_trade_count'] = session_struct['loss_trade_count'] + 1
+
+           session_struct['last_trade_won'] = False
+           trading_struct['consecutive_win'] = 0
 
            trading_struct['lost_trade_percent'] = priceChange
            trading_struct['sum_lost_trades'] = trading_struct['sum_lost_trades'] + trading_struct['lost_trade_percent']
@@ -293,8 +294,8 @@ def sell_coins() -> Dict:
 
         if ORDER != "":
             print(f"{txcolors.SELL_PROFIT if priceChange >= 0. else txcolors.SELL_LOSS}TP or SL reached, selling {coins_bought[coin]['volume']} {coin}. Bought at: {BUY_PRICE} (Price now: {LAST_PRICE})  - {priceChange:.2f}% - Est: {(QUANTITY * priceChange) / Decimal('100'):.{decimals()}f} {PAIR_WITH}{txcolors.DEFAULT}")
-            
-            try: 
+
+            try:
                 volume = coin_volume_precision(coin,coins_bought[coin]['volume'],lastPrice)
                 coins_sold[coin] = order_coin(coin,SIDE_SELL,lastPrice,volume)
             except Exception as e:
@@ -349,7 +350,7 @@ def order_coin(coin: str, order: str, lastPrice: Decimal, volume: Decimal) -> Di
             if order == SIDE_BUY:
                 commissionAsset = coin[:len(coin) - len(PAIR_WITH)]
                 commission = volume * TRADING_FEE / Decimal('100')
-            else: 
+            else:
                 commissionAsset = PAIR_WITH
                 commission = lastPrice * volume * TRADING_FEE / Decimal('100')
         # Prepare Order Coin
@@ -391,11 +392,11 @@ def order_coin(coin: str, order: str, lastPrice: Decimal, volume: Decimal) -> Di
     tradeWithFee = Decimal('0')
     tradeWithoutFee = Decimal('0')
     # loop through each 'fill':
-    for fills in order_details['fills']: 
+    for fills in order_details['fills']:
         FILL_PRICE = Decimal(fills['price'])
         FILL_QTY = Decimal(fills['qty'])
         FILL_FEE = Decimal(fills['commission'])
-        
+
         # check if the fee was in BNB. If not, log a nice warning:
         if (fills['commissionAsset'] != 'BNB') and (TRADING_FEE_BNB) and (BNB_WARNING == 0):
             print(f"{txcolors.WARNING}BNB not used for trading fee, please...{txcolors.DEFAULT}")
@@ -427,8 +428,8 @@ def order_coin(coin: str, order: str, lastPrice: Decimal, volume: Decimal) -> Di
     # calculate average fill price:
     FILL_AVG = Decimal(FILLS_TOTAL / FILLS_QTY).quantize(DECIMAL_PRECISION)
 
-    # Real Volume without Fee when don't use BNB... sometime you loose more than 0.1 due to precision of volume coin 
-    # Example a coin can be only be in integer mode ... you can 1 off coin ... 
+    # Real Volume without Fee when don't use BNB... sometime you loose more than 0.1 due to precision of volume coin
+    # Example a coin can be only be in integer mode ... you can 1 off coin ...
     FILLS_QTY = Decimal(FILLS_QTY - FILLS_QTY_FEE).quantize(DECIMAL_PRECISION)
 
     # create object with received data from Binance
