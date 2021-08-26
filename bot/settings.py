@@ -25,9 +25,9 @@ from binance.client import Client
 from binance.exceptions import BinanceAPIException
 from requests.exceptions import ReadTimeout, ConnectionError
 
-# Decimal better precision 
+# Decimal better precision
 from decimal import *
-# Truncate down always 
+# Truncate down always
 getcontext().rounding = ROUND_DOWN
 # Precision like Binance
 DECIMAL_PRECISION = Decimal('.00000001')
@@ -81,7 +81,7 @@ session_struct = {
      'symbol_info': {},
      'price_timedelta': Decimal('0'),
      'trade_slots': int(0),
-     'dynamics_state': 'up',
+     'dynamics_state': 'down',
      'last_trade_won': 2,
      'last_report_time': 0,
      'session_start': False,
@@ -225,7 +225,7 @@ trading_struct = {
       'sum_min_holding_price': Decimal('0'),
       'sum_max_holding_price': Decimal('0'),
       'consecutive_loss': Decimal('0'),
-      'consecutive_win': Decimal('0'),    
+      'consecutive_win': Decimal('0'),
       'stop_loss_adjust': False
 }
 
