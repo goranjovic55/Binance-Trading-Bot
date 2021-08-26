@@ -137,14 +137,13 @@ trading_options:
   # MODS SETTINGS_STRING
 
   # pausebotmod
-  # X of 15 MA's indicating sell  
+  # X of 15 MA's indicating sell
   PAUSEBOTMOD_THRESHOLD: 14
   PAUSEBOTMOD_SYMBOL: ETHUSDT
 
   # custsignalmod
   # How many of the 26 indicators to indicate a buy
-  SIGNALSAMPLEMOD_THRESHOLD : 18
-
+  SIGNALSAMPLEMOD_THRESHOLD: 18
 
   # multiplier for HOLDING_TIME_LIMIT wich gives actual TIME_DIFFERENCE * HOLDING_TIME_LIMIT_MULTIPLIER when to start lowering STOP_LOSS
   # holding take profit is % at wich we sell if holding time limit is passed defualt is 1 and after one timeperiod we will sell on holding take profit
