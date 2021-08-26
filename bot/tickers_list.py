@@ -99,9 +99,9 @@ def tickers_list() -> None:
         for coin in tickers_binance:
             if any(item + PAIR_WITH == coin['symbol'] for item in session_struct['tickers']) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
                 if SORT_LIST_TYPE == 'volume':
-                    tickers_sort[coin['symbol']] = { 'volume': float(coin['volume'])}
+                    tickers_sort[coin['symbol']] = { 'volume': Decimal(coin['volume'])}
                 if SORT_LIST_TYPE == 'price_change':    
-                    tickers_sort[coin['symbol']] = { 'priceChangePercent': float(coin['priceChangePercent'])}
+                    tickers_sort[coin['symbol']] = { 'priceChangePercent': Decimal(coin['priceChangePercent'])}
 
         # sort tickers by descending order volume and price
         if SORT_LIST_TYPE == 'volume':

@@ -16,7 +16,7 @@ from binance.exceptions import BinanceAPIException
 from requests.exceptions import ReadTimeout, ConnectionError
 
 # used to store trades and sell assets
-import json
+import simplejson
 
 from helpers.parameters import (
     parse_args, load_config
@@ -41,7 +41,7 @@ hsp_head = -1
 def get_symbol_info(url: str = 'https://api.binance.com/api/v3/exchangeInfo') -> None:
     global session_struct
     response = requests.get(url)
-    json_message = json.loads(response.content)
+    json_message = simplejson.loads(response.content, use_decimal=True)
 
     for symbol_info in json_message['symbols']:
         session_struct['symbol_info'][symbol_info['symbol']] = symbol_info
@@ -94,13 +94,17 @@ def get_price(add_to_historical: bool = True) -> Dict:
             continue
         break
 
+    # current price BNB pair BNB ;-) 1 = 1 
+    if PAIR_WITH == 'BNB':
+        session_struct['bnb_current_price'] = Decimal('1')
+
     for coin in prices:
         # Get Current Bnb Price to fee calculation
         if coin['symbol'] == 'BNB' + PAIR_WITH:
-            session_struct['bnb_current_price'] = float(coin['price'])
+            session_struct['bnb_current_price'] = Decimal(coin['price'])
 
         if any(item + PAIR_WITH == coin['symbol'] for item in session_struct['tickers']) and all(item not in coin['symbol'] for item in EXCLUDED_PAIRS):
-            initial_price[coin['symbol']] = { 'price': float(coin['price']), 'time': datetime.now()}
+            initial_price[coin['symbol']] = { 'price': Decimal(coin['price']), 'time': datetime.now()}
 
     if add_to_historical:
         hsp_head += 1
@@ -111,7 +115,7 @@ def get_price(add_to_historical: bool = True) -> Dict:
         historical_prices[hsp_head] = initial_price
     return initial_price
 
-def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
+def wait_for_price(type: str) -> Tuple[Dict, int, Dict]:
     '''calls the initial price and ensures the correct amount of time has passed
     before reading the current price again'''
 
@@ -120,17 +124,17 @@ def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
     volatile_coins = {}
     externals = {}
 
-    current_time_minutes = float(round(time.time()))/60
+    current_time_minutes = Decimal(round(time.time()))/60
 
 #first time we just skip untill we find a way for historic fata to be grabbed here
     if session_struct['price_timedelta'] == 0: session_struct['price_timedelta'] = current_time_minutes
 #we give local variable value of time that we use for checking to grab prices again
     price_timedelta_value = session_struct['price_timedelta']
 
-    #if historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'] > datetime.now() - timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)):
+    #if historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'] > datetime.now() - timedelta(minutes=Decimal(TIME_DIFFERENCE / RECHECK_INTERVAL)):
 
         # sleep for exactly the amount of time required
-        #time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
+        #time.sleep((timedelta(minutes=Decimal(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
     #print(f'PRICE_TIMEDELTA: {price_timedelta_value} - CURRENT_TIME: {current_time_minutes} - TIME_DIFFERENCE: {TIME_DIFFERENCE}')
 
     session_struct['prices_grabbed'] = False
@@ -162,10 +166,10 @@ def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
                 continue
 
               # minimum and maximum prices over time period
-              min_price = min(historical_prices, key = lambda x: float("inf") if x is None else x[coin]['price'])
-              max_price = max(historical_prices, key = lambda x: -1 if x is None else x[coin]['price'])
+              min_price = min(historical_prices, key = lambda x: Decimal("inf") if x is None else x[coin]['price'])
+              max_price = max(historical_prices, key = lambda x: Decimal('-1') if x is None else x[coin]['price'])
 
-              threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (max_price[coin]['price'] - min_price[coin]['price']) / min_price[coin]['price'] * 100
+              threshold_check = (Decimal('-1.0') if min_price[coin]['time'] > max_price[coin]['time'] else Decimal('1.0')) * (max_price[coin]['price'] - min_price[coin]['price']) / min_price[coin]['price'] * Decimal('100')
 
               if threshold_check > 0:
                  session_struct['market_resistance'] = session_struct['market_resistance'] + threshold_check
@@ -190,10 +194,10 @@ def wait_for_price(type: str) -> Tuple[Dict, float, Dict]:
                continue
 
            # minimum and maximum prices over time period
-           min_price = min(historical_prices, key = lambda x: float("inf") if x is None else x[coin]['price'])
-           max_price = max(historical_prices, key = lambda x: -1 if x is None else x[coin]['price'])
+           min_price = min(historical_prices, key = lambda x: Decimal("inf") if x is None else x[coin]['price'])
+           max_price = max(historical_prices, key = lambda x: Decimal('-1') if x is None else x[coin]['price'])
 
-           threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (max_price[coin]['price'] - min_price[coin]['price']) / min_price[coin]['price'] * 100
+           threshold_check = (Decimal('-1.0') if min_price[coin]['time'] > max_price[coin]['time'] else Decimal('1.0')) * (max_price[coin]['price'] - min_price[coin]['price']) / min_price[coin]['price'] * Decimal('100')
 
            if type == 'percent_mix_signal':
 
