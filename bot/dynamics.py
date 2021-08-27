@@ -30,13 +30,6 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
 
     if DYNAMIC_SETTINGS:
 
-#limiting STOP_LOSS TIME_DIFFERENCE and TRAILING_STOP_LOSS to dynamic min and max values
-        if settings_struct['STOP_LOSS'] < STOP_LOSS / DYNAMIC_MIN_MAX:
-           settings_struct['STOP_LOSS'] = STOP_LOSS / DYNAMIC_MIN_MAX
-
-        if settings_struct['TRAILING_STOP_LOSS'] < TRAILING_STOP_LOSS / DYNAMIC_MIN_MAX:
-           settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS /DYNAMIC_MIN_MAX
-
 # modifying of STOPLOSS based on closedtrades/tradeslots * win/loss percent and trailing stoploss based on profit to trade ratio
 # so we can not loose more than we can afford to
 
@@ -53,6 +46,14 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
               settings_struct['TRAILING_STOP_LOSS'] = settings_struct['TRAILING_STOP_LOSS'] + (TRAILING_STOP_LOSS / DYNAMIC_MIN_MAX)
 
            trading_struct['stop_loss_adjust'] = False
+
+#limiting STOP_LOSS TIME_DIFFERENCE and TRAILING_STOP_LOSS to dynamic min and max values
+        if settings_struct['STOP_LOSS'] < STOP_LOSS / DYNAMIC_MIN_MAX:
+           settings_struct['STOP_LOSS'] = STOP_LOSS / DYNAMIC_MIN_MAX
+
+        if settings_struct['TRAILING_STOP_LOSS'] < TRAILING_STOP_LOSS / DYNAMIC_MIN_MAX:
+           settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS /DYNAMIC_MIN_MAX
+
 
         if settings_struct['TIME_DIFFERENCE'] < TIME_DIFFERENCE / DYNAMIC_MIN_MAX:
            settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE / DYNAMIC_MIN_MAX
