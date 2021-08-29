@@ -47,13 +47,17 @@ def dynamic_settings(type: str, TIME_DIFFERENCE: float, RECHECK_INTERVAL: float)
 
            trading_struct['stop_loss_adjust'] = False
 
+# here we risk more untill we go above with our stoploss over closed trades later we apply limited loss strategy
+        if session_struct['closed_trades_percent'] < settings_struct['STOP_LOSS'] * DYNAMIC_MIN_MAX
+           settings_struct['STOP_LOSS'] = STOP_LOSS * DYNAMIC_MIN_MAX
+           settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS * DYNAMIC_MIN_MAX
+
 #limiting STOP_LOSS TIME_DIFFERENCE and TRAILING_STOP_LOSS to dynamic min and max values
         if settings_struct['STOP_LOSS'] < STOP_LOSS / DYNAMIC_MIN_MAX:
            settings_struct['STOP_LOSS'] = STOP_LOSS / DYNAMIC_MIN_MAX
 
         if settings_struct['TRAILING_STOP_LOSS'] < TRAILING_STOP_LOSS / DYNAMIC_MIN_MAX:
            settings_struct['TRAILING_STOP_LOSS'] = TRAILING_STOP_LOSS /DYNAMIC_MIN_MAX
-
 
         if settings_struct['TIME_DIFFERENCE'] < TIME_DIFFERENCE / DYNAMIC_MIN_MAX:
            settings_struct['TIME_DIFFERENCE'] = TIME_DIFFERENCE / DYNAMIC_MIN_MAX
