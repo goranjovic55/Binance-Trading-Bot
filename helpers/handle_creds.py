@@ -1,4 +1,5 @@
-from typing import Tuple, Dict
+from typing import Dict, Tuple
+
 
 def load_correct_creds(creds: Dict) -> Tuple[str, str]:
     """Returns the binance API key details from the config
@@ -9,10 +10,16 @@ def load_correct_creds(creds: Dict) -> Tuple[str, str]:
     Returns:
         tuple[str, str]: the binance access_key followed by the secret_key)
     """
-    return creds['prod']['access_key'], creds['prod']['secret_key']
+    return creds["prod"]["access_key"], creds["prod"]["secret_key"]
+
 
 def load_telegram_creds(creds: Dict) -> Tuple[str, str, str, str]:
-    return creds['telegram']['TELEGRAM_BOT_TOKEN'], creds['telegram']['TELEGRAM_BOT_ID'], creds['discord']['TEST_DISCORD_WEBHOOK'], creds['discord']['LIVE_DISCORD_WEBHOOK']
+    return (
+        creds["telegram"]["TELEGRAM_BOT_TOKEN"],
+        creds["telegram"]["TELEGRAM_BOT_ID"],
+        creds["discord"]["TEST_DISCORD_WEBHOOK"],
+        creds["discord"]["LIVE_DISCORD_WEBHOOK"],
+    )
 
 
 def test_api_key(client, BinanceAPIException) -> Tuple[bool, str]:
@@ -31,22 +38,20 @@ def test_api_key(client, BinanceAPIException) -> Tuple[bool, str]:
 
     except BinanceAPIException as e:
 
-
-        if e.code in  [-2015,-2014]:
+        if e.code in [-2015, -2014]:
             bad_key = "Your API key is not formatted correctly..."
             america = "If you are in america, you will have to update the config to set AMERICAN_USER: True"
             ip_b = "If you set an IP block on your keys make sure this IP address is allowed. check ipinfo.io/ip"
 
             msg = f"Your API key is either incorrect, IP blocked, or incorrect tld/permissons...\n  most likely: {bad_key}\n  {america}\n  {ip_b}"
 
-        elif  e.code in [-2021,-1021]:
+        elif e.code in [-2021, -1021]:
             issue = "https://github.com/CyberPunkMetalHead/Binance-volatility-trading-bot/issues/28"
             desc = "Ensure your OS is time synced with a timeserver. See issue."
             msg = f"Timestamp for this request was 1000ms ahead of the server's time.\n  {issue}\n  {desc}"
 
         else:
             msg = "Encountered an API Error code that was not caught nicely, please open issue...\n"
-
 
         return False, msg
 
